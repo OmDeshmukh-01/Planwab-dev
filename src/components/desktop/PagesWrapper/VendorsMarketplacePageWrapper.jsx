@@ -101,6 +101,8 @@ import { useUser } from "@clerk/clerk-react";
 import SmartMedia from "../SmartMediaLoader";
 import { useNavigationState } from "../../../hooks/useNavigationState";
 import CompareModal from "./../CompareModalDesktop";
+import { useAppValuesStore } from "../../../GlobalState/AppValuesStore";
+import LeadCaptureModal from "../LeadCaptureModal";
 // import CompareModal from "../../mobile/CompareModalMobile";
 
 const COLORS = {
@@ -2322,6 +2324,9 @@ const VendorCard = memo(
     addToRecentlyViewed,
     setShowShareModal,
     setShareItem,
+     isLeadModalOpen,
+    setLeadModalActionType,
+    setIsLeadModalOpen
   }) => {
     const [showActions, setShowActions] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
@@ -2334,6 +2339,7 @@ const VendorCard = memo(
     const inCart = isInCart(vendor._id);
 
     const { getHrefWithState } = useNavigationState();
+        const { allowedAction, canContinue } = useAppValuesStore();
 
     const router = useRouter();
 
@@ -2459,8 +2465,14 @@ const VendorCard = memo(
     );
 
     const handleCall = useCallback(() => {
-      if (vendor.phoneNo) window.location.href = `tel:${vendor.phoneNo}`;
-      else onShowToast("Phone not available", "info");
+      console.log("Allowed Action:", allowedAction, "Can Continue:", canContinue);
+      if(canContinue){
+            if (vendor.phoneNo) window.location.href = `tel:${vendor.phoneNo}`;
+            else onShowToast?.("Phone number not available", "info");
+        }else {
+           setIsLeadModalOpen(true);
+           setLeadModalActionType("revealPhone");
+        }
     }, [vendor.phoneNo, onShowToast]);
 
     if (isListView) {
@@ -4064,6 +4076,8 @@ export default function DesktopVendorMarketplace() {
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState(0);
+   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+    const [leadModalActionType, setLeadModalActionType] = useState("general");
 
   const [recentSearches, setRecentSearches] = useLocalStorage("desktop_recentSearches", []);
   const [compareMode, setCompareMode] = useState(false);
@@ -5580,6 +5594,9 @@ export default function DesktopVendorMarketplace() {
                             addToRecentlyViewed={addToRecentlyViewed}
                             setShowShareModal={setShowShareModal}
                             setShareItem={setShareItem}
+                                 setIsLeadModalOpen={setIsLeadModalOpen}
+                            setLeadModalActionType={setLeadModalActionType}
+                            isLeadModalOpen={isLeadModalOpen}
                           />
                         </motion.div>
                       ))}
@@ -5778,6 +5795,14 @@ export default function DesktopVendorMarketplace() {
           <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} shareItem={shareItem} />
         )}
       </AnimatePresence>
+
+          <LeadCaptureModal
+      isOpen={isLeadModalOpen}
+      onClose={() => setIsLeadModalOpen(false)}
+      actionType={leadModalActionType}
+      title="Plan Your Perfect Event"
+      subtitle="Get started with India's most affordable event planning marketplace"
+    />
 
       {/* ========== CUSTOM STYLES FOR COMPARE BAR ========== */}
       <style jsx>{`

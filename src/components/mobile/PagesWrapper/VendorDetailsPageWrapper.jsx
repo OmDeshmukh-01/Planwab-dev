@@ -129,6 +129,8 @@ import { useUser } from "@clerk/nextjs";
 import { toast } from "sonner";
 import Image from "next/image";
 import SmartMedia from "@/components/mobile/SmartMediaLoader";
+import { useAppValuesStore } from "../../../GlobalState/AppValuesStore";
+import LeadCaptureModalMobile from "../LeadCaptureModal";
 
 const AUTOPLAY_DELAY = 5000;
 
@@ -349,7 +351,7 @@ const CollapsibleSection = memo(
         </AnimatePresence>
       </motion.div>
     );
-  }
+  },
 );
 CollapsibleSection.displayName = "CollapsibleSection";
 
@@ -1219,14 +1221,14 @@ const CartDrawer = memo(({ onClose, items, onRemove, onUpdateQuantity, showToast
   const priceDetails = useMemo(() => {
     const subtotal = items.reduce(
       (acc, item) => acc + (item.price || item.basePrice || item.perDayPrice?.min || 0) * (item.quantity || 1),
-      0
+      0,
     );
     let couponDiscount = 0;
     if (appliedCoupon) {
       if (appliedCoupon.type === "percent")
         couponDiscount = Math.min(
           Math.round((subtotal * appliedCoupon.discount) / 100),
-          appliedCoupon.maxDiscount || Infinity
+          appliedCoupon.maxDiscount || Infinity,
         );
       else couponDiscount = appliedCoupon.discount;
     }
@@ -1249,7 +1251,7 @@ const CartDrawer = memo(({ onClose, items, onRemove, onUpdateQuantity, showToast
       onRemove(item._id);
       showToast("Item removed from cart", "info");
     },
-    [onRemove, haptic, showToast]
+    [onRemove, haptic, showToast],
   );
 
   return (
@@ -2019,6 +2021,7 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
   const redirectWithReturn = useRedirectWithReturn();
   const router = useRouter();
   const { cartItems, addToCart, removeFromCart, updateQuantity } = useCartStore();
+  const { allowedAction, canContinue } = useAppValuesStore();
 
   const containerRef = useRef(null);
   const carouselRef = useRef(null);
@@ -2045,6 +2048,8 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
   const [activeDrawer, setActiveDrawer] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+  const [leadModalActionType, setLeadModalActionType] = useState("general");
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [slideDirection, setSlideDirection] = useState(0);
@@ -2060,6 +2065,7 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
   const [showImageModal, setShowImageModal] = useState(false);
   const [modalImageIndex, setModalImageIndex] = useState(0);
   const [showBookingSheet, setShowBookingSheet] = useState(false);
+  const [isSubmittingBooking, setIsSubmittingBooking] = useState(false);
   const [showContactSheet, setShowContactSheet] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
 
@@ -2080,7 +2086,7 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
     (id, quantity) => {
       updateQuantity(id, quantity);
     },
-    [updateQuantity]
+    [updateQuantity],
   );
   const showToast = useCallback((message, type = "success") => {
     toast[type](message);
@@ -2209,7 +2215,7 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
 
   const isInCart = useMemo(
     () => (vendor ? cartItems.some((item) => item._id === vendor._id) : false),
-    [cartItems, vendor]
+    [cartItems, vendor],
   );
 
   const handleCartToggle = useCallback(() => {
@@ -2348,7 +2354,7 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
         bg: "bg-purple-50 dark:bg-purple-900/20",
       },
     ],
-    [vendor]
+    [vendor],
   );
 
   const goToImage = useCallback(
@@ -2358,7 +2364,7 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
       setSlideDirection(newDirection);
       setCurrentImageIndex(index);
     },
-    [images.length, currentImageIndex]
+    [images.length, currentImageIndex],
   );
 
   const nextImage = useCallback(() => {
@@ -2406,7 +2412,7 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
     (index) => {
       goToImage(index);
     },
-    [goToImage]
+    [goToImage],
   );
 
   const handleTouchStart = useCallback((e) => {
@@ -2437,7 +2443,7 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
       isDragging.current = false;
       dragStartX.current = 0;
     },
-    [nextImage, prevImage, images.length]
+    [nextImage, prevImage, images.length],
   );
 
   const scrollContainer = useCallback((ref, direction) => {
@@ -2457,7 +2463,7 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
         facebook: () => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`),
         twitter: () =>
           window.open(
-            `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`
+            `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`,
           ),
         whatsapp: () => window.open(`https://wa.me/?text=${encodeURIComponent(text + " " + url)}`),
       };
@@ -2465,24 +2471,99 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
       setShowShareModal(false);
       if (platform === "copy") toast.success("Link copied to clipboard!");
     },
-    [vendor?.name]
+    [vendor?.name],
   );
 
-  const handleBookingSubmit = useCallback(() => {
-    setShowBookingSheet(false);
-    toast.success("Booking request sent!");
-    setBookingForm({
-      name: "",
-      phone: "",
-      email: "",
-      date: "",
-      guests: "",
-      eventType: "",
-      budget: "",
-      timeSlot: "",
-      notes: "",
-    });
-  }, []);
+  const handleBookingSubmit = useCallback(async () => {
+    // Validation
+    if (!bookingForm.name || !bookingForm.phone || !bookingForm.date || !bookingForm.guests) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    // Validate phone number (basic validation)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(bookingForm.phone.replace(/\D/g, ""))) {
+      toast.error("Please enter a valid 10-digit phone number");
+      return;
+    }
+
+    // Validate email if provided
+    if (bookingForm.email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(bookingForm.email)) {
+        toast.error("Please enter a valid email address");
+        return;
+      }
+    }
+
+    // Validate date is in the future
+    const selectedDate = new Date(bookingForm.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      toast.error("Event date must be in the future");
+      return;
+    }
+
+    // Validate guests
+    if (bookingForm.guests < 1) {
+      toast.error("Number of guests must be at least 1");
+      return;
+    }
+
+    try {
+      setIsSubmittingBooking(true);
+
+      const response = await fetch("/api/vendor/requests/detail-booking", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          vendorId: vendor._id,
+          name: bookingForm.name,
+          phone: bookingForm.phone,
+          email: bookingForm.email || null,
+          date: bookingForm.date,
+          guests: parseInt(bookingForm.guests),
+          eventType: bookingForm.eventType || null,
+          budget: bookingForm.budget || null,
+          timeSlot: bookingForm.timeSlot || null,
+          notes: bookingForm.notes || null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to send booking request");
+      }
+
+      toast.success(data.message || "Booking request sent successfully!");
+
+      // Reset form and close sheet
+      setBookingForm({
+        name: "",
+        phone: "",
+        email: "",
+        date: "",
+        guests: "",
+        eventType: "",
+        budget: "",
+        timeSlot: "",
+        notes: "",
+      });
+
+      setShowBookingSheet(false);
+    } catch (error) {
+      console.error("Booking request error:", error);
+      toast.error(error.message || "Failed to send booking request. Please try again.");
+    } finally {
+      setIsSubmittingBooking(false);
+    }
+  }, [bookingForm, vendor._id]);
 
   const handleReviewSubmit = async () => {
     if (!isAuthLoaded) return;
@@ -2560,7 +2641,7 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
         });
       });
     },
-    [showHeaderTabs]
+    [showHeaderTabs],
   );
 
   // Only show skeleton if vendor is somehow null (fallback)
@@ -2860,32 +2941,32 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
               href={`/vendor/${vendor.category}/${vendor._id}/profile`}
               className="group block relative rounded-full border border-slate-200/60 dark:border-slate-700/50 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-[1.01]"
             >
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-green-500 to-green-800 shadow-md">
-                    <Image
-                      src={vendor?.defaultImage || vendor?.images?.[0] || "/placeholder-profile.jpg"}
-                      alt={`${vendor.name} Profile Picture`}
-                      width={500}
-                      height={500}
-                      quality={90}
-                      priority={false}
-                      loading="lazy"
-                      placeholder="blur"
-                      blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iI2YzZjRmNiIvPjwvc3ZnPg=="
-                      className="w-full h-full object-cover rounded-full overflow-hidden"
-                      onError={(e) => {
-                        e.currentTarget.src = "/placeholder-profile.jpg";
-                      }}
-                    />
-                  </div>
-                  <div className="absolute bottom-0 right-0 bg-white dark:bg-gray-800 p-1 rounded-full shadow-md border border-gray-100 dark:border-gray-700 text-violet-600">
-                    <Eye size={10} />
-                  </div>
+              <div className="relative">
+                <div className="w-16 h-16 rounded-full p-[3px] bg-gradient-to-tr from-green-500 to-green-800 shadow-md">
+                  <Image
+                    src={vendor?.defaultImage || vendor?.images?.[0] || "/placeholder-profile.jpg"}
+                    alt={`${vendor.name} Profile Picture`}
+                    width={500}
+                    height={500}
+                    quality={90}
+                    priority={false}
+                    loading="lazy"
+                    placeholder="blur"
+                    blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNTAwIiBoZWlnaHQ9IjUwMCIgZmlsbD0iI2YzZjRmNiIvPjwvc3ZnPg=="
+                    className="w-full h-full object-cover rounded-full overflow-hidden"
+                    onError={(e) => {
+                      e.currentTarget.src = "/placeholder-profile.jpg";
+                    }}
+                  />
                 </div>
+                <div className="absolute bottom-0 right-0 bg-white dark:bg-gray-800 p-1 rounded-full shadow-md border border-gray-100 dark:border-gray-700 text-violet-600">
+                  <Eye size={10} />
+                </div>
+              </div>
             </Link>
             <div className="flex flex-col items-start justify-center flex-1 min-h-full min-w-0">
               <div className="flex items-center gap-1.5 mb-0.5">
-                <h1 className="text-lg font-black text-gray-900 dark:text-white leading-tight truncate">
+                <h1 className="text-lg font-black text-gray-900 dark:text-white leading-tight w-[68vw]">
                   {vendor.name}
                 </h1>
                 {vendor.isVerified && <Verified size={16} className="text-blue-500 fill-blue-500 shrink-0" />}
@@ -2914,8 +2995,8 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
                       vendor.availabilityStatus === "Available"
                         ? "bg-green-100 text-green-700"
                         : vendor.availabilityStatus === "Busy"
-                        ? "bg-yellow-100 text-yellow-700"
-                        : "bg-red-100 text-red-700"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
                     }`}
                   >
                     {vendor.availabilityStatus}
@@ -2958,7 +3039,14 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
           <div className="grid grid-cols-4 gap-1.5 mt-3">
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => (window.location.href = `tel:${vendor.phoneNo}`)}
+              onClick={() => {
+                if (canContinue) {
+                  window.open(`tel:${vendor.phoneNo}`);
+                } else {
+                  setIsLeadModalOpen(true);
+                  setLeadModalActionType("revealPhone");
+                }
+              }}
               className="py-2.5 bg-green-500 rounded-xl font-bold flex flex-col items-center justify-center gap-0.5 text-white shadow-lg shadow-green-500/20"
             >
               <Phone size={16} />
@@ -2966,7 +3054,14 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.95 }}
-              onClick={() => window.open(`https://wa.me/${vendor.whatsappNo || vendor.phoneNo}`)}
+              onClick={() => {
+                if (canContinue) {
+                  window.open(`https://wa.me/${vendor.whatsappNo || vendor.phoneNo}`);
+                } else {
+                  setIsLeadModalOpen(true);
+                  setLeadModalActionType("revealWhatsapp");
+                }
+              }}
               className="py-2.5 bg-emerald-500 rounded-xl font-bold flex flex-col items-center justify-center gap-0.5 text-white shadow-lg shadow-emerald-500/20"
             >
               <MessageCircle size={16} />
@@ -3415,14 +3510,14 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
                         <div className="flex items-center gap-4 flex-1 min-w-0">
                           {/* Profile Picture or Fallback Icon */}
                           <div className="relative flex-shrink-0">
-                              <div className="w-14 h-14 rounded-xl overflow-hidden ring-2 ring-slate-200 dark:ring-slate-700 group-hover:ring-indigo-400 dark:group-hover:ring-indigo-500 transition-all duration-300">
-                                <SmartMedia
-                                  src={vendor?.defaultImage || vendor?.images?.[0] || "/placeholder-profile.jpg" }
-                                  type="image"
-                                  alt={`${vendor.name} Profile Picture`}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
+                            <div className="w-14 h-14 rounded-xl overflow-hidden ring-2 ring-slate-200 dark:ring-slate-700 group-hover:ring-indigo-400 dark:group-hover:ring-indigo-500 transition-all duration-300">
+                              <SmartMedia
+                                src={vendor?.defaultImage || vendor?.images?.[0] || "/placeholder-profile.jpg"}
+                                type="image"
+                                alt={`${vendor.name} Profile Picture`}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
                             {/* Status indicator dot */}
                             <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900" />
                           </div>
@@ -4228,53 +4323,53 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
         )}
 
         {/* Vendor Profile Link */}
-        {activeTab !== "overview" &&
-            <motion.div variants={fadeInUp}>
-              <Link
-                href={`/vendor/${vendor.category}/${vendor._id}/profile`}
-                className="group block relative bg-gradient-to-br from-indigo-500/80 via-purple-500/80 to-blue-600/70 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 px-4 py-3 rounded-2xl border border-slate-200/60 dark:border-slate-700/50 shadow-sm hover:shadow-lg hover:border-indigo-300/50 dark:hover:border-indigo-500/30 transition-all duration-300 hover:scale-[1.01] overflow-hidden mt-2 mb-3 mx-2"
-              >
-                {/* Subtle gradient overlay on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 via-purple-500/0 to-blue-500/0 group-hover:from-indigo-500/5 group-hover:via-purple-500/5 group-hover:to-blue-500/5 transition-all duration-300 rounded-2xl" />
+        {activeTab !== "overview" && (
+          <motion.div variants={fadeInUp}>
+            <Link
+              href={`/vendor/${vendor.category}/${vendor._id}/profile`}
+              className="group block relative bg-gradient-to-br from-indigo-500/80 via-purple-500/80 to-blue-600/70 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 px-4 py-3 rounded-2xl border border-slate-200/60 dark:border-slate-700/50 shadow-sm hover:shadow-lg hover:border-indigo-300/50 dark:hover:border-indigo-500/30 transition-all duration-300 hover:scale-[1.01] overflow-hidden mt-2 mb-3 mx-2"
+            >
+              {/* Subtle gradient overlay on hover */}
+              <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/0 via-purple-500/0 to-blue-500/0 group-hover:from-indigo-500/5 group-hover:via-purple-500/5 group-hover:to-blue-500/5 transition-all duration-300 rounded-2xl" />
 
-                <div className="relative flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1 min-w-0">
-                    {/* Profile Picture or Fallback Icon */}
-                    <div className="relative flex-shrink-0">
-                        <div className="w-14 h-14 rounded-xl overflow-hidden ring-2 ring-slate-200 dark:ring-slate-700 group-hover:ring-indigo-400 dark:group-hover:ring-indigo-500 transition-all duration-300">
-                          <SmartMedia
-                            src={vendor?.defaultImage || vendor?.images?.[0] || "/placeholder-profile.jpg"}
-                            type="image"
-                            alt={`${vendor.name} Profile Picture`}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      {/* Status indicator dot */}
-                      <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900" />
+              <div className="relative flex items-center justify-between">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                  {/* Profile Picture or Fallback Icon */}
+                  <div className="relative flex-shrink-0">
+                    <div className="w-14 h-14 rounded-xl overflow-hidden ring-2 ring-slate-200 dark:ring-slate-700 group-hover:ring-indigo-400 dark:group-hover:ring-indigo-500 transition-all duration-300">
+                      <SmartMedia
+                        src={vendor?.defaultImage || vendor?.images?.[0] || "/placeholder-profile.jpg"}
+                        type="image"
+                        alt={`${vendor.name} Profile Picture`}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
-
-                    {/* Text Content */}
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-[15px] text-white dark:text-slate-100 mb-0.5 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
-                        View Vendor Profile
-                      </p>
-                      <p className="text-[12px] text-slate-500 dark:text-slate-400 font-medium truncate">
-                        {vendor?.vendorProfile?.tagline ||
-                          (Array.isArray(vendor.vendorProfile) ? vendor?.vendorProfile[0]?.tagline : "") ||
-                          "Bio, social stats & featured work"}
-                      </p>
-                    </div>
+                    {/* Status indicator dot */}
+                    <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-900" />
                   </div>
 
-                  {/* Arrow Icon */}
-                  <ArrowRight
-                    size={20}
-                    className="flex-shrink-0 text-white dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all duration-300"
-                  />
+                  {/* Text Content */}
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-[15px] text-white dark:text-slate-100 mb-0.5 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-200">
+                      View Vendor Profile
+                    </p>
+                    <p className="text-[12px] text-slate-500 dark:text-slate-400 font-medium truncate">
+                      {vendor?.vendorProfile?.tagline ||
+                        (Array.isArray(vendor.vendorProfile) ? vendor?.vendorProfile[0]?.tagline : "") ||
+                        "Bio, social stats & featured work"}
+                    </p>
+                  </div>
                 </div>
-              </Link>
-            </motion.div>
-          }
+
+                {/* Arrow Icon */}
+                <ArrowRight
+                  size={20}
+                  className="flex-shrink-0 text-white dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 group-hover:translate-x-1 transition-all duration-300"
+                />
+              </div>
+            </Link>
+          </motion.div>
+        )}
 
         {/* SIMILAR VENDORS */}
         {similarVendors.length > 0 && (
@@ -4570,50 +4665,86 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
               <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto mb-5" />
               <h3 className="text-base font-bold mb-5 dark:text-white">Contact Information</h3>
               <div className="space-y-3">
-                <motion.a
+                <motion.button
                   whileTap={{ scale: 0.98 }}
-                  href={`tel:${vendor.phoneNo}`}
-                  className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl"
+                  onClick={() => {
+                    if (canContinue) {
+                      window.open(`tel:${vendor.phoneNo}`);
+                    } else {
+                      setIsLeadModalOpen(true);
+                      setLeadModalActionType("revealPhone");
+                    }
+                  }}
+                  className="flex w-full items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl"
                 >
                   <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center text-green-600">
                     <Phone size={22} />
                   </div>
                   <div className="flex-1">
-                    <p className="text-[10px] text-gray-500 uppercase font-bold">Phone</p>
-                    <p className="font-bold text-[13px] text-gray-900 dark:text-white">{vendor.phoneNo}</p>
+                    <p className="text-[10px] text-gray-500 uppercase" style={{ fontWeight: canContinue ? 500 : 900 }}>
+                      Phone
+                    </p>
+                    {canContinue && (
+                      <p className="font-bold text-[13px] text-gray-900 dark:text-white">{vendor.phoneNo}</p>
+                    )}
                   </div>
                   <ChevronRight className="text-gray-400" size={20} />
-                </motion.a>
+                </motion.button>
                 {vendor.whatsappNo && (
-                  <motion.a
+                  <motion.button
                     whileTap={{ scale: 0.98 }}
-                    href={`https://wa.me/${vendor.whatsappNo}`}
-                    className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl"
+                    onClick={() => {
+                      if (canContinue) {
+                        window.open(`https://wa.me/${vendor.whatsappNo}`);
+                      } else {
+                        setIsLeadModalOpen(true);
+                        setLeadModalActionType("revealWhatsapp");
+                      }
+                    }}
+                    className="flex w-full items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl"
                   >
                     <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center text-emerald-600">
                       <MessageCircle size={22} />
                     </div>
                     <div className="flex-1">
-                      <p className="text-[10px] text-gray-500 uppercase font-bold">WhatsApp</p>
-                      <p className="font-bold text-[13px] text-gray-900 dark:text-white">{vendor.whatsappNo}</p>
+                      <p
+                        className="text-[10px] text-gray-500 uppercase"
+                        style={{ fontWeight: canContinue ? 500 : 900 }}
+                      >
+                        WhatsApp
+                      </p>
+                      {canContinue && (
+                        <p className="font-bold text-[13px] text-gray-900 dark:text-white">{vendor.whatsappNo}</p>
+                      )}
                     </div>
                     <ChevronRight className="text-gray-400" size={20} />
-                  </motion.a>
+                  </motion.button>
                 )}
-                <motion.a
+                <motion.button
                   whileTap={{ scale: 0.98 }}
-                  href={`mailto:${vendor.email}`}
-                  className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl"
+                  onClick={() => {
+                    if (canContinue) {
+                      window.open(`mailto:${vendor.email}`);
+                    } else {
+                      setIsLeadModalOpen(true);
+                      setLeadModalActionType("revealEmail");
+                    }
+                  }}
+                  className="flex w-full items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl"
                 >
                   <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center text-blue-600">
                     <Mail size={22} />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[10px] text-gray-500 uppercase font-bold">Email</p>
-                    <p className="font-bold text-[13px] text-gray-900 dark:text-white truncate">{vendor.email}</p>
+                    <p className="text-[10px] text-gray-500 uppercase" style={{ fontWeight: canContinue ? 500 : 900 }}>
+                      Email
+                    </p>
+                    {canContinue && (
+                      <p className="font-bold text-[13px] text-gray-900 dark:text-white truncate">{vendor.email}</p>
+                    )}
                   </div>
                   <ChevronRight className="text-gray-400" size={20} />
-                </motion.a>
+                </motion.button>
                 {vendor.contactPerson?.firstName && (
                   <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-2xl">
                     <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center text-purple-600">
@@ -4642,19 +4773,60 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
             exit={{ opacity: 0 }}
             transition={backdropTransition}
             className="fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm flex items-end"
-            onClick={() => setShowBookingSheet(false)}
+            onClick={() => !isSubmittingBooking && setShowBookingSheet(false)}
           >
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={modalTransition}
-              className="w-full bg-white dark:bg-gray-900 rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto"
+              className="w-full bg-white dark:bg-gray-900 rounded-t-3xl p-5 max-h-[85vh] overflow-y-auto relative"
               onClick={(e) => e.stopPropagation()}
             >
+              {/* Loading Overlay */}
+              {isSubmittingBooking && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="absolute inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm rounded-t-3xl z-10 flex flex-col items-center justify-center"
+                >
+                  <div className="relative">
+                    {/* Spinning Circle */}
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="w-16 h-16 border-4 border-blue-200 dark:border-blue-900 border-t-blue-600 rounded-full"
+                    />
+                    {/* Inner Pulse */}
+                    <motion.div
+                      animate={{ scale: [1, 1.2, 1], opacity: [0.5, 0.8, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="absolute inset-0 m-auto w-8 h-8 bg-blue-500 rounded-full"
+                    />
+                  </div>
+                  <motion.p
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="mt-4 text-sm font-medium text-gray-700 dark:text-gray-300"
+                  >
+                    Sending booking request...
+                  </motion.p>
+                  <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    className="mt-1 text-xs text-gray-500 dark:text-gray-400"
+                  >
+                    Please wait
+                  </motion.p>
+                </motion.div>
+              )}
+
               <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto mb-5" />
               <h3 className="text-lg font-bold mb-1 dark:text-white">Request Booking</h3>
               <p className="text-[11px] text-gray-500 mb-5">We'll respond within 2 hours</p>
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">
@@ -4665,9 +4837,11 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
                     value={bookingForm.name}
                     onChange={(e) => setBookingForm({ ...bookingForm, name: e.target.value })}
                     placeholder="Your name"
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    disabled={isSubmittingBooking}
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">
@@ -4678,7 +4852,8 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
                       value={bookingForm.phone}
                       onChange={(e) => setBookingForm({ ...bookingForm, phone: e.target.value })}
                       placeholder="Phone number"
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                      disabled={isSubmittingBooking}
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -4688,10 +4863,12 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
                       value={bookingForm.email}
                       onChange={(e) => setBookingForm({ ...bookingForm, email: e.target.value })}
                       placeholder="Email"
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                      disabled={isSubmittingBooking}
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">
@@ -4701,7 +4878,8 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
                       type="date"
                       value={bookingForm.date}
                       onChange={(e) => setBookingForm({ ...bookingForm, date: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                      disabled={isSubmittingBooking}
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
                   <div>
@@ -4713,10 +4891,12 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
                       value={bookingForm.guests}
                       onChange={(e) => setBookingForm({ ...bookingForm, guests: e.target.value })}
                       placeholder="Number"
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                      disabled={isSubmittingBooking}
+                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
+
                 <div>
                   <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                     Event Type
@@ -4724,7 +4904,8 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
                   <select
                     value={bookingForm.eventType}
                     onChange={(e) => setBookingForm({ ...bookingForm, eventType: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                    disabled={isSubmittingBooking}
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <option value="">Select type</option>
                     {(vendor.eventTypes?.length > 0
@@ -4737,6 +4918,7 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
                     ))}
                   </select>
                 </div>
+
                 <div>
                   <label className="block text-[11px] font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                     Additional Notes
@@ -4746,16 +4928,32 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
                     value={bookingForm.notes}
                     onChange={(e) => setBookingForm({ ...bookingForm, notes: e.target.value })}
                     placeholder="Any specific requirements..."
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white resize-none focus:ring-2 focus:ring-blue-500 outline-none"
+                    disabled={isSubmittingBooking}
+                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[12px] text-gray-900 dark:text-white resize-none focus:ring-2 focus:ring-blue-500 outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
+
                 <motion.button
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={!isSubmittingBooking ? { scale: 0.98 } : {}}
                   onClick={handleBookingSubmit}
-                  className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold text-[13px] shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2"
+                  disabled={isSubmittingBooking}
+                  className="w-full py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-2xl font-bold text-[13px] shadow-lg shadow-blue-500/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
                 >
-                  <Send size={18} />
-                  Send Booking Request
+                  {isSubmittingBooking ? (
+                    <>
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                        className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                      />
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={18} />
+                      Send Booking Request
+                    </>
+                  )}
                 </motion.button>
               </div>
             </motion.div>
@@ -4901,6 +5099,14 @@ const VendorDetailsPageWrapper = ({ initialVendor, initialSimilar, initialRecomm
           showToast={showToast}
         />
       )}
+
+      <LeadCaptureModalMobile
+        isOpen={isLeadModalOpen}
+        onClose={() => setIsLeadModalOpen(false)}
+        actionType={leadModalActionType}
+        title="Plan Your Perfect Event"
+        subtitle="Get started with India's most affordable event planning marketplace"
+      />
 
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar {

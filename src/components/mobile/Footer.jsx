@@ -152,7 +152,7 @@ const Footer = () => {
       style={{ contentVisibility: "auto", containIntrinsicSize: "600px" }}
     >
       {/* Top Curve Decoration */}
-      <div className="w-full -mt-0 md:-mt-0 relative z-10 pointer-events-none leading-none">
+      {/* <div className="w-full -mt-0 md:-mt-0 relative z-10 pointer-events-none leading-none">
         <img
           alt=""
           loading="lazy"
@@ -160,9 +160,9 @@ const Footer = () => {
           src="https://www.theweddingcompany.com/images/HomePage/new/pink-curve.svg"
           aria-hidden="true"
         />
-      </div>
+      </div> */}
 
-      <div className="pb-12 pt-3 px-4 md:px-0 bg-[#FFEFF4]">
+      <div className="pb-12 pt-5 px-4 md:px-0 bg-[#FFEFF4]">
         <div className="mx-auto flex max-w-screen-lg flex-col justify-center items-center">
           <h2 className="mb-6 font-serif text-2xl font-semibold md:mb-10 md:text-4xl text-center text-gray-700">
             PlanWAB – Turning Your Moments into Perfect Plans

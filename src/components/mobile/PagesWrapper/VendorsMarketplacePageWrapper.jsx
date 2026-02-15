@@ -84,6 +84,8 @@ import SmartMedia from "../SmartMediaLoader";
 import { toast } from "sonner";
 import Image from "next/image";
 import CompareModal from "../CompareModalMobile";
+import LeadCaptureModalMobile from "../LeadCaptureModal";
+import { useAppValuesStore } from "../../../GlobalState/AppValuesStore";
 
 // =============================================================================
 // CONSTANTS
@@ -1691,7 +1693,10 @@ const VendorCard = memo(
     colorPrimary,
     onShowToast,
     setCompareMode,
-    setCompareList,
+    setCompareList, 
+    isLeadModalOpen,
+    setLeadModalActionType,
+    setIsLeadModalOpen
   }) => {
     const [isBookmarked, setIsBookmarked] = useState(false);
     const [showActions, setShowActions] = useState(false);
@@ -1702,6 +1707,7 @@ const VendorCard = memo(
     const [isLiked, setIsLiked] = useState(false);
     const [statusLoading, setStatusLoading] = useState(false);
     const [likingLoading, setLikingLoading] = useState(false);
+    const { allowedAction, canContinue } = useAppValuesStore();
 
     // ADD this useEffect in VendorCard component:
     useEffect(() => {
@@ -1814,8 +1820,13 @@ const VendorCard = memo(
     const handleCall = useCallback(
       (e) => {
         haptic("medium");
-        if (vendor.phoneNo) window.location.href = `tel:${vendor.phoneNo}`;
-        else onShowToast?.("Phone number not available", "info");
+        if(canContinue){
+            if (vendor.phoneNo) window.location.href = `tel:${vendor.phoneNo}`;
+            else onShowToast?.("Phone number not available", "info");
+        }else {
+           setIsLeadModalOpen(true);
+           setLeadModalActionType("revealPhone");
+        }
       },
       [vendor.phoneNo, haptic, onShowToast],
     );
@@ -3288,6 +3299,8 @@ export default function MarketplacePageWrapper() {
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [sortSheetOpen, setSortSheetOpen] = useState(false);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+  const [leadModalActionType, setLeadModalActionType] = useState("general");
 
   const [sortBy, setSortBy] = useState("rating");
   const [priceRange, setPriceRange] = useState([0, 1000000]);
@@ -4204,7 +4217,10 @@ export default function MarketplacePageWrapper() {
                             colorPrimary={COLORS.primary}
                             onShowToast={showToast}
                             setCompareMode={setCompareMode}
-                            setCompareList={setCompareList}
+                            setCompareList={setCompareList} 
+                            setIsLeadModalOpen={setIsLeadModalOpen}
+                            setLeadModalActionType={setLeadModalActionType}
+                            isLeadModalOpen={isLeadModalOpen}
                           />
                         </motion.div>
                       ))}
@@ -4305,6 +4321,13 @@ export default function MarketplacePageWrapper() {
                 showToast(errorMsg, "error");
               }}
             />
+    <LeadCaptureModalMobile
+      isOpen={isLeadModalOpen}
+      onClose={() => setIsLeadModalOpen(false)}
+      actionType={leadModalActionType}
+      title="Plan Your Perfect Event"
+      subtitle="Get started with India's most affordable event planning marketplace"
+    />
     </div>
   );
 }
