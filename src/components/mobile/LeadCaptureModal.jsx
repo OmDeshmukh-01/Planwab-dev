@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, User, Phone, Sparkles, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
-import { useAppValuesStore } from "../../store/AppValuesStore";
+import { useAppValuesStore } from "../../GlobalState/AppValuesStore";
+import SmartMedia from './SmartMediaLoader';
+import { useNavbarVisibilityStore } from './../../GlobalState/navbarVisibilityStore';
 
 const SPRING_CONFIG = {
   type: "spring",
@@ -17,18 +19,20 @@ const OVERLAY_SPRING = {
   damping: 20,
 };
 
-const LeadCaptureModal = ({ isOpen, onClose, actionType, title, subtitle }) => {
+const LeadCaptureModalMobile = ({ isOpen, onClose, actionType, title, subtitle }) => {
   const [formData, setFormData] = useState({ name: "", phone: "" });
   const [errors, setErrors] = useState({ name: "", phone: "" });
   const [touched, setTouched] = useState({ name: false, phone: false });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState(null);
+  const { setIsNavbarVisible } = useNavbarVisibilityStore();
 
   const { setCanContinue, setAllowedAction } = useAppValuesStore();
 
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      setIsNavbarVisible(false);
     } else {
       document.body.style.overflow = "unset";
       setFormData({ name: "", phone: "" });
@@ -38,6 +42,7 @@ const LeadCaptureModal = ({ isOpen, onClose, actionType, title, subtitle }) => {
     }
     return () => {
       document.body.style.overflow = "unset";
+      setIsNavbarVisible(true);
     };
   }, [isOpen]);
 
@@ -164,23 +169,20 @@ const LeadCaptureModal = ({ isOpen, onClose, actionType, title, subtitle }) => {
                 style={{ transformOrigin: "left" }}
               />
 
-              <motion.button
-                whileHover={{ scale: 1.1, rotate: 90 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={onClose}
-                className="absolute top-4 right-4 z-10 w-10 h-10 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-colors group"
-              >
-                <X size={20} className="text-gray-600 group-hover:text-gray-900" />
-              </motion.button>
-
-              <div className="relative px-6 sm:px-8 pt-12 pb-8">
+              <div className="relative px-6 sm:px-8 pt-8 pb-3">
                 <motion.div
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ delay: 0.2, ...SPRING_CONFIG }}
-                  className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-lg"
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-lg"
                 >
-                  <Sparkles size={32} className="text-white" />
+                  <SmartMedia 
+                    src="/planwablogo.png"
+                    alt="Planwab Logo"
+                    width={52}
+                    height={52}
+                    className="absolute object-cover w-13 h-13 rounded-full"
+                  />
                 </motion.div>
 
                 <motion.div
@@ -337,7 +339,7 @@ const LeadCaptureModal = ({ isOpen, onClose, actionType, title, subtitle }) => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.6 }}
-                    className="flex flex-col sm:flex-row gap-3 pt-2"
+                    className="flex flex-col sm:flex-row gap-3"
                   >
                     <motion.button
                       type="button"
@@ -376,7 +378,7 @@ const LeadCaptureModal = ({ isOpen, onClose, actionType, title, subtitle }) => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.7 }}
-                  className="text-xs text-gray-400 text-center mt-6"
+                  className="text-xs text-gray-400 text-center mt-3"
                 >
                   By continuing, you agree to our Terms of Service and Privacy Policy
                 </motion.p>
@@ -397,4 +399,4 @@ const LeadCaptureModal = ({ isOpen, onClose, actionType, title, subtitle }) => {
   );
 };
 
-export default LeadCaptureModal;
+export default LeadCaptureModalMobile;

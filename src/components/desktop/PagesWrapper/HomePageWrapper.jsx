@@ -256,7 +256,7 @@ export default function DesktopHomePageWrapper() {
     router.push(`?category=${categoryName.toLowerCase()}`, { scroll: false });
   };
 
-  const currentTheme = categoryThemes[activeCategory] || categoryThemes.Wedding;
+  const currentTheme = categoryThemes[activeCategory] || categoryThemes.Events;
   const activeCategoryData = categoryCards.find((c) => c.name === activeCategory) || categoryCards[1];
 
   const cardsData1 = [
