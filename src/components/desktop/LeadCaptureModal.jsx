@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, User, Phone, Sparkles, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
 import { useAppValuesStore } from "../../GlobalState/AppValuesStore";
+import SmartMedia from "../mobile/SmartMediaLoader";
+import { useNavbarVisibilityStore } from "../../GlobalState/navbarVisibilityStore";
 
 const SPRING_CONFIG = {
   type: "spring",
@@ -25,21 +27,25 @@ const LeadCaptureModal = ({ isOpen, onClose, actionType, title, subtitle }) => {
   const [submitStatus, setSubmitStatus] = useState(null);
 
   const { setCanContinue, setAllowedAction } = useAppValuesStore();
+    const { setIsNavbarVisible } = useNavbarVisibilityStore();
+  
 
-useEffect(() => {
-  if (isOpen) {
-    document.body.style.overflow = "hidden";  // ✅ This stops scrolling
-  } else {
-    document.body.style.overflow = "unset";   // ✅ This restores scrolling
-    setFormData({ name: "", phone: "" });
-    setErrors({ name: "", phone: "" });
-    setTouched({ name: false, phone: false });
-    setSubmitStatus(null);
-  }
-  return () => {
-    document.body.style.overflow = "unset";   // ✅ Cleanup function
-  };
-}, [isOpen]);
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden"; // ✅ This stops scrolling
+      setIsNavbarVisible(false); // Hide navbar when modal is open
+    } else {
+      document.body.style.overflow = "unset"; // ✅ This restores scrolling
+      setFormData({ name: "", phone: "" });
+      setErrors({ name: "", phone: "" });
+      setTouched({ name: false, phone: false });
+      setSubmitStatus(null);
+    }
+    return () => {
+      document.body.style.overflow = "unset"; // ✅ Cleanup function
+      setIsNavbarVisible(true); // Ensure navbar is visible when component unmounts
+    };
+  }, [isOpen]);
 
   const validateName = (name) => {
     if (!name.trim()) return "Name is required";
@@ -103,10 +109,10 @@ useEffect(() => {
           actionType: actionType || "general",
           currentUrl: window.location.href,
           metadata: {
-          referrer: document.referrer,
-          device: 'desktop',
-          campaign: 'summer-sale'
-        }
+            referrer: document.referrer,
+            device: "desktop",
+            campaign: "summer-sale",
+          },
         }),
       });
 
@@ -156,7 +162,7 @@ useEffect(() => {
               exit={{ scale: 0.8, opacity: 0, y: 50, rotateX: 15 }}
               transition={SPRING_CONFIG}
               onClick={(e) => e.stopPropagation()}
-              className="relative h-[98vh] w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
+              className="relative h-[95vh] w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
               style={{
                 transformStyle: "preserve-3d",
                 perspective: "1000px",
@@ -170,14 +176,20 @@ useEffect(() => {
                 style={{ transformOrigin: "left" }}
               />
 
-              <div className="relative px-6 sm:px-8 pt-12 pb-8">
+              <div className="relative px-6 sm:px-8 pt-6 pb-8">
                 <motion.div
                   initial={{ scale: 0, rotate: -180 }}
                   animate={{ scale: 1, rotate: 0 }}
                   transition={{ delay: 0.2, ...SPRING_CONFIG }}
-                  className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-lg"
+                  className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6 mx-auto shadow-lg"
                 >
-                  <Sparkles size={32} className="text-white" />
+                  <SmartMedia
+                    src="/planwablogo.png"
+                    alt="Planwab Logo"
+                    width={52}
+                    height={52}
+                    className="absolute object-cover w-15 h-15 rounded-full"
+                  />
                 </motion.div>
 
                 <motion.div
@@ -186,9 +198,7 @@ useEffect(() => {
                   transition={{ delay: 0.3 }}
                   className="text-center mb-8"
                 >
-                  <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">
-                    {title || "Get Started Today"}
-                  </h2>
+                  <h2 className="text-2xl sm:text-3xl font-black text-gray-900 mb-2">{title || "Get Started Today"}</h2>
                   <p className="text-sm sm:text-base text-gray-500">
                     {subtitle || "Share your details and we'll help plan your perfect event"}
                   </p>
@@ -253,10 +263,7 @@ useEffect(() => {
                     <label className="block text-sm font-bold text-gray-700 mb-2">Phone Number</label>
                     <div className="relative">
                       <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none">
-                        <Phone
-                          size={20}
-                          className={errors.phone && touched.phone ? "text-red-400" : "text-gray-400"}
-                        />
+                        <Phone size={20} className={errors.phone && touched.phone ? "text-red-400" : "text-gray-400"} />
                         <span className="text-gray-500 font-medium">+91</span>
                       </div>
                       <input
@@ -373,7 +380,7 @@ useEffect(() => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.7 }}
-                  className="text-xs text-gray-400 text-center mt-6"
+                  className="text-xs text-gray-400 text-center mt-3"
                 >
                   By continuing, you agree to our Terms of Service and Privacy Policy
                 </motion.p>
