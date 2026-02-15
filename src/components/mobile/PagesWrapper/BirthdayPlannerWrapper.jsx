@@ -178,7 +178,7 @@ export default function BirthdayPlannerWrapper() {
         if (currentStep === 'hotels' || currentStep === 'booking') {
             if (!sessionId) {
                 toast.error('Session expired or invalid.');
-                router.push('/m/events/birthday-planner');
+                router.push('/m/events/birthday/birthday-planner');
             } else if (!userFormData.name) {
                 // Fetch might have failed or data is missing
                 // For now, let's allow it if session ID exists, assuming data might load or be retried
@@ -193,12 +193,14 @@ export default function BirthdayPlannerWrapper() {
                 // If we have session but no hotel, maybe user went directly to step 3?
                 // Redirect to step 2
                 toast.error('Please select a hotel first');
-                router.push(`/m/events/birthday-planner?step=hotels&sessionId=${sessionId}`);
+                router.push(`/m/events/birthday/birthday-planner?step=hotels&sessionId=${sessionId}`);
             }
         }
 
         if (currentStep === 'confirmation' && !confirmationData && !isHydrating) {
             // similar guard
+            toast.error('Please complete booking details first');
+            router.push(`/m/events/birthday/birthday-planner?step=booking&sessionId=${sessionId}`);
         }
 
     }, [currentStep, sessionId, isHydrating, selectedHotel, confirmationData, router, userFormData.name]);
@@ -245,7 +247,7 @@ export default function BirthdayPlannerWrapper() {
 
             toast.success('Details saved successfully! 🎉');
             // Navigate with Session ID in URL
-            router.push(`/m/events/birthday-planner?step=hotels&sessionId=${newSessionId}`);
+            router.push(`/m/events/birthday/birthday-planner?step=hotels&sessionId=${newSessionId}`);
         } catch (error) {
             console.error('Submission Error:', error);
             toast.error(error.message || 'Failed to save details.');
@@ -343,7 +345,7 @@ export default function BirthdayPlannerWrapper() {
             }
 
             toast.success('Hotel selected! 🎉');
-            router.push(`/m/events/birthday-planner?step=booking&sessionId=${sessionId}`);
+            router.push(`/m/events/birthday/birthday-planner?step=booking&sessionId=${sessionId}`);
         } catch (error) {
             console.error("Hotel Selection Error:", error);
             // Even if API fails, we try to proceed? 
@@ -388,7 +390,7 @@ export default function BirthdayPlannerWrapper() {
             };
             setConfirmationData(confirmation);
             toast.success('Booking confirmed! 🎊');
-            router.push(`/m/events/birthday-planner?step=confirmation&sessionId=${sessionId}`);
+            router.push(`/m/events/birthday/birthday-planner?step=confirmation&sessionId=${sessionId}`);
         } catch (error) {
             console.error("Booking Confirmation Error:", error);
             toast.error(error.message || 'Failed to confirm booking.');
@@ -406,7 +408,7 @@ export default function BirthdayPlannerWrapper() {
                     loop
                     muted
                     playsInline
-                    className="w-full h-full object-cover opacity-90"
+                    className="w-full h-full object-cover opacity-30"
                 >
                     <source src="/CatVideos/birthday-hero.mp4" type="video/mp4" />
                 </video>
@@ -414,16 +416,16 @@ export default function BirthdayPlannerWrapper() {
             </div>
 
             <div className="relative z-10 flex flex-col min-h-screen">
-                <div className="flex-1 flex flex-col justify-center px-6 pt-32 pb-24">
-                    <div className="text-center mb-12 animate-slide">
-                        <h1 className="text-5xl md:text-6xl font-bold text-white mb-2 tracking-tight">PLAN YOUR</h1>
-                        <h2 className="text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F4C430] to-[#E5E4E2] drop-shadow-2xl">BIRTHDAY</h2>
+                <div className="flex-1 flex flex-col justify-center px-6 pt-22 pb-24">
+                    <div className="text-center animate-slide">
+                        <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 tracking-tight">PLAN YOUR</h1>
+                        <h2 className="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-[#D4AF37] via-[#F4C430] to-[#E5E4E2] drop-shadow-2xl">BIRTHDAY</h2>
                         <p className="mt-4 text-purple-200/80 text-xl md:text-2xl font-light max-w-lg mx-auto">Create unforgettable memories with our curated experience</p>
                     </div>
 
                     <SurpriseCard />
 
-                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] animate-slide mt-24">
+                    <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-[32px] p-6 shadow-[0_8px_32px_0_rgba(0,0,0,0.37)] animate-slide mt-4">
                         <form onSubmit={handleUserSubmit} className="space-y-5">
                             <FloatingInput
                                 label="Full Name"

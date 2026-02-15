@@ -128,6 +128,8 @@ import { QRCodeSVG } from "qrcode.react";
 import { Download, QrCode, Linkedin, MessageSquare } from "lucide-react";
 import Image from "next/image";
 import { useNavigationState } from "../../../hooks/useNavigationState";
+import { useAppValuesStore } from "../../../GlobalState/AppValuesStore";
+import LeadCaptureModal from "../LeadCaptureModal";
 
 const AUTOPLAY_DELAY = 5000;
 
@@ -1420,6 +1422,7 @@ const VendorDetailsPageWrapper = ({
   const { user } = useUser();
   const { addToCart, removeFromCart, isInCart } = useCartStore();
   const { backUrl, canGoBack, getHrefWithState } = useNavigationState();
+  const { allowedAction, canContinue } = useAppValuesStore();
 
   const [vendor, setVendor] = useState(initialVendor);
   const [loading, setLoading] = useState(false);
@@ -1443,6 +1446,8 @@ const VendorDetailsPageWrapper = ({
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [expandedFaq, setExpandedFaq] = useState(null);
   const [selectedPackage, setSelectedPackage] = useState(null);
+  const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+  const [leadModalActionType, setLeadModalActionType] = useState("general");
 
   const [showShareModal, setShowShareModal] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -5046,9 +5051,14 @@ const VendorDetailsPageWrapper = ({
                   </button>
                   <button
                     onClick={() => {
-                      const ph = vendor.whatsappNo || vendor.phoneNo;
+                      if(canContinue){
+                        const ph = vendor.whatsappNo || vendor.phoneNo;
                       const msg = encodeURIComponent(`Hi ${vendor.name}! I'm interested in your services.`);
                       window.open(`https://wa.me/${ph?.replace(/[^0-9]/g, "")}?text=${msg}`, "_blank");
+                      }else{
+                        setIsLeadModalOpen(true);
+           setLeadModalActionType("revealWhatsapp");
+                      }
                     }}
                     className="w-full flex items-center justify-center gap-2 px-5 py-3.5 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-2xl hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 font-bold text-sm"
                   >
@@ -5056,13 +5066,27 @@ const VendorDetailsPageWrapper = ({
                   </button>
                   <div className="grid grid-cols-2 gap-2">
                     <button
-                      onClick={() => window.open(`tel:${vendor.phoneNo}`, "_self")}
+                      onClick={() => {
+                        if(canContinue){
+                          window.open(`tel:${vendor.phoneNo}`, "_self");
+                        }else{
+                          setIsLeadModalOpen(true);
+                          setLeadModalActionType("revealPhone");
+                        }
+                      }}
                       className="flex items-center justify-center gap-2 px-3 py-2.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-all font-medium text-sm"
                     >
                       <Phone size={16} /> Call
                     </button>
                     <button
-                      onClick={() => window.open(`mailto:${vendor.email}`, "_self")}
+                      onClick={() => {
+                        if(canContinue){
+                          window.open(`mailto:${vendor.email}`, "_self");
+                        }else{
+                          setIsLeadModalOpen(true);
+                          setLeadModalActionType("revealEmail");
+                        }
+                      }}
                       className="flex items-center justify-center gap-2 px-3 py-2.5 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/40 transition-all font-medium text-sm"
                     >
                       <Mail size={16} /> Email
@@ -5251,43 +5275,62 @@ const VendorDetailsPageWrapper = ({
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-xl border border-gray-100 dark:border-gray-700">
                 <h3 className="font-bold text-gray-900 dark:text-gray-100 text-sm mb-3">Quick Contact</h3>
                 <div className="space-y-2">
-                  <a
-                    href={`tel:${vendor.phoneNo}`}
-                    className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
+                  <button
+                    onClick={() => {
+                      if(canContinue){
+                        window.open(`tel:${vendor.phoneNo}`, "_self");
+                      }else{
+                        setIsLeadModalOpen(true);
+                        setLeadModalActionType("revealPhone");
+                      }
+                    }}
+                    className="flex w-full items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-xl hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors"
                   >
                     <Phone size={18} className="text-green-600" />
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] text-gray-500 uppercase font-bold">Phone</p>
-                      <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{vendor.phoneNo}</p>
+                    {canContinue && <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{vendor.phoneNo}</p>}
                     </div>
                     <ChevronRight size={16} className="text-gray-400" />
-                  </a>
+                  </button>
                   {vendor.whatsappNo && (
-                    <a
-                      href={`https://wa.me/${vendor.whatsappNo}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+                    <button
+                      onClick={() => {
+                        if(canContinue){
+                          window.open(`https://wa.me/${vendor.whatsappNo}`, "_blank");
+                        }else{
+                          setIsLeadModalOpen(true);
+                          setLeadModalActionType("revealWhatsapp");
+                        }
+                      }}
+                      className="flex w-full items-center gap-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
                     >
                       <MessageCircle size={18} className="text-emerald-600" />
                       <div className="flex-1 min-w-0">
                         <p className="text-[10px] text-gray-500 uppercase font-bold">WhatsApp</p>
-                        <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{vendor.whatsappNo}</p>
+                        {canContinue && <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{vendor.whatsappNo}</p>}
                       </div>
                       <ChevronRight size={16} className="text-gray-400" />
-                    </a>
+                    </button>
                   )}
-                  <a
-                    href={`mailto:${vendor.email}`}
-                    className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                  <button
+                     onClick={() => {
+                      if(canContinue){
+                        window.open(`mailto:${vendor.email}`, "_self");
+                      }else{
+                        setIsLeadModalOpen(true);
+                        setLeadModalActionType("revealEmail");
+                      }
+                    }}
+                    className="flex w-full items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
                   >
                     <Mail size={18} className="text-blue-600" />
                     <div className="flex-1 min-w-0">
                       <p className="text-[10px] text-gray-500 uppercase font-bold">Email</p>
-                      <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{vendor.email}</p>
+                      {canContinue && <p className="font-bold text-sm text-gray-900 dark:text-white truncate">{vendor.email}</p>}
                     </div>
                     <ChevronRight size={16} className="text-gray-400" />
-                  </a>
+                  </button>
                   {vendor.contactPerson?.firstName && (
                     <div className="flex items-center gap-3 p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl">
                       <User size={18} className="text-purple-600" />
@@ -5438,6 +5481,14 @@ const VendorDetailsPageWrapper = ({
           <KeyboardShortcutsModal isOpen={showKeyboardShortcuts} onClose={() => setShowKeyboardShortcuts(false)} />
         )}
       </AnimatePresence>
+
+        <LeadCaptureModal
+                  isOpen={isLeadModalOpen}
+                  onClose={() => setIsLeadModalOpen(false)}
+                  actionType={leadModalActionType}
+                  title="Plan Your Perfect Event"
+                  subtitle="Get started with India's most affordable event planning marketplace"
+                />
 
       <style jsx global>{`
         .no-scrollbar::-webkit-scrollbar {

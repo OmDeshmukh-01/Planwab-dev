@@ -3,10 +3,12 @@
 import { useState, useEffect } from "react";
 import LeadCaptureModal from "../desktop/LeadCaptureModal";
 import LeadCaptureModalMobile from "../mobile/LeadCaptureModal";
+import { useAppValuesStore } from "../../GlobalState/AppValuesStore";
 
 const ClientModalWrapper = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
    const [isMobile, setIsMobile] = useState(false);
+   const { canContinue } = useAppValuesStore();
 
     useEffect(() => {
     const checkDevice = () => {
@@ -25,6 +27,7 @@ const ClientModalWrapper = () => {
 
   useEffect(() => {
     const timer = setTimeout(() => {
+      if(canContinue) return; // Don't show if user has already taken action
       setIsModalOpen(true);
     }, 15000); 
 

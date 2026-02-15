@@ -1069,7 +1069,7 @@ export default function DesktopHeader() {
         className={`fixed top-0 left-0 right-0 !z-[40] transition-all duration-500 ease-out rounded-b-xl ${
           isScrolled
             ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-lg border-b border-gray-200 dark:border-gray-800 shadow-xl"
-            : `bg-transparent dark:bg-transparent ${isHomePage ? 'border-b-gray-600 border-[0.5px]' : ''}`
+            : `${isHomePage ? 'border-b-gray-600 border-[0.5px] bg-transparent dark:bg-transparent' : 'bg-white dark:bg-gray-800'}`
         }`}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
