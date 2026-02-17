@@ -40,7 +40,7 @@ export async function POST(request) {
   }
 }
 
-// GET - Fetch booking requests (optionally filtered by user)
+// GET - Fetch booking requests
 export async function GET(request) {
   try {
     const { userId } = await auth();
@@ -80,29 +80,44 @@ export async function GET(request) {
 export async function PUT(request) {
   try {
     const { userId } = await auth();
+    const body = await request.json();
+    const { searchParams } = new URL(request.url);
+    const adminPassword = searchParams.get("adminPassword");
 
-       if (!userId) {
-          return NextResponse.json(
-            { success: false, message: "Unauthorized - Please sign in" },
-            { status: 401 }
-          );
-        }
+    const MAIN_ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "PlanWAB@12345";
+    const EDIT_ADMIN_PASSWORD = process.env.VENDOR_REQ_EDIT_ADMIN_PASSWORD || "EDit@PlanWAB@12345";
+
+    const isAdmin = adminPassword === MAIN_ADMIN_PASSWORD || adminPassword === EDIT_ADMIN_PASSWORD;
+
+    if (!userId && !isAdmin) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized - Please sign in" },
+        { status: 401 }
+      );
+    }
 
     await connectToDatabase();
 
-    const body = await request.json();
     const { id, ...updateData } = body;
+    // Support ID from query param
+    const requestId = id || searchParams.get("id");
 
-    if (!id) {
+    if (!requestId) {
       return NextResponse.json(
         { error: "Booking request ID is required" },
         { status: 400 }
       );
     }
 
-    // Find and update (only if it belongs to the user)
+    // Build query
+    const query = { _id: requestId };
+    if (!isAdmin) {
+      query.userId = userId;
+    }
+
+    // Find and update
     const updatedRequest = await DetailsBookingRequest.findOneAndUpdate(
-      { _id: id, userId },
+      query,
       { ...updateData, updatedAt: new Date() },
       { new: true, runValidators: true }
     );
@@ -138,17 +153,21 @@ export async function PUT(request) {
 export async function DELETE(request) {
   try {
     const { userId } = await auth();
- 
-       if (!userId) {
-          return NextResponse.json(
-            { success: false, message: "Unauthorized - Please sign in" },
-            { status: 401 }
-          );
-        }
+    const { searchParams } = new URL(request.url);
+    const adminPassword = searchParams.get("adminPassword");
+
+    const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "PlanWAB@12345";
+    const isAdmin = adminPassword === ADMIN_PASSWORD;
+
+    if (!userId && !isAdmin) {
+      return NextResponse.json(
+        { success: false, message: "Unauthorized - Please sign in" },
+        { status: 401 }
+      );
+    }
 
     await connectToDatabase();
 
-    const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
     if (!id) {
@@ -158,11 +177,14 @@ export async function DELETE(request) {
       );
     }
 
-    // Delete only if it belongs to the user
-    const deletedRequest = await DetailsBookingRequest.findOneAndDelete({
-      _id: id,
-      userId,
-    });
+    // Build query
+    const query = { _id: id };
+    if (!isAdmin) {
+      query.userId = userId;
+    }
+
+    // Delete
+    const deletedRequest = await DetailsBookingRequest.findOneAndDelete(query);
 
     if (!deletedRequest) {
       return NextResponse.json(

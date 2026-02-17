@@ -10,7 +10,7 @@ const verifyAdminPassword = (password) => {
 };
 
 const verifyVendorReqEditPassword = (password) => {
-  return password === VENDOR_REQ_EDIT_ADMIN_PASSWORD;
+  return password === VENDOR_REQ_EDIT_ADMIN_PASSWORD || password === ADMIN_PASSWORD;
 };
 
 // GET - Fetch single vendor request by ID OR list with filtering and pagination
@@ -20,9 +20,7 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
 
-    // ========================================
-    // NEW CODE: Handle single request fetching by ID
-    // ========================================
+    // Handle single request fetching by ID
     const requestId = searchParams.get("id");
     if (requestId) {
       try {
@@ -58,11 +56,9 @@ export async function GET(request) {
         throw error; // Re-throw other errors to be handled below
       }
     }
-    // ========================================
-    // END OF NEW CODE
-    // ========================================
 
-    // EXISTING CODE: Query parameters for listing (unchanged)
+
+    // Query parameters for listing
     const page = parseInt(searchParams.get("page")) || 1;
     const limit = parseInt(searchParams.get("limit")) || 10;
     const status = searchParams.get("status");

@@ -82,26 +82,24 @@ const ToastProvider = ({ children }) => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, x: 100, scale: 0.9 }}
               transition={{ type: "spring", stiffness: 500, damping: 40 }}
-              className={`pointer-events-auto p-4 rounded-xl shadow-2xl border backdrop-blur-sm flex items-start gap-3 ${
-                toast.type === "success"
-                  ? "bg-green-50/95 dark:bg-green-900/95 border-green-300 dark:border-green-600 text-green-800 dark:text-green-100"
-                  : toast.type === "error"
+              className={`pointer-events-auto p-4 rounded-xl shadow-2xl border backdrop-blur-sm flex items-start gap-3 ${toast.type === "success"
+                ? "bg-green-50/95 dark:bg-green-900/95 border-green-300 dark:border-green-600 text-green-800 dark:text-green-100"
+                : toast.type === "error"
                   ? "bg-red-50/95 dark:bg-red-900/95 border-red-300 dark:border-red-600 text-red-800 dark:text-red-100"
                   : toast.type === "warning"
-                  ? "bg-yellow-50/95 dark:bg-yellow-900/95 border-yellow-300 dark:border-yellow-600 text-yellow-800 dark:text-yellow-100"
-                  : "bg-blue-50/95 dark:bg-blue-900/95 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-100"
-              }`}
+                    ? "bg-yellow-50/95 dark:bg-yellow-900/95 border-yellow-300 dark:border-yellow-600 text-yellow-800 dark:text-yellow-100"
+                    : "bg-blue-50/95 dark:bg-blue-900/95 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-100"
+                }`}
             >
               <div
-                className={`p-1 rounded-full ${
-                  toast.type === "success"
-                    ? "bg-green-200 dark:bg-green-700"
-                    : toast.type === "error"
+                className={`p-1 rounded-full ${toast.type === "success"
+                  ? "bg-green-200 dark:bg-green-700"
+                  : toast.type === "error"
                     ? "bg-red-200 dark:bg-red-700"
                     : toast.type === "warning"
-                    ? "bg-yellow-200 dark:bg-yellow-700"
-                    : "bg-blue-200 dark:bg-blue-700"
-                }`}
+                      ? "bg-yellow-200 dark:bg-yellow-700"
+                      : "bg-blue-200 dark:bg-blue-700"
+                  }`}
               >
                 {toast.type === "success" && <CheckCircle size={18} />}
                 {toast.type === "error" && <AlertCircle size={18} />}
@@ -169,7 +167,7 @@ const statusConfig = {
 // ============================================================================
 // DELETE CONFIRMATION MODAL
 // ============================================================================
-const DeleteConfirmModal = ({ request, onClose, onConfirm }) => {
+const DeleteConfirmModal = ({ request, requestType = "vendor", onClose, onConfirm }) => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -186,7 +184,17 @@ const DeleteConfirmModal = ({ request, onClose, onConfirm }) => {
     setError("");
 
     try {
-      const res = await fetch(`/api/vendor/requests?id=${request._id}&password=${encodeURIComponent(password)}`, {
+      let endpoint = `/api/vendor/requests?id=${request._id}&password=${encodeURIComponent(password)}`;
+
+      if (requestType === "birthday") {
+        endpoint = `/api/vendor/requests/birthday-routes?id=${request._id}&password=${encodeURIComponent(password)}`;
+      } else if (requestType === "booking") {
+        endpoint = `/api/vendor/requests/detail-booking?id=${request._id}&password=${encodeURIComponent(password)}`;
+      } else if (requestType === "leads") {
+        endpoint = `/api/leads?id=${request._id}&password=${encodeURIComponent(password)}`;
+      }
+
+      const res = await fetch(endpoint, {
         method: "DELETE",
       });
 
@@ -248,12 +256,46 @@ const DeleteConfirmModal = ({ request, onClose, onConfirm }) => {
             </div>
 
             <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-xl">
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                <strong>Business:</strong> {request.businessName}
-              </p>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
-                <strong>Owner:</strong> {request.ownerName}
-              </p>
+              {requestType === "vendor" && (
+                <>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    <strong>Business:</strong> {request.businessName}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    <strong>Owner:</strong> {request.ownerName}
+                  </p>
+                </>
+              )}
+              {requestType === "birthday" && (
+                <>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    <strong>Name:</strong> {request.userDetails?.name}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    <strong>Venue:</strong> {request.venueName}
+                  </p>
+                </>
+              )}
+              {requestType === "booking" && (
+                <>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    <strong>Name:</strong> {request.name}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    <strong>Email:</strong> {request.email}
+                  </p>
+                </>
+              )}
+              {requestType === "leads" && (
+                <>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    <strong>Name:</strong> {request.name}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    <strong>Contact:</strong> {request.phone}
+                  </p>
+                </>
+              )}
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 <strong>ID:</strong> {request._id?.slice(-8).toUpperCase()}
               </p>
@@ -271,11 +313,10 @@ const DeleteConfirmModal = ({ request, onClose, onConfirm }) => {
                     setError("");
                   }}
                   placeholder="Enter admin password"
-                  className={`w-full pl-10 pr-12 py-3 rounded-xl border-2 outline-none transition-all bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                    error
-                      ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
-                      : "border-gray-200 dark:border-gray-600 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
-                  }`}
+                  className={`w-full pl-10 pr-12 py-3 rounded-xl border-2 outline-none transition-all bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${error
+                    ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
+                    : "border-gray-200 dark:border-gray-600 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
+                    }`}
                   disabled={loading}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && password) {
@@ -344,10 +385,10 @@ const DeleteConfirmModal = ({ request, onClose, onConfirm }) => {
 // ============================================================================
 // MAIN COMPONENT
 // ============================================================================
-export default function ViewVendorRequestTab({ request, onBack, onEdit, onDelete }) {
+export default function ViewVendorRequestTab({ request, requestType = "vendor", onBack, onEdit, onDelete }) {
   return (
     <ToastProvider>
-      <ViewVendorRequestContent request={request} onBack={onBack} onEdit={onEdit} onDelete={onDelete} />
+      <ViewVendorRequestContent request={request} requestType={requestType} onBack={onBack} onEdit={onEdit} onDelete={onDelete} />
     </ToastProvider>
   );
 }
@@ -357,6 +398,7 @@ export default function ViewVendorRequestTab({ request, onBack, onEdit, onDelete
 // ============================================================================
 function ViewVendorRequestContent({
   request,
+  requestType,
   isEditMode = false,
   onBack,
   onSwitchToEdit,
@@ -384,6 +426,42 @@ function ViewVendorRequestContent({
   const statusInfo = statusConfig[request.status] || statusConfig.pending;
   const StatusIcon = statusInfo.icon;
   const gradientColor = categoryColors[request.category] || "from-indigo-500 to-purple-500";
+
+  // Helper to get display values based on request type
+  const getDisplayValues = () => {
+    if (requestType === "birthday") {
+      return {
+        title: request.userDetails?.name || "Birthday Request",
+        subtitle: `Booking ID: ${request.bookingId}`,
+        category: "Birthday Party",
+        icon: CalendarDays,
+      }
+    }
+    if (requestType === "booking") {
+      return {
+        title: request.name || "Booking Request",
+        subtitle: request.email,
+        category: request.eventType || "General Booking",
+        icon: Calendar,
+      }
+    }
+    if (requestType === "leads") {
+      return {
+        title: request.name || "Lead",
+        subtitle: request.phone,
+        category: request.source || "General Lead",
+        icon: User,
+      }
+    }
+    return {
+      title: request.businessName,
+      subtitle: `${request.ownerName} • ${request.city}`,
+      category: request.category,
+      icon: CategoryIcon,
+    }
+  }
+
+  const { title, subtitle, category: displayCategory, icon: DisplayIcon } = getDisplayValues();
 
   const copyToClipboard = (text, field) => {
     navigator.clipboard.writeText(text);
@@ -420,15 +498,16 @@ function ViewVendorRequestContent({
               <div className="flex flex-col lg:flex-row lg:items-end gap-6">
                 <div className="flex items-end gap-4 min-w-0 flex-1">
                   <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl bg-white/20 backdrop-blur-sm border-2 border-white/30 shadow-2xl flex items-center justify-center flex-shrink-0">
-                    <CategoryIcon size={36} className="text-white" />
+                    <DisplayIcon size={36} className="text-white" />
                   </div>
                   <div className="flex-1 text-white min-w-0">
-                    <div className="flex flex-wrap items-center gap-3 mb-2">
-                      <h1 className="text-2xl md:text-3xl font-bold">{request.businessName}</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold mb-2">{title}</h1>
+
+                    <div className="mb-3">
                       <motion.span
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        className={`px-3 py-1.5 rounded-xl text-sm font-bold flex items-center gap-2 ${statusInfo.color} backdrop-blur-sm`}
+                        className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold ${statusInfo.color} backdrop-blur-sm border border-white/10`}
                       >
                         <StatusIcon size={14} />
                         {request.status
@@ -437,26 +516,35 @@ function ViewVendorRequestContent({
                           .join(" ") || "Pending"}
                       </motion.span>
                     </div>
-                    <p className="text-white/90 text-lg font-medium mb-1">
-                      {request.ownerName} • {request.city}
+
+                    <p className="text-white/90 text-lg font-medium mb-3">
+                      {subtitle}
                     </p>
+
                     <div className="flex flex-wrap items-center gap-4 text-white/70 text-sm">
-                      <span className="flex items-center gap-1">
-                        <Tag size={14} />
+                      <span className="flex items-center gap-1.5">
+                        <Tag size={15} />
                         ID: {request._id?.slice(-8).toUpperCase()}
                       </span>
-                      <span className="flex items-center gap-1">
-                        <Building2 size={14} />
-                        {request.category}
+                      <span className="flex items-center gap-1.5">
+                        <Building2 size={15} />
+                        {displayCategory}
                       </span>
-                      <span className="flex items-center gap-1">
-                        <TrendingUp size={14} />
-                        {request.experience} years exp
-                      </span>
+                      {requestType === "vendor" && (
+                        <span className="flex items-center gap-1.5">
+                          <TrendingUp size={15} />
+                          {request.experience} years exp
+                        </span>
+                      )}
+                      {requestType !== "vendor" && (
+                        <span className="flex items-center gap-1.5">
+                          <Calendar size={15} />
+                          {formatDate(request.eventDate || request.createdAt)}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
-                // Replace the existing button section with:
                 <div className="flex gap-3 flex-shrink-0">
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -522,66 +610,133 @@ function ViewVendorRequestContent({
           {/* CONTENT SECTIONS */}
           {/* ================================================================ */}
           <div className="p-4 md:p-6 lg:p-8 space-y-8">
-            {/* Business Details Section */}
-            <Section title="Business Details" icon={Briefcase} badge="Primary Info">
+            {/* Business/Event Details Section */}
+            <Section title={requestType === "vendor" ? "Business Details" : "Request Details"} icon={Briefcase} badge="Primary Info">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <InfoCard
-                  icon={Building2}
-                  label="Business Name"
-                  value={request.businessName}
-                  className="lg:col-span-2"
-                  highlight
-                />
-                <InfoCard icon={User} label="Owner Name" value={request.ownerName} />
-                <InfoCard icon={Tag} label="Category" value={request.category} />
-                <InfoCard icon={TrendingUp} label="Experience" value={`${request.experience} years`} />
-                {request.teamSize && <InfoCard icon={Users} label="Team Size" value={request.teamSize} />}
-                {request.description && (
-                  <InfoCard
-                    icon={FileText}
-                    label="Business Description"
-                    value={request.description}
-                    className="lg:col-span-full"
-                  />
+                {requestType === "vendor" && (
+                  <>
+                    <InfoCard
+                      icon={Building2}
+                      label="Business Name"
+                      value={request.businessName}
+                      className="lg:col-span-2"
+                      highlight
+                    />
+                    <InfoCard icon={User} label="Owner Name" value={request.ownerName} />
+                    <InfoCard icon={Tag} label="Category" value={request.category} />
+                    <InfoCard icon={TrendingUp} label="Experience" value={`${request.experience} years`} />
+                    {request.teamSize && <InfoCard icon={Users} label="Team Size" value={request.teamSize} />}
+                    {request.description && (
+                      <InfoCard
+                        icon={FileText}
+                        label="Business Description"
+                        value={request.description}
+                        className="lg:col-span-full"
+                      />
+                    )}
+                  </>
+                )}
+
+                {requestType === "birthday" && (
+                  <>
+                    <InfoCard icon={User} label="Name" value={request.userDetails?.name} />
+                    <InfoCard icon={Phone} label="Phone" value={request.userDetails?.phone} />
+                    <InfoCard icon={Calendar} label="Birthday Date" value={formatDate(request.userDetails?.birthdayDate)} />
+                    <InfoCard icon={Building2} label="Venue" value={request.venueName} className="lg:col-span-2" highlight />
+                    {request.venueLocation && <InfoCard icon={MapPin} label="Location" value={request.venueLocation} />}
+                    {request.venuePrice && <InfoCard icon={DollarSign} label="Venue Price" value={`₹${request.venuePrice}`} />}
+                    <InfoCard icon={Calendar} label="Event Date" value={formatDate(request.bookingDetails?.eventDate || request.createdAt)} />
+                    <InfoCard icon={Users} label="Guests" value={request.bookingDetails?.guestCount} />
+                    {request.bookingDetails?.budget && <InfoCard icon={DollarSign} label="Budget" value={`₹${request.bookingDetails.budget}`} />}
+                    <InfoCard icon={Tag} label="Food Type" value={request.bookingDetails?.foodType} />
+                    {request.bookingDetails?.timeSlot && <InfoCard icon={Clock} label="Time Slot" value={request.bookingDetails.timeSlot} />}
+                    {request.bookingDetails?.specialRequests && (
+                      <InfoCard
+                        icon={MessageCircle}
+                        label="Special Requests"
+                        value={request.bookingDetails.specialRequests}
+                        className="lg:col-span-full"
+                      />
+                    )}
+                  </>
+                )}
+
+                {requestType === "booking" && (
+                  <>
+                    <InfoCard icon={User} label="Name" value={request.name} highlight />
+                    <InfoCard icon={Mail} label="Email" value={request.email} />
+                    <InfoCard icon={Phone} label="Phone" value={request.phone} />
+                    <InfoCard icon={Sparkles} label="Event Type" value={request.eventType} />
+                    <InfoCard icon={Calendar} label="Event Date" value={formatDate(request.date)} />
+                    {request.guests && <InfoCard icon={Users} label="Guest Count" value={request.guests} />}
+                    {request.budget && <InfoCard icon={DollarSign} label="Budget" value={`₹${request.budget}`} />}
+                    {request.timeSlot && <InfoCard icon={Clock} label="Time Slot" value={request.timeSlot} />}
+                    {request.notes && (
+                      <InfoCard
+                        icon={FileText}
+                        label="Notes"
+                        value={request.notes}
+                        className="lg:col-span-full"
+                      />
+                    )}
+                  </>
+                )}
+
+                {requestType === "leads" && (
+                  <>
+                    <InfoCard icon={User} label="Name" value={request.name} highlight />
+                    <InfoCard icon={Phone} label="Contact" value={request.phone} />
+                    <InfoCard icon={Globe} label="Source" value={request.source} />
+                    {request.message && (
+                      <InfoCard
+                        icon={MessageCircle}
+                        label="Message"
+                        value={request.message}
+                        className="lg:col-span-full"
+                      />
+                    )}
+                  </>
                 )}
               </div>
             </Section>
 
-            {/* Contact Information Section */}
-            <Section title="Contact Information" icon={User} badge="Contact Details">
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                <InfoCard
-                  icon={Mail}
-                  label="Email"
-                  value={request.email}
-                  copyable
-                  onCopy={copyToClipboard}
-                  copied={copiedField}
-                />
-                <InfoCard
-                  icon={Phone}
-                  label="Phone"
-                  value={request.phone}
-                  copyable
-                  onCopy={copyToClipboard}
-                  copied={copiedField}
-                />
-                <InfoCard icon={MapPin} label="City" value={request.city} />
-                {request.state && <InfoCard icon={MapPin} label="State" value={request.state} />}
-                {request.pincode && <InfoCard icon={MapPin} label="Pincode" value={request.pincode} />}
-                {request.address && (
+            {/* Contact Information Section - Only for Vendor as others are covered above */}
+            {requestType === "vendor" && (
+              <Section title="Contact Information" icon={User} badge="Contact Details">
+                <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                   <InfoCard
-                    icon={MapPin}
-                    label="Full Address"
-                    value={request.address}
-                    className="lg:col-span-2 xl:col-span-3"
+                    icon={Mail}
+                    label="Email"
+                    value={request.email}
+                    copyable
+                    onCopy={copyToClipboard}
+                    copied={copiedField}
                   />
-                )}
-              </div>
-            </Section>
+                  <InfoCard
+                    icon={Phone}
+                    label="Phone"
+                    value={request.phone}
+                    copyable
+                    onCopy={copyToClipboard}
+                    copied={copiedField}
+                  />
+                  <InfoCard icon={MapPin} label="City" value={request.city} />
+                  {request.state && <InfoCard icon={MapPin} label="State" value={request.state} />}
+                  {request.pincode && <InfoCard icon={MapPin} label="Pincode" value={request.pincode} />}
+                  {request.address && (
+                    <InfoCard
+                      icon={MapPin}
+                      label="Full Address"
+                      value={request.address}
+                      className="lg:col-span-2 xl:col-span-3"
+                    />
+                  )}
+                </div>
+              </Section>
+            )}
 
-            {/* Services & Portfolio */}
-            {(request.services?.length > 0 || request.portfolioImages?.length > 0) && (
+            {/* Services & Portfolio - Only for Vendor */}
+            {requestType === "vendor" && (request.services?.length > 0 || request.portfolioImages?.length > 0) && (
               <Section title="Services & Portfolio" icon={Star} badge="Business Offerings">
                 <div className="space-y-6">
                   {/* Services */}
@@ -646,84 +801,88 @@ function ViewVendorRequestContent({
               </Section>
             )}
 
-            {/* Social & Legal Information */}
-            <Section title="Social & Legal Information" icon={Globe} badge="External Links">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {request.website && (
-                  <InfoCard
-                    icon={Link}
-                    label="Website"
-                    value={request.website}
-                    copyable
-                    onCopy={copyToClipboard}
-                    copied={copiedField}
-                  />
-                )}
-                {request.instagram && (
-                  <InfoCard
-                    icon={Instagram}
-                    label="Instagram"
-                    value={request.instagram}
-                    copyable
-                    onCopy={copyToClipboard}
-                    copied={copiedField}
-                  />
-                )}
-                {request.facebook && (
-                  <InfoCard
-                    icon={Facebook}
-                    label="Facebook"
-                    value={request.facebook}
-                    copyable
-                    onCopy={copyToClipboard}
-                    copied={copiedField}
-                  />
-                )}
-                {request.linkedin && (
-                  <InfoCard
-                    icon={Linkedin}
-                    label="LinkedIn"
-                    value={request.linkedin}
-                    copyable
-                    onCopy={copyToClipboard}
-                    copied={copiedField}
-                  />
-                )}
-                {request.gstNumber && (
-                  <InfoCard
-                    icon={FileText}
-                    label="GST Number"
-                    value={request.gstNumber}
-                    copyable
-                    onCopy={copyToClipboard}
-                    copied={copiedField}
-                  />
-                )}
-                {request.panNumber && (
-                  <InfoCard
-                    icon={FileText}
-                    label="PAN Number"
-                    value={request.panNumber}
-                    copyable
-                    onCopy={copyToClipboard}
-                    copied={copiedField}
-                  />
-                )}
-              </div>
-            </Section>
-
-            {/* Registration Details */}
-            <Section title="Registration Details" icon={UserCheck} badge="Request Info">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl text-center border-2 border-green-200 dark:border-green-800 shadow-sm">
-                  <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-                    <UserCheck className="text-white" size={32} />
-                  </div>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                    {request.registrationType === "quick" ? "Quick" : "Full"}
-                  </p>
-                  <p className="text-sm text-green-600 dark:text-green-400 font-medium">Registration Type</p>
+            {/* Social & Legal Information - Only for Vendor */}
+            {requestType === "vendor" && (
+              <Section title="Social & Legal Information" icon={Globe} badge="External Links">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {request.website && (
+                    <InfoCard
+                      icon={Link}
+                      label="Website"
+                      value={request.website}
+                      copyable
+                      onCopy={copyToClipboard}
+                      copied={copiedField}
+                    />
+                  )}
+                  {request.instagram && (
+                    <InfoCard
+                      icon={Instagram}
+                      label="Instagram"
+                      value={request.instagram}
+                      copyable
+                      onCopy={copyToClipboard}
+                      copied={copiedField}
+                    />
+                  )}
+                  {request.facebook && (
+                    <InfoCard
+                      icon={Facebook}
+                      label="Facebook"
+                      value={request.facebook}
+                      copyable
+                      onCopy={copyToClipboard}
+                      copied={copiedField}
+                    />
+                  )}
+                  {request.linkedin && (
+                    <InfoCard
+                      icon={Linkedin}
+                      label="LinkedIn"
+                      value={request.linkedin}
+                      copyable
+                      onCopy={copyToClipboard}
+                      copied={copiedField}
+                    />
+                  )}
+                  {request.gstNumber && (
+                    <InfoCard
+                      icon={FileText}
+                      label="GST Number"
+                      value={request.gstNumber}
+                      copyable
+                      onCopy={copyToClipboard}
+                      copied={copiedField}
+                    />
+                  )}
+                  {request.panNumber && (
+                    <InfoCard
+                      icon={FileText}
+                      label="PAN Number"
+                      value={request.panNumber}
+                      copyable
+                      onCopy={copyToClipboard}
+                      copied={copiedField}
+                    />
+                  )}
                 </div>
+              </Section>
+            )}
+
+            {/* Registration/Request Status Details */}
+            <Section title={requestType === 'vendor' ? "Registration Details" : "Status & History"} icon={UserCheck} badge="Request Info">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {requestType === "vendor" && (
+                  <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl text-center border-2 border-green-200 dark:border-green-800 shadow-sm">
+                    <div className="w-16 h-16 bg-green-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                      <UserCheck className="text-white" size={32} />
+                    </div>
+                    <p className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                      {request.registrationType === "quick" ? "Quick" : "Full"}
+                    </p>
+                    <p className="text-sm text-green-600 dark:text-green-400 font-medium">Registration Type</p>
+                  </div>
+                )}
 
                 <div className="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-2xl text-center border-2 border-blue-200 dark:border-blue-800 shadow-sm">
                   <div className="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
@@ -778,7 +937,7 @@ function ViewVendorRequestContent({
               </Section>
             )}
 
-            {/* System Information */}
+            {/* System Info - Generic */}
             <Section title="System Information" icon={Info} badge="Metadata">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <InfoCard icon={Calendar} label="Created" value={formatDate(request.createdAt)} />
@@ -791,11 +950,13 @@ function ViewVendorRequestContent({
                   onCopy={copyToClipboard}
                   copied={copiedField}
                 />
-                <InfoCard
-                  icon={Globe}
-                  label="Registration Source"
-                  value={request.registrationType === "quick" ? "Quick Form" : "Full Form"}
-                />
+                {requestType === "vendor" && (
+                  <InfoCard
+                    icon={Globe}
+                    label="Registration Source"
+                    value={request.registrationType === "quick" ? "Quick Form" : "Full Form"}
+                  />
+                )}
               </div>
             </Section>
 
@@ -817,8 +978,19 @@ function ViewVendorRequestContent({
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      const subject = `Regarding your vendor registration request - ${request.businessName}`;
-                      const body = `Hello ${request.ownerName},\n\nThank you for your interest in partnering with us through PlanWAB.\n\nBusiness Details:\n- Business Name: ${request.businessName}\n- Category: ${request.category}\n- Location: ${request.city}\n- Experience: ${request.experience} years\n\nWe'll review your application and get back to you soon.\n\nBest regards,\nPlanWAB Partnership Team`;
+                      let subject, body;
+
+                      if (requestType === "vendor") {
+                        subject = `Regarding your vendor registration request - ${request.businessName}`;
+                        body = `Hello ${request.ownerName},\n\nThank you for your interest in partnering with us through PlanWAB.\n\nBusiness Details:\n- Business Name: ${request.businessName}\n- Category: ${request.category}\n- Location: ${request.city}\n- Experience: ${request.experience} years\n\nWe'll review your application and get back to you soon.\n\nBest regards,\nPlanWAB Partnership Team`;
+                      } else {
+                        // Generic fallback for other types
+                        const name = request.userDetails?.name || request.fullName || request.name || "Customer";
+                        const eventType = request.eventType || request.venueName || "Event";
+                        subject = `Regarding your request - ${name}`;
+                        body = `Hello ${name},\n\nThank you for your interest in PlanWAB.\n\nRequest Details:\n- Type: ${requestType.charAt(0).toUpperCase() + requestType.slice(1)}\n- Reference: ${eventType}\n\nWe'll review your request and get back to you soon.\n\nBest regards,\nPlanWAB Team`;
+                      }
+
                       window.location.href = `mailto:${request.email}?subject=${encodeURIComponent(
                         subject
                       )}&body=${encodeURIComponent(body)}`;
@@ -852,10 +1024,11 @@ function ViewVendorRequestContent({
         {showDeleteConfirm && (
           <DeleteConfirmModal
             request={request}
+            requestType={requestType}
             onClose={() => setShowDeleteConfirm(false)}
             onConfirm={() => {
+              onDelete(request);
               setShowDeleteConfirm(false);
-              onDelete?.();
             }}
           />
         )}
@@ -906,9 +1079,8 @@ const Section = ({ title, icon: Icon, children, badge, tip }) => (
 const InfoCard = ({ icon: Icon, label, value, className = "", copyable, onCopy, copied, highlight = false }) => (
   <motion.div
     whileHover={copyable ? { scale: 1.02, y: -2 } : { y: -1 }}
-    className={`group p-5 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl border-2 border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md transition-all duration-300 ${className} ${
-      highlight ? "ring-2 ring-purple-500 ring-opacity-50" : ""
-    }`}
+    className={`group p-5 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl border-2 border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md transition-all duration-300 ${className} ${highlight ? "ring-2 ring-purple-500 ring-opacity-50" : ""
+      }`}
   >
     <div className="flex items-start justify-between mb-3">
       <div className="flex items-center gap-3">
