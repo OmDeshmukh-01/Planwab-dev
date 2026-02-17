@@ -554,201 +554,198 @@ export default function CategoryGrid() {
 
   const currentCategory = activeCategory || "Wedding";
   // Tailwind classes with responsive breakpoints
-  const baseWidth = 171;   // in px
-const baseHeight = 90; 
-const widthClasses = {
-  base: "w-[171px]",
-  md: "md:w-[137px]",
-  lg: "lg:w-[172px]",
-};
+  const baseWidth = 171; // in px
+  const baseHeight = 90;
+  const widthClasses = {
+    base: "w-[171px]",
+    md: "md:w-[137px]",
+    lg: "lg:w-[172px]",
+  };
 
-const heightClasses = {
-  base: "h-[90px]",
-  md: "md:h-[72px]",
-  lg: "lg:h-[108px]",
-};
+  const heightClasses = {
+    base: "h-[90px]",
+    md: "md:h-[72px]",
+    lg: "lg:h-[108px]",
+  };
 
-const cardWidthClass = `${widthClasses.base} ${widthClasses.md} ${widthClasses.lg}`;
-const cardHeightClass = `${heightClasses.base} ${heightClasses.md} ${heightClasses.lg}`;
-
+  const cardWidthClass = `${widthClasses.base} ${widthClasses.md} ${widthClasses.lg}`;
+  const cardHeightClass = `${heightClasses.base} ${heightClasses.md} ${heightClasses.lg}`;
 
   // Categories for Wedding/Anniversary/Events
-const categories = useMemo(
-  () => [
-    {
-      name: `${currentCategory === "Default" ? "Event" : currentCategory} Planner`,
-      key: "planners",
-      image: "/CardsCatPhotos/PlannerCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Photographer",
-      image: "/CardsCatPhotos/PhotographerCat.png",
-      key: "photographers",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "mehendi",
-      key: "mehendi",
-      image: "/CardsCatPhotos/MehndiCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "MakeUp",
-      key: "makeup",
-      image: "/CardsCatPhotos/MakeUpCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: `${currentCategory} Venues`,
-      key: "venues",
-      image: "https://cdn.yesmadam.com/images/live/category/Hydra%20Category_Wedding%20Season-18-11-25.gif",
-      span: 2,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "DJs & Sound",
-      key: "djs",
-      image: "/CardsCatPhotos/DJCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Dhol",
-      key: "dhol",
-      image: "/CardsCatPhotos/DholCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Caterers",
-      key: "catering",
-      image: "/CardsCatPhotos/CaterorsCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-        {
-      name: "Dhol",
-      key: "dhol",
-      image: "/CardsCatPhotos/DholCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Caterers",
-      key: "catering",
-      image: "/CardsCatPhotos/CaterorsCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-  ],
-  [currentCategory]
-);
+  const activeCategories = useMemo(
+    () => [
+      {
+        name: `${currentCategory === "Default" ? "Event" : currentCategory} Planner`,
+        key: "planners",
+        image: "/CardsCatPhotos/PlannerCat.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Photographer",
+        image: "/CardsCatPhotos/PhotographerCat.png",
+        key: "photographers",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "mehendi",
+        key: "mehendi",
+        image: "/CardsCatPhotos/MehndiCat.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "MakeUp",
+        key: "makeup",
+        image: "/CardsCatPhotos/MakeUpCat.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: `${currentCategory} Venues`,
+        key: "venues",
+        image: "https://cdn.yesmadam.com/images/live/category/Hydra%20Category_Wedding%20Season-18-11-25.gif",
+        span: 2,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "DJs & Sound",
+        key: "djs",
+        image: "/CardsCatPhotos/DJCat.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Dhol",
+        key: "dhol",
+        image: "/CardsCatPhotos/DholCat.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Caterers",
+        key: "catering",
+        image: "/CardsCatPhotos/CaterorsCat.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Dhol",
+        key: "dhol",
+        image: "/CardsCatPhotos/DholCat.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Caterers",
+        key: "catering",
+        image: "/CardsCatPhotos/CaterorsCat.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+    ],
+    [currentCategory],
+  );
 
   // Categories for Birthday
-const categoriesBirthday = useMemo(
-  () => [
-    {
-      name: `${currentCategory === "Default" ? "Event" : currentCategory} Planner`,
-      key: "planners",
-      image: "/CardsCatPhotos/PlannerCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Decorator",
-      key: "decor",
-      image: "/CardsCatPhotos/DecoratorCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "DJs & Sound",
-      key: "djs",
-      image: "/CardsCatPhotos/DJCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Photographer",
-      key: "photographers",
-      image: "/CardsCatPhotos/PhotographerCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: `${currentCategory} Venues`,
-      key: "venues",
-      image: "https://cdn.yesmadam.com/images/live/category/Hydra%20Category_Wedding%20Season-18-11-25.gif",
-      span: 2,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Caterers",
-      key: "catering",
-      image: "/CardsCatPhotos/CaterorsCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Cake",
-      key: "cake",
-      image: "/CardsCatPhotos/CakesCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "MakeUp",
-      key: "makeup",
-      image: "/CardsCatPhotos/MakeUpCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-  ],
-  [currentCategory]
-);
-
-  const activeCategories = currentCategory === "Birthday" ? categoriesBirthday : categories;
+  const categoriesBirthday = useMemo(
+    () => [
+      {
+        name: `${currentCategory === "Default" ? "Event" : currentCategory} Planner`,
+        key: "planners",
+        image: "/CardsCatPhotos/PlannerCatB.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Decorator",
+        key: "decor",
+        image: "/CardsCatPhotos/DecoratorCatB.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "DJs & Sound",
+        key: "djs",
+        image: "/CardsCatPhotos/DJCatB.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Photographer",
+        key: "photographers",
+        image: "/CardsCatPhotos/PhotographerCatB.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: `${currentCategory} Venues`,
+        key: "venues",
+        image: "https://cdn.yesmadam.com/images/live/category/Hydra%20Category_Wedding%20Season-18-11-25.gif",
+        span: 2,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Caterers",
+        key: "catering",
+        image: "/CardsCatPhotos/CaterorsCatB.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Cake",
+        key: "cake",
+        image: "/CardsCatPhotos/CakesCatB.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "MakeUp",
+        key: "makeup",
+        image: "/CardsCatPhotos/MakeUpCatB.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+    ],
+    [currentCategory],
+  );
 
   const checkScroll = useCallback(() => {
     if (!scrollRef.current) return;
@@ -794,7 +791,7 @@ const categoriesBirthday = useMemo(
         router.push(url);
       });
     },
-    [router]
+    [router],
   );
 
   const handleCategoryClick = (e, item) => {
@@ -925,10 +922,7 @@ const categoriesBirthday = useMemo(
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
           >
             <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-full shadow-xl border border-gray-200">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              >
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
                 <Loader2 className="w-5 h-5 text-blue-500" />
               </motion.div>
               <span className="text-sm font-medium text-gray-700">Loading...</span>

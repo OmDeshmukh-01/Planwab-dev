@@ -49,7 +49,7 @@ Planwab-dev
 │  ├─ AnniversaryCat.png
 │  ├─ AnniversaryDesign.png
 │  ├─ AnniversaryHeaderCard.png
-│  ├─ AnniversaryHeroMobImg.png
+│  ├─ anniversarySectionBottom.png
 │  ├─ auth1.jpeg
 │  ├─ auth2.jpeg
 │  ├─ auth3.jpeg
@@ -72,8 +72,9 @@ Planwab-dev
 │  ├─ BirthdayCat.png
 │  ├─ BirthdayDesign.png
 │  ├─ BirthdayHeaderCard.png
-│  ├─ BirthdayHeroMobImg.png
+│  ├─ birthdaySectionBottom.png
 │  ├─ CardsCatPhotos
+│  │  ├─ Birthday_table.png
 │  │  ├─ CakesCardPhoto.png
 │  │  ├─ CakesCatB.png
 │  │  ├─ CateringCardPhoto.png
@@ -116,11 +117,18 @@ Planwab-dev
 │  ├─ CatVideos
 │  │  ├─ AnniversaryCatVid.mp4
 │  │  ├─ AnniversaryHeroMob.mp4
+│  │  ├─ AnniversaryHeroMobImg.png
+│  │  ├─ birthday-hero.mp4
 │  │  ├─ BirthdayCatVid.mp4
 │  │  ├─ BirthdayHeroMob.mp4
+│  │  ├─ BirthdayHeroMobImg.png
+│  │  ├─ DefaultHeroMobImg.png
 │  │  ├─ EventsHeroMob.mp4
-│  │  └─ WeddingHeroMob.mp4
-│  ├─ DefaultHeroMobImg.png
+│  │  ├─ WeddingHeroMob.mp4
+│  │  └─ WeddingHeroMobImg.png
+│  ├─ DholSectionBottom.png
+│  ├─ EventsHeaderCard.png
+│  ├─ eventsSectionBottom.png
 │  ├─ file.svg
 │  ├─ globe.svg
 │  ├─ GlowLoadingGif.gif
@@ -139,6 +147,15 @@ Planwab-dev
 │  ├─ posters
 │  │  ├─ anniversary-poster.jpg
 │  │  ├─ birthday-poster.jpg
+│  │  ├─ deskHeroCarousel
+│  │  │  ├─ anniversary.png
+│  │  │  ├─ anniversaryRight.png
+│  │  │  ├─ birthday.png
+│  │  │  ├─ birthdayRight.png
+│  │  │  ├─ events.png
+│  │  │  ├─ eventsRight.png
+│  │  │  ├─ wedding.png
+│  │  │  └─ weddingRight.png
 │  │  └─ wedding-poster.jpg
 │  ├─ quickServicesPhotos
 │  │  ├─ cakesQS.png
@@ -156,7 +173,7 @@ Planwab-dev
 │  ├─ WeddingCat.png
 │  ├─ WeddingDesign.png
 │  ├─ WeddingHeaderCard.png
-│  ├─ WeddingHeroMobImg.png
+│  ├─ weddingSectionBottom.png
 │  └─ window.svg
 ├─ README.md
 ├─ src
@@ -188,18 +205,65 @@ Planwab-dev
 │  │  │  │     └─ vendors
 │  │  │  │        └─ page.jsx
 │  │  │  ├─ (pages)
+│  │  │  │  ├─ about
+│  │  │  │  │  ├─ blogs
+│  │  │  │  │  │  ├─ loading.js
+│  │  │  │  │  │  └─ page.jsx
+│  │  │  │  │  ├─ contact
+│  │  │  │  │  │  ├─ loading.js
+│  │  │  │  │  │  └─ page.jsx
+│  │  │  │  │  ├─ loading.js
+│  │  │  │  │  └─ page.jsx
 │  │  │  │  ├─ events
 │  │  │  │  │  ├─ page.js
 │  │  │  │  │  └─ [category]
+│  │  │  │  │     ├─ birthday-planner
+│  │  │  │  │     │  └─ page.js
 │  │  │  │  │     └─ page.js
 │  │  │  │  ├─ plan-my-event
 │  │  │  │  │  └─ [category]
 │  │  │  │  │     └─ page.js
+│  │  │  │  ├─ pricing
+│  │  │  │  │  ├─ loading.js
+│  │  │  │  │  └─ page.jsx
+│  │  │  │  ├─ user
+│  │  │  │  │  ├─ bookings
+│  │  │  │  │  │  ├─ loading.js
+│  │  │  │  │  │  └─ page.jsx
+│  │  │  │  │  ├─ checkout
+│  │  │  │  │  │  ├─ loading.js
+│  │  │  │  │  │  └─ page.jsx
+│  │  │  │  │  ├─ profile
+│  │  │  │  │  │  ├─ loading.js
+│  │  │  │  │  │  └─ page.jsx
+│  │  │  │  │  └─ proposals
+│  │  │  │  │     └─ tracking
+│  │  │  │  │        └─ [id]
+│  │  │  │  │           ├─ loading.js
+│  │  │  │  │           └─ page.js
 │  │  │  │  ├─ vendor
+│  │  │  │  │  ├─ onboarding
+│  │  │  │  │  │  ├─ loading.js
+│  │  │  │  │  │  └─ page.jsx
+│  │  │  │  │  ├─ register
+│  │  │  │  │  │  ├─ loading.js
+│  │  │  │  │  │  └─ page.jsx
 │  │  │  │  │  └─ [category]
+│  │  │  │  │     ├─ profile
+│  │  │  │  │     │  └─ [username]
+│  │  │  │  │     │     ├─ loading.js
+│  │  │  │  │     │     └─ page.jsx
 │  │  │  │  │     └─ [id]
-│  │  │  │  │        └─ page.jsx
+│  │  │  │  │        ├─ loading.js
+│  │  │  │  │        ├─ page.jsx
+│  │  │  │  │        └─ profile
+│  │  │  │  │           ├─ loading.js
+│  │  │  │  │           └─ page.jsx
 │  │  │  │  └─ vendors
+│  │  │  │     ├─ explore
+│  │  │  │     │  └─ [category]
+│  │  │  │     │     ├─ loading.js
+│  │  │  │     │     └─ page.js
 │  │  │  │     └─ marketplace
 │  │  │  │        ├─ page.jsx
 │  │  │  │        └─ [category]
@@ -235,6 +299,8 @@ Planwab-dev
 │  │  │     │  ├─ events
 │  │  │     │  │  ├─ page.js
 │  │  │     │  │  └─ [category]
+│  │  │     │  │     ├─ birthday-planner
+│  │  │     │  │     │  └─ page.js
 │  │  │     │  │     └─ page.js
 │  │  │     │  ├─ plan-my-event
 │  │  │     │  │  └─ [category]
@@ -266,6 +332,10 @@ Planwab-dev
 │  │  │     │  │  │  ├─ loading.js
 │  │  │     │  │  │  └─ page.jsx
 │  │  │     │  │  └─ [category]
+│  │  │     │  │     ├─ profile
+│  │  │     │  │     │  └─ [username]
+│  │  │     │  │     │     ├─ loading.js
+│  │  │     │  │     │     └─ page.jsx
 │  │  │     │  │     └─ [id]
 │  │  │     │  │        ├─ loading.js
 │  │  │     │  │        ├─ page.jsx
@@ -287,6 +357,8 @@ Planwab-dev
 │  │  │     ├─ loading.js
 │  │  │     └─ page.js
 │  │  ├─ api
+│  │  │  ├─ leads
+│  │  │  │  └─ route.js
 │  │  │  ├─ media
 │  │  │  │  └─ route.js
 │  │  │  ├─ orders
@@ -313,7 +385,15 @@ Planwab-dev
 │  │  │  │  ├─ lists
 │  │  │  │  │  └─ [id]
 │  │  │  │  │     └─ route.js
+│  │  │  │  ├─ profile
+│  │  │  │  │  └─ route.js
 │  │  │  │  ├─ requests
+│  │  │  │  │  ├─ birthday-routes
+│  │  │  │  │  │  └─ route.js
+│  │  │  │  │  ├─ detail-booking
+│  │  │  │  │  │  ├─ route.js
+│  │  │  │  │  │  └─ [id]
+│  │  │  │  │  │     └─ route.js
 │  │  │  │  │  └─ route.js
 │  │  │  │  ├─ route.js
 │  │  │  │  └─ [id]
@@ -343,6 +423,7 @@ Planwab-dev
 │  │  │  └─ webhooks
 │  │  │     └─ clerk
 │  │  │        └─ route.js
+│  │  ├─ error.js
 │  │  ├─ favicon.ico
 │  │  ├─ globals.css
 │  │  ├─ layout.js
@@ -389,24 +470,58 @@ Planwab-dev
 │  │  │  ├─ Anniversary.jsx
 │  │  │  ├─ AuthPromo.jsx
 │  │  │  ├─ Birthday.jsx
+│  │  │  ├─ CarouselHeader.jsx
 │  │  │  ├─ ClientWrapper.jsx
+│  │  │  ├─ CompareModalDesktop.jsx
+│  │  │  ├─ ConditionalNavbar.jsx
+│  │  │  ├─ Footer.jsx
 │  │  │  ├─ Header.jsx
+│  │  │  ├─ HomePage
+│  │  │  │  ├─ CardsWithBanner.jsx
+│  │  │  │  ├─ CategoriesGrid.jsx
+│  │  │  │  ├─ HeroSection.jsx
+│  │  │  │  ├─ HowItWorks.jsx
+│  │  │  │  ├─ PlanningTools.jsx
+│  │  │  │  ├─ SearchSection.jsx
+│  │  │  │  ├─ ServicesBanner.jsx
+│  │  │  │  ├─ TestimonialsSection.jsx
+│  │  │  │  └─ VendorsSection.jsx
 │  │  │  ├─ Img.jsx
+│  │  │  ├─ LeadCaptureModal.jsx
+│  │  │  ├─ Navbar.jsx
 │  │  │  ├─ PagesWrapper
+│  │  │  │  ├─ AboutPageWrapper.jsx
+│  │  │  │  ├─ BirthdayPlannerWrapper.jsx
+│  │  │  │  ├─ BlogPageWrapper.jsx
 │  │  │  │  ├─ CategoryEventsPageWrapper.jsx
+│  │  │  │  ├─ CheckoutPageWrapper.jsx
+│  │  │  │  ├─ ContactUsPageWrapper.jsx
+│  │  │  │  ├─ FindAVendorPageWrapper.jsx
 │  │  │  │  ├─ HomePageWrapper.jsx
 │  │  │  │  ├─ PlanMyEventPageWrapper.jsx
+│  │  │  │  ├─ PricingPageWrapper.jsx
 │  │  │  │  ├─ SignInPageWrapper.jsx
 │  │  │  │  ├─ SignUpPageWrapper.jsx
+│  │  │  │  ├─ TrackingProposalsPagewrapper.jsx
+│  │  │  │  ├─ UserBookingsPageWrapper.jsx
+│  │  │  │  ├─ UserProfilePageWrapper.jsx
 │  │  │  │  ├─ VendorDetailsPageWrapper.jsx
+│  │  │  │  ├─ VendorOnboardingPageWrapper.jsx
+│  │  │  │  ├─ VendorProfileNewPageWrapper.jsx
+│  │  │  │  ├─ VendorProfilePageWrapper.jsx
+│  │  │  │  ├─ VendorRegisterPageWrapper.jsx
 │  │  │  │  └─ VendorsMarketplacePageWrapper.jsx
+│  │  │  ├─ ReviewSection.jsx
+│  │  │  ├─ SearchModal.jsx
 │  │  │  ├─ SkeletonCard.jsx
+│  │  │  ├─ SmartMediaLoader.jsx
 │  │  │  ├─ ui
 │  │  │  │  ├─ EventsPage
 │  │  │  │  │  ├─ Banner1.jsx
 │  │  │  │  │  ├─ HeroSection.jsx
 │  │  │  │  │  ├─ HowItWorks.jsx
 │  │  │  │  │  └─ SearchSection.jsx
+│  │  │  │  ├─ FloatingLinesUiEffect.jsx
 │  │  │  │  ├─ landingPage
 │  │  │  │  │  ├─ HeroSection.jsx
 │  │  │  │  │  ├─ HowItWorks.jsx
@@ -419,463 +534,16 @@ Planwab-dev
 │  │  │  │  │  └─ DetailsPageSkeleton.jsx
 │  │  │  │  └─ vendor
 │  │  │  │     └─ VendorCard.jsx
+│  │  │  ├─ UpdateProfileDrawer.jsx
+│  │  │  ├─ VendorProfileCreate.jsx
+│  │  │  ├─ VendorsCarousel1.jsx
 │  │  │  └─ Wedding.jsx
-│  │  └─ mobile
-│  │     ├─ admin
-│  │     │  ├─ DashboardStatsCard.jsx
-│  │     │  ├─ events
-│  │     │  │  ├─ AddEvent.jsx
-│  │     │  │  └─ AllEvents.jsx
-│  │     │  ├─ Header.jsx
-│  │     │  ├─ LayoutWrapper.jsx
-│  │     │  ├─ modals
-│  │     │  │  ├─ DropdownMenu.jsx
-│  │     │  │  ├─ events
-│  │     │  │  │  ├─ DeleteEventModal.jsx
-│  │     │  │  │  ├─ EditEventModal.jsx
-│  │     │  │  │  └─ ViewEventModal.jsx
-│  │     │  │  ├─ ModalBackdrop.jsx
-│  │     │  │  ├─ users
-│  │     │  │  │  ├─ DeleteUserModal.jsx
-│  │     │  │  │  └─ ViewUserModal.jsx
-│  │     │  │  └─ vendors
-│  │     │  │     ├─ DeleteVendorModal.jsx
-│  │     │  │     ├─ EditVendorModal.jsx
-│  │     │  │     └─ ViewVendorModal.jsx
-│  │     │  ├─ Sidebar.jsx
-│  │     │  ├─ users
-│  │     │  │  └─ AllUsers.jsx
-│  │     │  └─ vendors
-│  │     │     ├─ addVendor.jsx
-│  │     │     └─ AllVendors.jsx
-│  │     ├─ Anniversary.jsx
-│  │     ├─ AppEntryGate.jsx
-│  │     ├─ AuthPromo.jsx
-│  │     ├─ Birthday.jsx
-│  │     ├─ ClientWrapper.jsx
-│  │     ├─ ConditionalNavbar.jsx
-│  │     ├─ Footer.jsx
-│  │     ├─ ForceLightMode.js
-│  │     ├─ Header.jsx
-│  │     ├─ homepage
-│  │     │  ├─ AreYouVendor.jsx
-│  │     │  ├─ CategoriesGrid.jsx
-│  │     │  ├─ HomePageShimmer.jsx
-│  │     │  ├─ MostBooked.jsx
-│  │     │  ├─ QuickServices.jsx
-│  │     │  ├─ SampleProposals.jsx
-│  │     │  ├─ ServicesSteps.jsx
-│  │     │  └─ WhyWeBetter.jsx
-│  │     ├─ Img.jsx
-│  │     ├─ LoaderStarter.jsx
-│  │     ├─ MapContainer.jsx
-│  │     ├─ Navbar.jsx
-│  │     ├─ PagesWrapper
-│  │     │  ├─ AboutPageWrapper.jsx
-│  │     │  ├─ BlogPageWrapper.jsx
-│  │     │  ├─ CategoryEventsPageWrapper.jsx
-│  │     │  ├─ CheckoutPageWrapper.jsx
-│  │     │  ├─ ContactUsPageWrapper.jsx
-│  │     │  ├─ FindAVendorPageWrapper.jsx
-│  │     │  ├─ HomePageWrapper.jsx
-│  │     │  ├─ PlanMyEventPageWrapper.jsx
-│  │     │  ├─ PricingPageWrapper.jsx
-│  │     │  ├─ SignInPageWrapper.jsx
-│  │     │  ├─ SignUpPageWrapper.jsx
-│  │     │  ├─ UserBookingsPageWrapper.jsx
-│  │     │  ├─ UserProfilePageWrapper.jsx
-│  │     │  ├─ VendorDetailsPageWrapper.jsx
-│  │     │  ├─ VendorOnboardingPageWrapper.jsx
-│  │     │  ├─ VendorProfilePageWrapper.jsx
-│  │     │  ├─ VendorRegisterPageWrapper.jsx
-│  │     │  └─ VendorsMarketplacePageWrapper.jsx
-│  │     ├─ ReviewSection.jsx
-│  │     ├─ SkeletonCard.jsx
-│  │     ├─ SmartMediaLoader.jsx
-│  │     ├─ ui
-│  │     │  ├─ EventsPage
-│  │     │  │  ├─ Banner1.jsx
-│  │     │  │  ├─ Banner2.jsx
-│  │     │  │  ├─ HeroSection.jsx
-│  │     │  │  ├─ HowItWorks.jsx
-│  │     │  │  └─ SearchSection.jsx
-│  │     │  ├─ landingPage
-│  │     │  │  ├─ HeroSection.jsx
-│  │     │  │  ├─ HowItWorks.jsx
-│  │     │  │  ├─ SearchSection.jsx
-│  │     │  │  ├─ ServicesBanner.jsx
-│  │     │  │  ├─ ServicesSection.jsx
-│  │     │  │  ├─ TestimonialsSection.jsx
-│  │     │  │  └─ VendorsSection.jsx
-│  │     │  └─ skeletons
-│  │     │     └─ DetailsPageSkeleton.jsx
-│  │     ├─ UpdateProfileDrawer.jsx
-│  │     ├─ VendorProfile
-│  │     │  ├─ MoreOptionsDrawer.jsx
-│  │     │  ├─ PostDetailModal.jsx
-│  │     │  ├─ ReelsViewer.jsx
-│  │     │  └─ UploadModal.jsx
-│  │     ├─ VendorProfileCreate.jsx
-│  │     └─ Wedding.jsx
-│  ├─ contexts
-│  │  └─ ThemeContext.js
-│  ├─ database
-│  │  ├─ actions
-│  │  │  ├─ FetchActions.js
-│  │  │  └─ UserActions.js
-│  │  ├─ models
-│  │  │  ├─ Orders.js
-│  │  │  ├─ PlannedEvent.js
-│  │  │  ├─ userModel.js
-│  │  │  ├─ VendorModel.js
-│  │  │  ├─ VendorProfileModel.js
-│  │  │  ├─ VendorRequestsModel.js
-│  │  │  └─ VendorsReviewsModel.js
-│  │  └─ mongoose.js
-│  ├─ GlobalState
-│  │  ├─ CartDataStore.js
-│  │  ├─ CategoryStore.js
-│  │  └─ navbarVisibilityStore.js
-│  ├─ hooks
-│  │  ├─ useNavigationWithReturn.js
-│  │  └─ useReviews.js
-│  ├─ lib
-│  │  ├─ AppUtils.js
-│  │  ├─ constants
-│  │  │  └─ index.ts
-│  │  ├─ getDeviceType.js
-│  │  ├─ reviewUtils.js
-│  │  ├─ ThemeClerkProvider.jsx
-│  │  └─ utils.js
-│  └─ proxy.ts
-├─ tailwind.config.js
-└─ tsconfig.json
-
-```
-```
-Planwab-dev
-├─ .dockerignore
-├─ components.json
-├─ Dockerfile
-├─ eslint.config.mjs
-├─ next.config.mjs
-├─ package-lock.json
-├─ package.json
-├─ postcss.config.mjs
-├─ public
-│  ├─ AnniversaryCat.png
-│  ├─ AnniversaryDesign.png
-│  ├─ AnniversaryHeaderCard.png
-│  ├─ AnniversaryHeroMobImg.png
-│  ├─ auth1.jpeg
-│  ├─ auth2.jpeg
-│  ├─ auth3.jpeg
-│  ├─ auth4.jpeg
-│  ├─ auth5.jpeg
-│  ├─ Banners
-│  │  ├─ banner1.png
-│  │  ├─ banner10.png
-│  │  ├─ banner2.png
-│  │  ├─ banner3.png
-│  │  ├─ banner4.png
-│  │  ├─ banner5.gif
-│  │  ├─ banner6.png
-│  │  ├─ banner7.png
-│  │  ├─ banner8.gif
-│  │  ├─ banner9.png
-│  │  ├─ sampleProposal1.png
-│  │  ├─ sampleProposal2.png
-│  │  └─ sampleProposal3.png
-│  ├─ BirthdayCat.png
-│  ├─ BirthdayDesign.png
-│  ├─ BirthdayHeaderCard.png
-│  ├─ BirthdayHeroMobImg.png
-│  ├─ CardsCatPhotos
-│  │  ├─ CakesCardPhoto.png
-│  │  ├─ CakesCatB.png
-│  │  ├─ CateringCardPhoto.png
-│  │  ├─ CaterorsCat.png
-│  │  ├─ CaterorsCatB.png
-│  │  ├─ DecorationCardPhoto.png
-│  │  ├─ DecoratorCatB.png
-│  │  ├─ DholCat.png
-│  │  ├─ DJCat.png
-│  │  ├─ DJCatB.png
-│  │  ├─ EntertainmentCardPhoto.png
-│  │  ├─ GiftsAndFavoursCardPhoto.png
-│  │  ├─ InvitationsCardPhoto.png
-│  │  ├─ MakeUpCardPhoto.png
-│  │  ├─ MakeUpCat.png
-│  │  ├─ MakeUpCatB.png
-│  │  ├─ MehndiCardPhoto.png
-│  │  ├─ MehndiCat.png
-│  │  ├─ PhotographerCat.png
-│  │  ├─ PhotographerCatB.png
-│  │  ├─ PhotoGraphyCardPhoto.png
-│  │  ├─ PlannerCat.png
-│  │  ├─ PlannerCatB.png
-│  │  ├─ PlannersCardPhoto.png
-│  │  ├─ SecurityCardPhoto.png
-│  │  ├─ SoundCardPhoto.png
-│  │  └─ TransportCardPhoto.png
-│  ├─ Cat1.png
-│  ├─ Cat10.png
-│  ├─ Cat11.png
-│  ├─ Cat12.png
-│  ├─ Cat2.png
-│  ├─ Cat3.png
-│  ├─ Cat4.png
-│  ├─ Cat5.png
-│  ├─ Cat6.png
-│  ├─ Cat7.png
-│  ├─ Cat8.png
-│  ├─ Cat9.png
-│  ├─ CatVideos
-│  │  ├─ AnniversaryCatVid.mp4
-│  │  ├─ AnniversaryHeroMob.mp4
-│  │  ├─ BirthdayCatVid.mp4
-│  │  ├─ BirthdayHeroMob.mp4
-│  │  ├─ EventsHeroMob.mp4
-│  │  └─ WeddingHeroMob.mp4
-│  ├─ DefaultHeroMobImg.png
-│  ├─ file.svg
-│  ├─ globe.svg
-│  ├─ GlowLoadingGif.gif
-│  ├─ heroimage.webp
-│  ├─ HeroNAPAnniversary.gif
-│  ├─ HeroNAPBirthday.gif
-│  ├─ HeroNAPDefault.gif
-│  ├─ HeroNAPWedding.gif
-│  ├─ Loading
-│  │  ├─ 404NotFoundVideo.mp4
-│  │  └─ loading1.mp4
-│  ├─ logo.svg
-│  ├─ next.svg
-│  ├─ planwablogo.ico
-│  ├─ planwablogo.png
-│  ├─ posters
-│  │  ├─ anniversary-poster.jpg
-│  │  ├─ birthday-poster.jpg
-│  │  └─ wedding-poster.jpg
-│  ├─ quickServicesPhotos
-│  │  ├─ cakesQS.png
-│  │  ├─ caterorQS.png
-│  │  ├─ decorQS.png
-│  │  ├─ dholQS.png
-│  │  ├─ djQS.png
-│  │  ├─ makeupQS.png
-│  │  ├─ mehndiQS.png
-│  │  ├─ panditQS.png
-│  │  ├─ photographerQS.png
-│  │  ├─ plannerQS.png
-│  │  └─ venueQS.png
-│  ├─ vercel.svg
-│  ├─ WeddingCat.png
-│  ├─ WeddingDesign.png
-│  ├─ WeddingHeaderCard.png
-│  ├─ WeddingHeroMobImg.png
-│  └─ window.svg
-├─ README.md
-├─ src
-│  ├─ app
-│  │  ├─ (auth)
-│  │  │  ├─ layout.jsx
-│  │  │  ├─ loading.js
-│  │  │  ├─ sign-in
-│  │  │  │  └─ [[...sign-in]]
-│  │  │  │     └─ page.jsx
-│  │  │  └─ sign-up
-│  │  │     └─ [[...sign-up]]
-│  │  │        └─ page.jsx
-│  │  ├─ (desktop)
-│  │  │  ├─ (admin)
-│  │  │  │  └─ admin
-│  │  │  │     ├─ dashboard
-│  │  │  │     │  └─ page.jsx
-│  │  │  │     ├─ events
-│  │  │  │     │  └─ page.jsx
-│  │  │  │     ├─ layout.js
-│  │  │  │     ├─ loading.js
-│  │  │  │     ├─ settings
-│  │  │  │     │  └─ page.jsx
-│  │  │  │     ├─ users
-│  │  │  │     │  └─ page.jsx
-│  │  │  │     ├─ vendor-requests
-│  │  │  │     │  └─ page.jsx
-│  │  │  │     └─ vendors
-│  │  │  │        └─ page.jsx
-│  │  │  ├─ (pages)
-│  │  │  │  ├─ events
-│  │  │  │  │  ├─ page.js
-│  │  │  │  │  └─ [category]
-│  │  │  │  │     └─ page.js
-│  │  │  │  ├─ plan-my-event
-│  │  │  │  │  └─ [category]
-│  │  │  │  │     └─ page.js
-│  │  │  │  ├─ vendor
-│  │  │  │  │  └─ [category]
-│  │  │  │  │     └─ [id]
-│  │  │  │  │        └─ page.jsx
-│  │  │  │  └─ vendors
-│  │  │  │     └─ marketplace
-│  │  │  │        ├─ page.jsx
-│  │  │  │        └─ [category]
-│  │  │  │           └─ page.jsx
-│  │  │  ├─ layout.js
-│  │  │  └─ page.js
-│  │  ├─ (mobile)
-│  │  │  └─ m
-│  │  │     ├─ (admin)
-│  │  │     │  └─ admin
-│  │  │     │     ├─ dashboard
-│  │  │     │     │  └─ page.jsx
-│  │  │     │     ├─ events
-│  │  │     │     │  └─ page.jsx
-│  │  │     │     ├─ layout.js
-│  │  │     │     ├─ loading.js
-│  │  │     │     ├─ settings
-│  │  │     │     │  └─ page.jsx
-│  │  │     │     ├─ users
-│  │  │     │     │  └─ page.jsx
-│  │  │     │     └─ vendors
-│  │  │     │        └─ page.jsx
-│  │  │     ├─ (pages)
-│  │  │     │  ├─ about
-│  │  │     │  │  ├─ blogs
-│  │  │     │  │  │  ├─ loading.js
-│  │  │     │  │  │  └─ page.jsx
-│  │  │     │  │  ├─ contact
-│  │  │     │  │  │  ├─ loading.js
-│  │  │     │  │  │  └─ page.jsx
-│  │  │     │  │  ├─ loading.js
-│  │  │     │  │  └─ page.jsx
-│  │  │     │  ├─ events
-│  │  │     │  │  ├─ page.js
-│  │  │     │  │  └─ [category]
-│  │  │     │  │     └─ page.js
-│  │  │     │  ├─ plan-my-event
-│  │  │     │  │  └─ [category]
-│  │  │     │  │     ├─ loading.js
-│  │  │     │  │     └─ page.js
-│  │  │     │  ├─ pricing
-│  │  │     │  │  ├─ loading.js
-│  │  │     │  │  └─ page.jsx
-│  │  │     │  ├─ user
-│  │  │     │  │  ├─ bookings
-│  │  │     │  │  │  ├─ loading.js
-│  │  │     │  │  │  └─ page.jsx
-│  │  │     │  │  ├─ checkout
-│  │  │     │  │  │  ├─ loading.js
-│  │  │     │  │  │  └─ page.jsx
-│  │  │     │  │  ├─ profile
-│  │  │     │  │  │  ├─ loading.js
-│  │  │     │  │  │  └─ page.jsx
-│  │  │     │  │  └─ proposals
-│  │  │     │  │     └─ tracking
-│  │  │     │  │        └─ [id]
-│  │  │     │  │           ├─ loading.js
-│  │  │     │  │           └─ page.js
-│  │  │     │  ├─ vendor
-│  │  │     │  │  ├─ onboarding
-│  │  │     │  │  │  ├─ loading.js
-│  │  │     │  │  │  └─ page.jsx
-│  │  │     │  │  ├─ register
-│  │  │     │  │  │  ├─ loading.js
-│  │  │     │  │  │  └─ page.jsx
-│  │  │     │  │  └─ [category]
-│  │  │     │  │     └─ [id]
-│  │  │     │  │        ├─ loading.js
-│  │  │     │  │        ├─ page.jsx
-│  │  │     │  │        └─ profile
-│  │  │     │  │           ├─ loading.js
-│  │  │     │  │           └─ page.jsx
-│  │  │     │  └─ vendors
-│  │  │     │     ├─ explore
-│  │  │     │     │  └─ [category]
-│  │  │     │     │     ├─ loading.js
-│  │  │     │     │     └─ page.js
-│  │  │     │     └─ marketplace
-│  │  │     │        ├─ loading.js
-│  │  │     │        ├─ page.jsx
-│  │  │     │        └─ [category]
-│  │  │     │           ├─ loading.js
-│  │  │     │           └─ page.jsx
-│  │  │     ├─ layout.js
-│  │  │     ├─ loading.js
-│  │  │     └─ page.js
-│  │  ├─ api
-│  │  │  ├─ media
-│  │  │  │  └─ route.js
-│  │  │  ├─ orders
-│  │  │  │  └─ route.js
-│  │  │  ├─ plannedevent
-│  │  │  │  ├─ add
-│  │  │  │  │  └─ route.js
-│  │  │  │  └─ route.js
-│  │  │  ├─ user
-│  │  │  │  ├─ me
-│  │  │  │  │  └─ route.js
-│  │  │  │  ├─ route.js
-│  │  │  │  ├─ status
-│  │  │  │  │  └─ route.js
-│  │  │  │  ├─ toggle-like
-│  │  │  │  │  └─ route.js
-│  │  │  │  └─ toggle-watchlist
-│  │  │  │     └─ route.js
-│  │  │  ├─ vendor
-│  │  │  │  ├─ add
-│  │  │  │  │  └─ route.js
-│  │  │  │  ├─ bulk
-│  │  │  │  │  └─ route.js
-│  │  │  │  ├─ lists
-│  │  │  │  │  └─ [id]
-│  │  │  │  │     └─ route.js
-│  │  │  │  ├─ requests
-│  │  │  │  │  └─ route.js
-│  │  │  │  ├─ route.js
-│  │  │  │  └─ [id]
-│  │  │  │     ├─ profile
-│  │  │  │     │  ├─ interactions
-│  │  │  │     │  │  └─ route.js
-│  │  │  │     │  ├─ posts
-│  │  │  │     │  │  ├─ interactions
-│  │  │  │     │  │  │  └─ route.js
-│  │  │  │     │  │  └─ route.js
-│  │  │  │     │  ├─ reels
-│  │  │  │     │  │  ├─ interactions
-│  │  │  │     │  │  │  └─ route.js
-│  │  │  │     │  │  └─ route.js
-│  │  │  │     │  ├─ route.js
-│  │  │  │     │  ├─ upload-config
-│  │  │  │     │  │  └─ route.js
-│  │  │  │     │  └─ verify-password
-│  │  │  │     │     └─ route.js
-│  │  │  │     ├─ reviews
-│  │  │  │     │  ├─ route.js
-│  │  │  │     │  └─ [reviewId]
-│  │  │  │     │     └─ route.js
-│  │  │  │     ├─ route.js
-│  │  │  │     └─ unified
-│  │  │  │        └─ route.js
-│  │  │  └─ webhooks
-│  │  │     └─ clerk
-│  │  │        └─ route.js
-│  │  ├─ favicon.ico
-│  │  ├─ globals.css
-│  │  ├─ layout.js
-│  │  ├─ loading.js
-│  │  ├─ not-found.js
-│  │  ├─ robots.js
-│  │  └─ sitemap.js
-│  ├─ components
-│  │  ├─ desktop
+│  │  ├─ mobile
 │  │  │  ├─ admin
 │  │  │  │  ├─ DashboardStatsCard.jsx
 │  │  │  │  ├─ events
 │  │  │  │  │  ├─ AddEvent.jsx
-│  │  │  │  │  ├─ AllEvents.jsx
-│  │  │  │  │  ├─ EditEventTab.jsx
-│  │  │  │  │  └─ ViewEventTab.jsx
+│  │  │  │  │  └─ AllEvents.jsx
 │  │  │  │  ├─ Header.jsx
 │  │  │  │  ├─ LayoutWrapper.jsx
 │  │  │  │  ├─ modals
@@ -895,32 +563,73 @@ Planwab-dev
 │  │  │  │  ├─ Sidebar.jsx
 │  │  │  │  ├─ users
 │  │  │  │  │  └─ AllUsers.jsx
-│  │  │  │  ├─ vendor-requests
-│  │  │  │  │  ├─ AllVendorRequests.jsx
-│  │  │  │  │  └─ viewVendorRequestTab.jsx
 │  │  │  │  └─ vendors
 │  │  │  │     ├─ addVendor.jsx
-│  │  │  │     ├─ AllVendors.jsx
-│  │  │  │     ├─ EditVendorTab.jsx
-│  │  │  │     └─ ViewVendorTab.jsx
+│  │  │  │     └─ AllVendors.jsx
 │  │  │  ├─ Anniversary.jsx
+│  │  │  ├─ AppEntryGate.jsx
 │  │  │  ├─ AuthPromo.jsx
 │  │  │  ├─ Birthday.jsx
+│  │  │  ├─ BirthdayPage
+│  │  │  │  ├─ BookingPage.jsx
+│  │  │  │  ├─ Button.jsx
+│  │  │  │  ├─ ConfirmationPage.jsx
+│  │  │  │  ├─ FloatingInput.jsx
+│  │  │  │  ├─ HotelCard.jsx
+│  │  │  │  ├─ HotelsPage.jsx
+│  │  │  │  ├─ Navigation.jsx
+│  │  │  │  └─ SurpriseCard.jsx
 │  │  │  ├─ ClientWrapper.jsx
+│  │  │  ├─ CompareModalMobile.jsx
+│  │  │  ├─ ConditionalNavbar.jsx
+│  │  │  ├─ Footer.jsx
+│  │  │  ├─ ForceLightMode.js
 │  │  │  ├─ Header.jsx
+│  │  │  ├─ homepage
+│  │  │  │  ├─ AreYouVendor.jsx
+│  │  │  │  ├─ AsyncSections.jsx
+│  │  │  │  ├─ CategoriesGrid.jsx
+│  │  │  │  ├─ HomePageShimmer.jsx
+│  │  │  │  ├─ MostBooked.jsx
+│  │  │  │  ├─ QuickServices.jsx
+│  │  │  │  ├─ SampleProposals.jsx
+│  │  │  │  ├─ ServicesSteps.jsx
+│  │  │  │  └─ WhyWeBetter.jsx
 │  │  │  ├─ Img.jsx
+│  │  │  ├─ LeadCaptureModal.jsx
+│  │  │  ├─ LoaderStarter.jsx
+│  │  │  ├─ MapContainer.jsx
+│  │  │  ├─ Navbar.jsx
 │  │  │  ├─ PagesWrapper
+│  │  │  │  ├─ AboutPageWrapper.jsx
+│  │  │  │  ├─ BirthdayPlannerWrapper.jsx
+│  │  │  │  ├─ BlogPageWrapper.jsx
 │  │  │  │  ├─ CategoryEventsPageWrapper.jsx
+│  │  │  │  ├─ CheckoutPageWrapper.jsx
+│  │  │  │  ├─ ContactUsPageWrapper.jsx
+│  │  │  │  ├─ FindAVendorPageWrapper.jsx
 │  │  │  │  ├─ HomePageWrapper.jsx
 │  │  │  │  ├─ PlanMyEventPageWrapper.jsx
+│  │  │  │  ├─ PricingPageWrapper.jsx
 │  │  │  │  ├─ SignInPageWrapper.jsx
 │  │  │  │  ├─ SignUpPageWrapper.jsx
+│  │  │  │  ├─ TrackingProposalsPagewrapper.jsx
+│  │  │  │  ├─ UserBookingsPageWrapper.jsx
+│  │  │  │  ├─ UserProfilePageWrapper.jsx
 │  │  │  │  ├─ VendorDetailsPageWrapper.jsx
+│  │  │  │  ├─ VendorOnboardingPageWrapper.jsx
+│  │  │  │  ├─ VendorProfileNewPageWrapper.jsx
+│  │  │  │  ├─ VendorProfilePageWrapper.jsx
+│  │  │  │  ├─ VendorRegisterPageWrapper.jsx
 │  │  │  │  └─ VendorsMarketplacePageWrapper.jsx
+│  │  │  ├─ RawHeroMedia.jsx
+│  │  │  ├─ ReviewSection.jsx
 │  │  │  ├─ SkeletonCard.jsx
+│  │  │  ├─ SmartMediaLoader.jsx
 │  │  │  ├─ ui
 │  │  │  │  ├─ EventsPage
 │  │  │  │  │  ├─ Banner1.jsx
+│  │  │  │  │  ├─ Banner2.jsx
 │  │  │  │  │  ├─ HeroSection.jsx
 │  │  │  │  │  ├─ HowItWorks.jsx
 │  │  │  │  │  └─ SearchSection.jsx
@@ -932,108 +641,20 @@ Planwab-dev
 │  │  │  │  │  ├─ ServicesSection.jsx
 │  │  │  │  │  ├─ TestimonialsSection.jsx
 │  │  │  │  │  └─ VendorsSection.jsx
-│  │  │  │  ├─ skeletons
-│  │  │  │  │  └─ DetailsPageSkeleton.jsx
-│  │  │  │  └─ vendor
-│  │  │  │     └─ VendorCard.jsx
+│  │  │  │  └─ skeletons
+│  │  │  │     └─ DetailsPageSkeleton.jsx
+│  │  │  ├─ UpdateProfileDrawer.jsx
+│  │  │  ├─ VendorProfile
+│  │  │  │  ├─ MoreOptionsDrawer.jsx
+│  │  │  │  ├─ PostDetailModal.jsx
+│  │  │  │  ├─ ReelsViewer.jsx
+│  │  │  │  └─ UploadModal.jsx
+│  │  │  ├─ VendorProfileCreate.jsx
 │  │  │  └─ Wedding.jsx
-│  │  └─ mobile
-│  │     ├─ admin
-│  │     │  ├─ DashboardStatsCard.jsx
-│  │     │  ├─ events
-│  │     │  │  ├─ AddEvent.jsx
-│  │     │  │  └─ AllEvents.jsx
-│  │     │  ├─ Header.jsx
-│  │     │  ├─ LayoutWrapper.jsx
-│  │     │  ├─ modals
-│  │     │  │  ├─ DropdownMenu.jsx
-│  │     │  │  ├─ events
-│  │     │  │  │  ├─ DeleteEventModal.jsx
-│  │     │  │  │  ├─ EditEventModal.jsx
-│  │     │  │  │  └─ ViewEventModal.jsx
-│  │     │  │  ├─ ModalBackdrop.jsx
-│  │     │  │  ├─ users
-│  │     │  │  │  ├─ DeleteUserModal.jsx
-│  │     │  │  │  └─ ViewUserModal.jsx
-│  │     │  │  └─ vendors
-│  │     │  │     ├─ DeleteVendorModal.jsx
-│  │     │  │     ├─ EditVendorModal.jsx
-│  │     │  │     └─ ViewVendorModal.jsx
-│  │     │  ├─ Sidebar.jsx
-│  │     │  ├─ users
-│  │     │  │  └─ AllUsers.jsx
-│  │     │  └─ vendors
-│  │     │     ├─ addVendor.jsx
-│  │     │     └─ AllVendors.jsx
-│  │     ├─ Anniversary.jsx
-│  │     ├─ AppEntryGate.jsx
-│  │     ├─ AuthPromo.jsx
-│  │     ├─ Birthday.jsx
-│  │     ├─ ClientWrapper.jsx
-│  │     ├─ ConditionalNavbar.jsx
-│  │     ├─ Footer.jsx
-│  │     ├─ ForceLightMode.js
-│  │     ├─ Header.jsx
-│  │     ├─ homepage
-│  │     │  ├─ AreYouVendor.jsx
-│  │     │  ├─ CategoriesGrid.jsx
-│  │     │  ├─ HomePageShimmer.jsx
-│  │     │  ├─ MostBooked.jsx
-│  │     │  ├─ QuickServices.jsx
-│  │     │  ├─ SampleProposals.jsx
-│  │     │  ├─ ServicesSteps.jsx
-│  │     │  └─ WhyWeBetter.jsx
-│  │     ├─ Img.jsx
-│  │     ├─ LoaderStarter.jsx
-│  │     ├─ MapContainer.jsx
-│  │     ├─ Navbar.jsx
-│  │     ├─ PagesWrapper
-│  │     │  ├─ AboutPageWrapper.jsx
-│  │     │  ├─ BlogPageWrapper.jsx
-│  │     │  ├─ CategoryEventsPageWrapper.jsx
-│  │     │  ├─ CheckoutPageWrapper.jsx
-│  │     │  ├─ ContactUsPageWrapper.jsx
-│  │     │  ├─ FindAVendorPageWrapper.jsx
-│  │     │  ├─ HomePageWrapper.jsx
-│  │     │  ├─ PlanMyEventPageWrapper.jsx
-│  │     │  ├─ PricingPageWrapper.jsx
-│  │     │  ├─ SignInPageWrapper.jsx
-│  │     │  ├─ SignUpPageWrapper.jsx
-│  │     │  ├─ UserBookingsPageWrapper.jsx
-│  │     │  ├─ UserProfilePageWrapper.jsx
-│  │     │  ├─ VendorDetailsPageWrapper.jsx
-│  │     │  ├─ VendorOnboardingPageWrapper.jsx
-│  │     │  ├─ VendorProfilePageWrapper.jsx
-│  │     │  ├─ VendorRegisterPageWrapper.jsx
-│  │     │  └─ VendorsMarketplacePageWrapper.jsx
-│  │     ├─ ReviewSection.jsx
-│  │     ├─ SkeletonCard.jsx
-│  │     ├─ SmartMediaLoader.jsx
-│  │     ├─ ui
-│  │     │  ├─ EventsPage
-│  │     │  │  ├─ Banner1.jsx
-│  │     │  │  ├─ Banner2.jsx
-│  │     │  │  ├─ HeroSection.jsx
-│  │     │  │  ├─ HowItWorks.jsx
-│  │     │  │  └─ SearchSection.jsx
-│  │     │  ├─ landingPage
-│  │     │  │  ├─ HeroSection.jsx
-│  │     │  │  ├─ HowItWorks.jsx
-│  │     │  │  ├─ SearchSection.jsx
-│  │     │  │  ├─ ServicesBanner.jsx
-│  │     │  │  ├─ ServicesSection.jsx
-│  │     │  │  ├─ TestimonialsSection.jsx
-│  │     │  │  └─ VendorsSection.jsx
-│  │     │  └─ skeletons
-│  │     │     └─ DetailsPageSkeleton.jsx
-│  │     ├─ UpdateProfileDrawer.jsx
-│  │     ├─ VendorProfile
-│  │     │  ├─ MoreOptionsDrawer.jsx
-│  │     │  ├─ PostDetailModal.jsx
-│  │     │  ├─ ReelsViewer.jsx
-│  │     │  └─ UploadModal.jsx
-│  │     ├─ VendorProfileCreate.jsx
-│  │     └─ Wedding.jsx
+│  │  ├─ providers
+│  │  │  └─ ReactQueryProvider.jsx
+│  │  └─ shared
+│  │     └─ ClientModalWrapper.jsx
 │  ├─ contexts
 │  │  └─ ThemeContext.js
 │  ├─ database
@@ -1041,6 +662,9 @@ Planwab-dev
 │  │  │  ├─ FetchActions.js
 │  │  │  └─ UserActions.js
 │  │  ├─ models
+│  │  │  ├─ BirthdayBooking.js
+│  │  │  ├─ DetailsBookingRequestModel.js
+│  │  │  ├─ LeadsModel.js
 │  │  │  ├─ Orders.js
 │  │  │  ├─ PlannedEvent.js
 │  │  │  ├─ userModel.js
@@ -1050,10 +674,12 @@ Planwab-dev
 │  │  │  └─ VendorsReviewsModel.js
 │  │  └─ mongoose.js
 │  ├─ GlobalState
+│  │  ├─ AppValuesStore.js
 │  │  ├─ CartDataStore.js
 │  │  ├─ CategoryStore.js
 │  │  └─ navbarVisibilityStore.js
 │  ├─ hooks
+│  │  ├─ useNavigationState.js
 │  │  ├─ useNavigationWithReturn.js
 │  │  └─ useReviews.js
 │  ├─ lib
@@ -1061,6 +687,7 @@ Planwab-dev
 │  │  ├─ constants
 │  │  │  └─ index.ts
 │  │  ├─ getDeviceType.js
+│  │  ├─ navigationUtils.js
 │  │  ├─ reviewUtils.js
 │  │  ├─ ThemeClerkProvider.jsx
 │  │  └─ utils.js

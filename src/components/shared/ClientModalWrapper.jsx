@@ -4,11 +4,13 @@ import { useState, useEffect } from "react";
 import LeadCaptureModal from "../desktop/LeadCaptureModal";
 import LeadCaptureModalMobile from "../mobile/LeadCaptureModal";
 import { useAppValuesStore } from "../../GlobalState/AppValuesStore";
+import { useNavbarVisibilityStore } from "../../GlobalState/navbarVisibilityStore";
 
 const ClientModalWrapper = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
    const [isMobile, setIsMobile] = useState(false);
    const { canContinue } = useAppValuesStore();
+   const { isNavbarVisible, setIsNavbarVisible } = useNavbarVisibilityStore();
 
     useEffect(() => {
     const checkDevice = () => {
@@ -28,7 +30,10 @@ const ClientModalWrapper = () => {
   useEffect(() => {
     const timer = setTimeout(() => {
       if(canContinue) return; // Don't show if user has already taken action
-      setIsModalOpen(true);
+      if(!canContinue){
+        setIsModalOpen(true);
+        setIsNavbarVisible(false);
+      }
     }, 15000); 
 
     return () => clearTimeout(timer);
@@ -37,7 +42,10 @@ const ClientModalWrapper = () => {
   return (
     <ModalComponent
       isOpen={isModalOpen}
-      onClose={() => setIsModalOpen(false)}
+      onClose={() => {
+        setIsModalOpen(false);
+        setIsNavbarVisible(true);
+      }}
       actionType="auto-popup"
       title="Plan Your Perfect Event"
       subtitle="Get started with India's most affordable event planning marketplace"

@@ -161,6 +161,13 @@ const LeadCaptureModalMobile = ({ isOpen, onClose, actionType, title, subtitle }
                 perspective: "1000px",
               }}
             >
+              <button
+                onClick={onClose}
+                className="absolute top-4 right-4 p-2 rounded-full text-gray-500 hover:text-gray-700 transition-colors" 
+                aria-label="Close modal"
+              >
+                <X size={20} />
+              </button>
               <motion.div
                 initial={{ scaleX: 0 }}
                 animate={{ scaleX: 1 }}
@@ -341,15 +348,6 @@ const LeadCaptureModalMobile = ({ isOpen, onClose, actionType, title, subtitle }
                     transition={{ delay: 0.6 }}
                     className="flex flex-col sm:flex-row gap-3"
                   >
-                    <motion.button
-                      type="button"
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={onClose}
-                      className="w-full sm:w-auto px-6 py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded-xl transition-colors"
-                    >
-                      Cancel
-                    </motion.button>
                     <motion.button
                       type="submit"
                       whileHover={{ scale: 1.02 }}
