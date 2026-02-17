@@ -219,7 +219,9 @@ Planwab-dev
 │  │  │  │  │  └─ [category]
 │  │  │  │  │     ├─ birthday-planner
 │  │  │  │  │     │  └─ page.js
-│  │  │  │  │     └─ page.js
+│  │  │  │  │     ├─ page.js
+│  │  │  │  │     └─ planning-tools
+│  │  │  │  │        └─ page.js
 │  │  │  │  ├─ plan-my-event
 │  │  │  │  │  └─ [category]
 │  │  │  │  │     └─ page.js
@@ -363,6 +365,10 @@ Planwab-dev
 │  │  │  │  └─ route.js
 │  │  │  ├─ orders
 │  │  │  │  └─ route.js
+│  │  │  ├─ planned-events
+│  │  │  │  ├─ route.js
+│  │  │  │  └─ [id]
+│  │  │  │     └─ route.js
 │  │  │  ├─ plannedevent
 │  │  │  │  ├─ add
 │  │  │  │  │  └─ route.js
@@ -499,6 +505,7 @@ Planwab-dev
 │  │  │  │  ├─ FindAVendorPageWrapper.jsx
 │  │  │  │  ├─ HomePageWrapper.jsx
 │  │  │  │  ├─ PlanMyEventPageWrapper.jsx
+│  │  │  │  ├─ PlanningToolsPageWrapper.jsx
 │  │  │  │  ├─ PricingPageWrapper.jsx
 │  │  │  │  ├─ SignInPageWrapper.jsx
 │  │  │  │  ├─ SignUpPageWrapper.jsx
@@ -667,6 +674,7 @@ Planwab-dev
 │  │  │  ├─ LeadsModel.js
 │  │  │  ├─ Orders.js
 │  │  │  ├─ PlannedEvent.js
+│  │  │  ├─ PlannedToolEvent.js
 │  │  │  ├─ userModel.js
 │  │  │  ├─ VendorModel.js
 │  │  │  ├─ VendorProfileModel.js
