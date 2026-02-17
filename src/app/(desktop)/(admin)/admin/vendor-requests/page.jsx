@@ -3,14 +3,15 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { List, Eye, ArrowLeft, TrendingUp, RefreshCw, ChevronRight, Home, UserCheck } from "lucide-react";
+import { List, Eye, ArrowLeft, TrendingUp, RefreshCw, ChevronRight, Home, UserCheck, Cake, CalendarDays, Rocket } from "lucide-react";
 import ViewVendorRequestTab from "@/components/desktop/admin/vendor-requests/viewVendorRequestTab";
 import AllVendorRequests from "@/components/desktop/admin/vendor-requests/AllVendorRequests";
 
-export default function VendorRequestsPage() {
+export default function RequestsPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  const requestType = searchParams.get("type") || "vendor";
   const [activeTab, setActiveTab] = useState(searchParams.get("tab") || "all");
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [selectedRequestId, setSelectedRequestId] = useState(searchParams.get("requestId") || null);
@@ -34,44 +35,91 @@ export default function VendorRequestsPage() {
     }
 
     if (requestId && tab === "view") {
-      fetchRequestById(requestId);
-      setIsEditMode(editMode);
+      // Optimization: If we already have the request in state, don't re-fetch
+      if (selectedRequest && selectedRequest._id === requestId) {
+        setIsEditMode(editMode);
+      } else {
+        fetchRequestById(requestId);
+        setIsEditMode(editMode);
+      }
     }
-  }, [searchParams]);
+  }, [searchParams, requestType, selectedRequest?._id]);
 
   const fetchRequestById = useCallback(async (id) => {
     try {
-      const response = await fetch(`/api/vendor/requests?id=${id}`);
-      if (!response.ok) throw new Error("Vendor request not found");
+      let endpoint = "/api/vendor/requests";
+      if (requestType === "birthday") endpoint = "/api/vendor/requests/birthday-routes";
+      else if (requestType === "booking") endpoint = "/api/vendor/requests/detail-booking";
+      else if (requestType === "leads") endpoint = "/api/leads";
+
+      // Fetch requests based on type; some endpoints require list fetching
+      let fetchUrl = endpoint;
+      if (requestType === "birthday") fetchUrl += "?limit=10000";
+      else if (requestType === "booking") fetchUrl += "?all=true";
+
+      const response = await fetch(fetchUrl);
+      if (!response.ok) throw new Error("Request not found");
       const result = await response.json();
-      setSelectedRequest(result.data || result);
+
+      let data;
+      if (requestType === "birthday") {
+        const list = result.data?.bookings || result.data || [];
+        data = list.find(item => item._id === id);
+      } else if (requestType === "booking") {
+        const list = result.data || [];
+        data = list.find(item => item._id === id);
+      } else if (requestType === "leads") {
+        const list = result.leads || result.data || [];
+        data = list.find(item => item._id === id);
+      } else {
+        // Direct ID fetching for vendor requests
+        const res = await fetch(`${endpoint}?id=${id}`);
+        const resData = await res.json();
+        data = resData.data || resData;
+      }
+
+      if (data) {
+        setSelectedRequest(data);
+      } else {
+        throw new Error("Request not found in list");
+      }
     } catch (error) {
-      console.error("Error fetching vendor request:", error);
+      console.error("Error fetching request:", error);
       updateURL("all");
       setSelectedRequest(null);
     }
-  }, []);
+  }, [requestType]);
 
   const updateURL = useCallback(
     (tab, requestId = null, editMode = false) => {
-      const params = new URLSearchParams();
+      const params = new URLSearchParams(searchParams);
       params.set("tab", tab);
+
+      // Preserve type
+      if (requestType) params.set("type", requestType);
 
       if (requestId) {
         params.set("requestId", requestId);
+      } else {
+        params.delete("requestId");
       }
 
       if (editMode) {
         params.set("edit", "true");
+      } else {
+        params.delete("edit");
       }
 
       if (tab === "view") {
-        params.set("name", selectedRequest?.businessName || "vendor-request");
+        const name = selectedRequest?.businessName || selectedRequest?.userDetails?.name || selectedRequest?.name || "request";
+        params.set("name", name);
+      } else {
+        params.delete("name");
       }
 
       router.push(`?${params.toString()}`, { scroll: false });
     },
-    [router, selectedRequest]
+    [router, selectedRequest, searchParams, requestType]
   );
 
   const handleViewRequest = useCallback(
@@ -169,13 +217,28 @@ export default function VendorRequestsPage() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [activeTab, isEditMode, handleBackToList, handleRefresh, updateURL, selectedRequest]);
 
-  const tabs = [{ id: "all", label: "All Requests", icon: List, description: "View and manage all vendor requests" }];
+  const getTypeConfig = () => {
+    switch (requestType) {
+      case "birthday":
+        return { label: "Birthday Requests", icon: Cake, description: "Manage birthday party requests" };
+      case "booking":
+        return { label: "Booking Requests", icon: CalendarDays, description: "Manage detailed booking requests" };
+      case "leads":
+        return { label: "Leads Requests", icon: Rocket, description: "Manage lead generation requests" };
+      default:
+        return { label: "Vendor Requests", icon: UserCheck, description: "Manage vendor registration requests" };
+    }
+  };
+
+  const typeConfig = getTypeConfig();
+  const tabs = [{ id: "all", label: `All ${typeConfig.label}`, icon: List, description: typeConfig.description }];
 
   const getBreadcrumbs = () => {
-    const crumbs = [{ label: "Dashboard", href: "/admin" }, { label: "Vendor Requests" }];
+    const crumbs = [{ label: "Dashboard", href: "/admin" }, { label: "Requests", href: "/admin/requests" }, { label: typeConfig.label }];
 
     if (activeTab === "view" && selectedRequest) {
-      crumbs.push({ label: selectedRequest.businessName, isActive: !isEditMode });
+      const name = selectedRequest.businessName || selectedRequest.userDetails?.name || selectedRequest.name || "Request Details";
+      crumbs.push({ label: name, isActive: !isEditMode });
       if (isEditMode) {
         crumbs.push({ label: "Edit", isActive: true });
       }
@@ -186,9 +249,10 @@ export default function VendorRequestsPage() {
 
   const getPageTitle = () => {
     if (activeTab === "view" && selectedRequest) {
-      return isEditMode ? `Editing: ${selectedRequest.businessName}` : `Viewing: ${selectedRequest.businessName}`;
+      const name = selectedRequest.businessName || selectedRequest.userDetails?.name || selectedRequest.name || "Request";
+      return isEditMode ? `Editing: ${name}` : `Viewing: ${name}`;
     }
-    return "Manage Vendor Requests";
+    return `Manage ${typeConfig.label}`;
   };
 
   const getCurrentTabInfo = () => {
@@ -197,7 +261,7 @@ export default function VendorRequestsPage() {
         id: "view",
         label: isEditMode ? "Edit Request" : "View Request",
         icon: Eye,
-        description: isEditMode ? "Edit vendor request details" : "View vendor request details",
+        description: isEditMode ? "Edit request details" : "View request details",
       };
     }
     return tabs[0];
@@ -238,7 +302,7 @@ export default function VendorRequestsPage() {
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="flex items-start gap-4">
                 <div className="p-3 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl shadow-lg flex-shrink-0">
-                  <UserCheck size={24} className="text-white" />
+                  <typeConfig.icon size={24} className="text-white" />
                 </div>
                 <div className="min-w-0">
                   <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white truncate">
@@ -297,7 +361,7 @@ export default function VendorRequestsPage() {
 
                 {/* Dynamic View/Edit Tab */}
                 {selectedRequest && activeTab === "view" && (
-                  <TabButton tab={getCurrentTabInfo()} isActive={true} onClick={() => {}} />
+                  <TabButton tab={getCurrentTabInfo()} isActive={true} onClick={() => { }} />
                 )}
               </div>
             </div>
@@ -307,35 +371,33 @@ export default function VendorRequestsPage() {
               <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg overflow-hidden bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold flex-shrink-0">
-                    {selectedRequest.businessName.charAt(0).toUpperCase()}
+                    {(selectedRequest.businessName || selectedRequest.userDetails?.name || selectedRequest.fullName || selectedRequest.name || "?").charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                      {selectedRequest.businessName}
+                      {selectedRequest.businessName || selectedRequest.userDetails?.name || selectedRequest.fullName || selectedRequest.name || "Unknown Request"}
                     </p>
                     <p className="text-xs text-gray-500 capitalize">
-                      {selectedRequest.category} • {selectedRequest.city || "N/A"} • {selectedRequest.status}
+                      {selectedRequest.category || selectedRequest.eventType || selectedRequest.source || "General"} • {selectedRequest.city || selectedRequest.venueName || "N/A"} • {selectedRequest.status}
                     </p>
                   </div>
                   <div className="flex gap-2 flex-shrink-0">
                     <button
                       onClick={handleSwitchToView}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                        !isEditMode
-                          ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      }`}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${!isEditMode
+                        ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        }`}
                     >
                       <Eye size={14} />
                       <span className="hidden sm:inline">View</span>
                     </button>
                     <button
                       onClick={handleSwitchToEdit}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                        isEditMode
-                          ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      }`}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${isEditMode
+                        ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
+                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                        }`}
                     >
                       <TrendingUp size={14} />
                       <span className="hidden sm:inline">Edit</span>
@@ -357,6 +419,7 @@ export default function VendorRequestsPage() {
             >
               {activeTab === "all" && (
                 <AllVendorRequests
+                  requestType={requestType}
                   onViewRequest={handleViewRequest}
                   onEditRequest={handleEditRequest}
                   refreshTrigger={refreshTrigger}
@@ -366,6 +429,7 @@ export default function VendorRequestsPage() {
 
               {activeTab === "view" && selectedRequest && (
                 <ViewVendorRequestTab
+                  requestType={requestType}
                   request={selectedRequest}
                   isEditMode={isEditMode}
                   onBack={handleBackToList}
@@ -381,7 +445,7 @@ export default function VendorRequestsPage() {
           {/* Footer Info */}
           <div className="mt-8 text-center text-xs text-gray-400 dark:text-gray-500">
             <p>
-              Vendor Requests Management System • Press{" "}
+              {typeConfig.label} Management System • Press{" "}
               <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">Esc</kbd> to go back •{" "}
               <kbd className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 rounded">Ctrl+R</kbd> to refresh
             </p>
@@ -395,24 +459,21 @@ export default function VendorRequestsPage() {
 const TabButton = ({ tab, isActive, onClick }) => (
   <button
     onClick={onClick}
-    className={`group flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-      isActive
-        ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 shadow-sm"
-        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
-    }`}
+    className={`group flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive
+      ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 shadow-sm"
+      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
+      }`}
   >
     <tab.icon
       size={18}
-      className={`flex-shrink-0 transition-transform group-hover:scale-110 ${
-        isActive ? "text-indigo-600 dark:text-indigo-400" : ""
-      }`}
+      className={`flex-shrink-0 transition-transform group-hover:scale-110 ${isActive ? "text-indigo-600 dark:text-indigo-400" : ""
+        }`}
     />
     <div className="text-left">
       <span className="block">{tab.label}</span>
       <span
-        className={`text-xs font-normal hidden md:block ${
-          isActive ? "text-indigo-500 dark:text-indigo-400" : "text-gray-400 dark:text-gray-500"
-        }`}
+        className={`text-xs font-normal hidden md:block ${isActive ? "text-indigo-500 dark:text-indigo-400" : "text-gray-400 dark:text-gray-500"
+          }`}
       >
         {tab.description}
       </span>
@@ -426,3 +487,4 @@ const TabButton = ({ tab, isActive, onClick }) => (
     )}
   </button>
 );
+

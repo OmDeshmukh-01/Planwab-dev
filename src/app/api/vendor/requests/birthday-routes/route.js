@@ -162,6 +162,103 @@ export async function PATCH(request) {
     }
 }
 
+// PUT - Update booking
+export async function PUT(request) {
+    try {
+        await connectToDatabase();
+
+        const { searchParams } = new URL(request.url);
+        const adminPassword = searchParams.get("adminPassword");
+        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "PlanWAB@12345";
+        const VENDOR_REQ_EDIT_ADMIN_PASSWORD = process.env.VENDOR_REQ_EDIT_ADMIN_PASSWORD || "EDit@PlanWAB@12345";
+
+        if (adminPassword !== ADMIN_PASSWORD && adminPassword !== VENDOR_REQ_EDIT_ADMIN_PASSWORD) {
+            return NextResponse.json({ success: false, error: "Unauthorized: Invalid admin password" }, { status: 401 });
+        }
+
+        const body = await request.json();
+        const { id, _id, ...updateData } = body;
+        const requestId = id || _id || searchParams.get("id");
+
+        if (!requestId) {
+            return NextResponse.json({ success: false, error: "Booking ID is required" }, { status: 400 });
+        }
+
+        const booking = await BirthdayBooking.findByIdAndUpdate(
+            requestId,
+            updateData,
+            { new: true, runValidators: true }
+        );
+
+        if (!booking) {
+            return NextResponse.json(
+                { success: false, error: "Booking not found" },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json({
+            success: true,
+            data: booking,
+            message: "Booking updated successfully",
+        });
+    } catch (error) {
+        console.error("PUT /api/birthday-routes error:", error);
+        return NextResponse.json(
+            {
+                success: false,
+                error: "Failed to update booking",
+                details: error.message,
+            },
+            { status: 500 }
+        );
+    }
+}
+
+// DELETE - Delete booking
+export async function DELETE(request) {
+    try {
+        await connectToDatabase();
+
+        const { searchParams } = new URL(request.url);
+        const id = searchParams.get("id");
+        const adminPassword = searchParams.get("adminPassword");
+        const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "PlanWAB@12345";
+
+        if (adminPassword !== ADMIN_PASSWORD) {
+            return NextResponse.json({ success: false, error: "Unauthorized: Invalid admin password" }, { status: 401 });
+        }
+
+        if (!id) {
+            return NextResponse.json({ success: false, error: "Booking ID is required" }, { status: 400 });
+        }
+
+        const deletedBooking = await BirthdayBooking.findByIdAndDelete(id);
+
+        if (!deletedBooking) {
+            return NextResponse.json(
+                { success: false, error: "Booking not found" },
+                { status: 404 }
+            );
+        }
+
+        return NextResponse.json({
+            success: true,
+            message: "Booking deleted successfully",
+        });
+    } catch (error) {
+        console.error("DELETE /api/birthday-routes error:", error);
+        return NextResponse.json(
+            {
+                success: false,
+                error: "Failed to delete booking",
+                details: error.message,
+            },
+            { status: 500 }
+        );
+    }
+}
+
 export async function GET(request) {
     try {
         await connectToDatabase();
