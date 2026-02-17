@@ -59,6 +59,7 @@ import {
   Zap,
   Award,
   ExternalLink,
+  ChevronUp,
 } from "lucide-react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
@@ -1294,12 +1295,6 @@ const [isNavbarExpanded, setIsNavbarExpanded] = useState(false);
     setShowToggleButton(true);
   } else {
     setShowToggleButton(false);
-    setIsNavbarExpanded(false); // Close navbar when at top
-  }
-  
-  // Hide navbar when scrolling up
-  if (diff < 0 && latest > 200) {
-    setIsNavbarExpanded(false);
   }
   
   lastScrollY.current = latest;
@@ -1427,6 +1422,7 @@ const [isNavbarExpanded, setIsNavbarExpanded] = useState(false);
             haptic("medium");
             setIsNavbarExpanded(true);
           }}
+          onMouseEnter={()=>setIsNavbarExpanded(true)}
           className="fixed right-6 bottom-6 z-[9999] w-14 h-14 pl-2 bg-white/95 backdrop-blur-xl rounded-full shadow-2xl border border-gray-200/50 flex items-center justify-center group hover:px-6 cursor-pointer transition-all duration-300"
         >
           <motion.div
@@ -1635,6 +1631,13 @@ const [isNavbarExpanded, setIsNavbarExpanded] = useState(false);
               </motion.button>
             );
           })}
+              <button
+                  onClick={() => setIsNavbarExpanded(!isNavbarExpanded)}
+                  className="absolute right-[50px] bottom-[-1px] p-2 rounded-full shadow-md bg-white hover:bg-gray-50 transition-colors cursor-pointer" 
+                  aria-label="toggle navbar"
+                >
+                  {isNavbarExpanded ? (<ChevronRight size={20} className="text-gray-700" />) : (<ChevronDown size={20} className="text-gray-700" />)}
+                </button>
         </div>
       </motion.div>
       )}

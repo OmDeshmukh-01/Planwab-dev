@@ -374,7 +374,7 @@ export default function DesktopHomePageWrapper() {
         title={`${activeCategory} Planners`}
         description={`Find the best ${activeCategory.toLowerCase()} planners that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Planners`}
-        buttonLink={`/vendors/marketplace?categories=${activeCategory.toLowerCase()}`}
+        buttonLink={`/vendors/marketplace?categories=planners`}
         imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
       />
 
@@ -390,7 +390,7 @@ export default function DesktopHomePageWrapper() {
         title={`${activeCategory} Photographers`}
         description={`Find the best ${activeCategory.toLowerCase()} photographers that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Photographers`}
-        buttonLink={`/vendors/marketplace?categories=${activeCategory.toLowerCase()}`}
+        buttonLink={`/vendors/marketplace?categories=photographers`}
         imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
         contentSide="right"
       />
@@ -412,7 +412,7 @@ export default function DesktopHomePageWrapper() {
         title={`${activeCategory} Venues`}
         description={`Find the best ${activeCategory.toLowerCase()} venues that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Venues`}
-        buttonLink={`/vendors/marketplace?categories=${activeCategory.toLowerCase()}`}
+        buttonLink={`/vendors/marketplace?categories=venues`}
         imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
         contentSide="left"
       />
@@ -428,7 +428,7 @@ export default function DesktopHomePageWrapper() {
         title={`${activeCategory} Makeup Artists`}
         description={`Find the best ${activeCategory.toLowerCase()} makeup artists that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Makeup Artists`}
-        buttonLink={`/vendors/marketplace?categories=${activeCategory.toLowerCase()}`}
+        buttonLink={`/vendors/marketplace?categories=makeup`}
         imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
         contentSide="right"
       />
@@ -445,7 +445,7 @@ export default function DesktopHomePageWrapper() {
         title={`${activeCategory} Featured Vendors.`}
         description={`Find the best ${activeCategory.toLowerCase()} vendors that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Vendors`}
-        buttonLink={`/vendors/marketplace?categories=${activeCategory.toLowerCase()}`}
+        buttonLink={`/vendors/marketplace?featured=true`}
         imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
         contentSide="left"
       />

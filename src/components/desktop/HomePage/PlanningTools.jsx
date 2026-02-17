@@ -169,7 +169,7 @@ export default function WeddingPlanningTools({ heading, description }) {
       title: "Planning tools",
       description: "Custom planning tools to manage your checklist, budget, guests and vendors.",
       linkText: "Discover our tools",
-      linkHref: "/planning-tools",
+      linkHref: "/events/events/planning-tools",
       icon: "https://cdn1.weddingwire.in/assets/svg/original/illustration/notebook.svg",
       iconAlt: "illustration notebook",
     },
