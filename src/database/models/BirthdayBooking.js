@@ -59,8 +59,8 @@ const BirthdayBookingSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["draft", "details_added", "completed"],
-      default: "draft",
+      enum: ["RECIVED", "PROCESSING", "PENDING", "COMPLETED", "FAILED"],
+      default: "RECIVED",
       required: true,
       index: true,
     },
@@ -75,5 +75,10 @@ const BirthdayBookingSchema = new mongoose.Schema(
 
 BirthdayBookingSchema.index({ sessionId: 1, status: 1 });
 BirthdayBookingSchema.index({ createdAt: -1 });
+
+// Force recompilation in development to pick up schema changes
+if (process.env.NODE_ENV === "development") {
+  delete mongoose.models.BirthdayBooking;
+}
 
 export default mongoose.models.BirthdayBooking || mongoose.model("BirthdayBooking", BirthdayBookingSchema);

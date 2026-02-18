@@ -55,11 +55,11 @@ import { useUser } from "@clerk/clerk-react";
 const REQUESTS_PER_PAGE = 10;
 
 const statusConfig = {
-  pending: { color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300", icon: Clock },
-  approved: { color: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300", icon: CheckCircle },
-  rejected: { color: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300", icon: XCircle },
-  under_review: { color: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300", icon: UserCheck2 },
-  contacted: { color: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300", icon: MessageCircle },
+  RECIVED: { color: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300", icon: Mail },
+  PROCESSING: { color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300", icon: SlidersHorizontal },
+  PENDING: { color: "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300", icon: Clock },
+  COMPLETED: { color: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300", icon: CheckCircle },
+  FAILED: { color: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300", icon: XCircle },
 };
 
 const categoryOptions = [
@@ -77,9 +77,9 @@ const categoryOptions = [
 
 const experienceOptions = ["0-1", "1-3", "3-5", "5-10", "10+"];
 const teamSizeOptions = ["1", "2-5", "6-10", "11-20", "20+"];
-const statusOptions = ["pending", "approved", "rejected", "under_review", "contacted"];
+const statusOptions = ["RECIVED", "PROCESSING", "PENDING", "COMPLETED", "FAILED"];
 
-export default function AllVendorRequests({ requestType = "vendor", onViewRequest, onEditRequest, onDeleteSuccess, refreshTrigger }) {
+export default function AllVendorRequests({ requestType = "vendor", onViewRequest, onEditRequest, onDeleteSuccess, refreshTrigger, onStatsUpdate }) {
   const [requests, setRequests] = useState([]);
   const [allRequestsData, setAllRequestsData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -126,6 +126,8 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
         endpoint = "/api/vendor/requests/detail-booking?all=true";
       } else if (requestType === "leads") {
         endpoint = "/api/leads";
+      } else if (requestType === "planning") {
+        endpoint = user ? `/api/plannedevent?userId=${user.id}&limit=1000` : "";
       }
 
       const response = await fetch(endpoint);
@@ -139,13 +141,14 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
       if (result.success) {
         let requestsArray = [];
 
-        // Handle different data structures based on the API response format
         if (requestType === "birthday") {
           requestsArray = result.data?.bookings || result.data || [];
         } else if (requestType === "booking") {
           requestsArray = result.data || [];
         } else if (requestType === "leads") {
           requestsArray = result.leads || result.data || [];
+        } else if (requestType === "planning") {
+          requestsArray = result.data || [];
         } else {
           requestsArray = result.data?.requests || [];
           setApiStats(result.data?.statusStats);
@@ -199,6 +202,12 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
             request.source?.toLowerCase().includes(query)
           );
         }
+        if (requestType === "planning") {
+          return (
+            request.eventName?.toLowerCase().includes(query) ||
+            request.eventType?.toLowerCase().includes(query)
+          );
+        }
         return (
           request.businessName?.toLowerCase().includes(query) ||
           request.ownerName?.toLowerCase().includes(query) ||
@@ -209,7 +218,6 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
         );
       });
     }
-
     if (statusFilter !== "all") {
       filtered = filtered.filter((request) => request.status === statusFilter);
     }
@@ -253,10 +261,14 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
         const getCategory = (r) => {
           if (requestType === "booking") return r.eventType;
           if (requestType === "leads") return r.source;
+          if (requestType === "planning") return r.category;
           return r.category;
         }
         aVal = getCategory(a) || "";
         bVal = getCategory(b) || "";
+      } else if (requestType === "planning" && sortBy === "eventName") {
+        aVal = a.eventName || "";
+        bVal = b.eventName || "";
       } else {
         aVal = a[sortBy] || "";
         bVal = b[sortBy] || "";
@@ -285,82 +297,21 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
   // Dynamic stats calculation
   const stats = useMemo(() => {
     if (!allRequestsData || allRequestsData.length === 0) {
-      return {
-        total: 0,
-        pending: 0,
-        approved: 0,
-        rejected: 0,
-        under_review: 0,
-        contacted: 0,
-        thisMonth: 0,
-        lastMonth: 0,
-        growthRate: 0,
-        categories: {},
-        topCategory: "N/A",
-        fullRegistrations: 0,
-        quickRegistrations: 0,
-      };
+      return { total: 0 };
     }
 
-    const total = allRequestsData.length;
-    const pending = allRequestsData.filter((r) => r.status === "pending").length;
-    const approved = allRequestsData.filter((r) => r.status === "approved").length;
-    const rejected = allRequestsData.filter((r) => r.status === "rejected").length;
-    const under_review = allRequestsData.filter((r) => r.status === "under_review").length;
-    const contacted = allRequestsData.filter((r) => r.status === "contacted").length;
-
-    const now = new Date();
-    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
-
-    const getDate = (r) => new Date(r.submittedAt || r.createdAt || r.date);
-
-    const thisMonth = allRequestsData.filter((r) => {
-      const requestDate = getDate(r);
-      return requestDate >= thisMonthStart;
-    }).length;
-
-    const lastMonth = allRequestsData.filter((r) => {
-      const requestDate = getDate(r);
-      return requestDate >= lastMonthStart && requestDate <= lastMonthEnd;
-    }).length;
-
-    const growthRate =
-      lastMonth > 0 ? Math.round(((thisMonth - lastMonth) / lastMonth) * 100) : thisMonth > 0 ? 100 : 0;
-
-    const categories = {};
-    allRequestsData.forEach((r) => {
-      let cat = r.category;
-      if (requestType === "booking") cat = r.eventType;
-      if (requestType === "leads") cat = r.source;
-
-      if (cat) {
-        categories[cat] = (categories[cat] || 0) + 1;
-      }
-    });
-
-    const topCategory = Object.entries(categories).sort((a, b) => b[1] - a[1])[0]?.[0] || "N/A";
-
-    const fullRegistrations = allRequestsData.filter((r) => r.registrationType === "full").length;
-    const quickRegistrations = allRequestsData.filter((r) => r.registrationType === "quick").length;
-
     return {
-      total,
-      pending,
-      approved,
-      rejected,
-      under_review,
-      contacted,
-      thisMonth,
-      lastMonth,
-      growthRate,
-      categories,
-      topCategory,
-      fullRegistrations,
-      quickRegistrations,
+      total: allRequestsData.length,
     };
-  }, [allRequestsData, requestType]);
+  }, [allRequestsData]);
+
+
+  // Report stats to parent when they change
+  useEffect(() => {
+    if (onStatsUpdate) {
+      onStatsUpdate(stats);
+    }
+  }, [stats, onStatsUpdate]);
 
   const paginatedRequests = useMemo(() => {
     const startIndex = (currentPage - 1) * REQUESTS_PER_PAGE;
@@ -414,6 +365,8 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
         endpoint = `/api/vendor/requests/detail-booking?id=${selectedRequest._id}&adminPassword=${encodeURIComponent(adminPassword)}`;
       } else if (requestType === "leads") {
         endpoint = `/api/leads?id=${selectedRequest._id}&adminPassword=${encodeURIComponent(adminPassword)}`;
+      } else if (requestType === "planning") {
+        endpoint = `/api/plannedevent?id=${selectedRequest._id}&adminPassword=${encodeURIComponent(adminPassword)}`;
       }
 
       if (action === "delete") {
@@ -433,41 +386,39 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
         toast.success("Request deleted successfully");
         await fetchRequests();
         onDeleteSuccess?.();
+
+      } else if (action === "edit") {
+        setEditLoading(true);
+
+        let body = {};
+
+        if (requestType === "vendor") {
+          // For vendor, send everything + reviewedBy
+          body = { ...editFormData, reviewedBy: "Admin" };
+        } else {
+          // For Birthday, Booking, Leads - Update only status to prevent data overwrite
+          body = { status: editFormData.status };
+        }
+
+        const response = await fetch(endpoint, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to update request");
+        }
+
+        // Success
+        closeAllModals();
+        toast.success("Request updated successfully");
+        await fetchRequests();
       }
-
-      // } else if (action === "edit") {
-      //   setEditLoading(true);
-
-      //   // Prepare body based on request type
-      //   let body = {};
-
-      //   if (requestType === "vendor") {
-      //     // For vendor, send everything + reviewedBy
-      //     body = { ...editFormData, reviewedBy: "Admin" };
-      //   } else {
-      //     // For Birthday, Booking, Leads - Update only status to prevent data overwrite
-      //     body = { status: editFormData.status };
-      //   }
-
-      //   const response = await fetch(endpoint, {
-      //     method: "PUT",
-      //     headers: {
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify(body),
-      //   });
-
-      //   const result = await response.json();
-
-      //   if (!response.ok) {
-      //     throw new Error(result.error || "Failed to update request");
-      //   }
-
-      //   // Success
-      //   closeAllModals();
-      //   toast.success("Request updated successfully");
-      //   await fetchRequests();
-      // }
 
     } catch (err) {
       setPasswordError(err.message);
@@ -598,14 +549,7 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
     cityFilter !== "all" ||
     registrationTypeFilter !== "all";
 
-  const statusFilterOptions = [
-    { value: "all", label: "All Status" },
-    { value: "pending", label: "Pending" },
-    { value: "approved", label: "Approved" },
-    { value: "rejected", label: "Rejected" },
-    { value: "under_review", label: "Under Review" },
-    { value: "contacted", label: "Contacted" },
-  ];
+
 
   const categoryFilterOptions = useMemo(() => {
     const uniqueCategories = new Set(allRequestsData.map((r) => r.category).filter(Boolean));
@@ -618,16 +562,15 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
     ];
   }, [allRequestsData]);
 
-  const cityOptions = useMemo(() => {
-    const uniqueCities = new Set(allRequestsData.map((r) => r.city).filter(Boolean));
+  const statusFilterOptions = useMemo(() => {
     return [
-      { value: "all", label: "All Cities" },
-      ...Array.from(uniqueCities).map((city) => ({
-        value: city,
-        label: city,
+      { value: "all", label: "All Status" },
+      ...statusOptions.map((status) => ({
+        value: status,
+        label: status.charAt(0).toUpperCase() + status.slice(1).toLowerCase().replace(/_/g, " "),
       })),
     ];
-  }, [allRequestsData]);
+  }, []);
 
   const registrationTypeOptions = [
     { value: "all", label: "All Types" },
@@ -645,7 +588,6 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
 
   return (
     <div className="space-y-4 md:space-y-6">
-
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col sm:flex-row gap-3">
@@ -860,6 +802,14 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Phone</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Source</th>
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">Date</th>
+                    </>
+                  )}
+                  {requestType === "planning" && (
+                    <>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Event / Type</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">Progress</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">Budget / Guests</th>
                     </>
                   )}
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -1221,7 +1171,7 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
                     >
                       {statusOptions.map((status) => (
                         <option key={status} value={status}>
-                          {status.charAt(0).toUpperCase() + status.slice(1).replace("_", " ")}
+                          {status.charAt(0).toUpperCase() + status.slice(1).toLowerCase().replace(/_/g, " ")}
                         </option>
                       ))}
                     </select>
@@ -1548,7 +1498,7 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </div >
   );
 }
 
@@ -1624,7 +1574,7 @@ const FilterDropdown = ({ label, options, value, onChange, icon: Icon }) => {
 };
 
 const RequestTableRow = ({ request, requestType, onAction }) => {
-  const status = statusConfig[request.status] || statusConfig.pending;
+  const status = statusConfig[request.status] || statusConfig.PENDING;
   const StatusIcon = status.icon;
 
   if (requestType === "birthday") {
@@ -1839,6 +1789,70 @@ const RequestTableRow = ({ request, requestType, onAction }) => {
     )
   }
 
+  if (requestType === "planning") {
+    return (
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+              {request.eventName?.charAt(0).toUpperCase() || "?"}
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                {request.eventName || "Untitled Event"}
+              </h3>
+              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
+                <Sparkles size={12} />
+                {request.eventType || "N/A"}
+              </div>
+            </div>
+          </div>
+        </td>
+        <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+          <div className="flex items-center gap-2">
+            <Calendar size={14} className="text-gray-400" />
+            {request.eventDate ? new Date(request.eventDate).toLocaleDateString() : "N/A"}
+          </div>
+        </td>
+        <td className="px-4 py-3 hidden md:table-cell">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
+              <span>Progress</span>
+              <span>{Math.round((request.tasksCompleted / (request.totalTasks || 1)) * 100)}%</span>
+            </div>
+            <div className="w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-indigo-500 rounded-full"
+                style={{ width: `${Math.round((request.tasksCompleted / (request.totalTasks || 1)) * 100)}%` }}
+              />
+            </div>
+          </div>
+        </td>
+        <td className="px-4 py-3 hidden lg:table-cell">
+          <div className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-300">
+            <div className="flex items-center gap-1">
+              <DollarSign size={12} className="text-gray-400" />
+              <span>{request.totalBudgetSpent} / {request.totalBudgetAllocated}</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Users size={12} className="text-gray-400" />
+              <span>{request.confirmedGuests} confirmed</span>
+            </div>
+          </div>
+        </td>
+        <td className="px-4 py-3">
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${request.status === "completed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
+            }`}>
+            <span className="capitalize">{request.status || "ongoing"}</span>
+          </span>
+        </td>
+        <td className="px-4 py-3 text-right">
+          {/* Actions for planning could be added here if needed */}
+        </td>
+      </tr>
+    )
+  }
+
   // Default: Vendor
   return (
     <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
@@ -1959,7 +1973,7 @@ const RequestRowSkeleton = () => (
 );
 
 const RequestCard = ({ request, type, onView, onEdit, onDelete }) => {
-  const statusInfo = statusConfig[request.status] || statusConfig.pending;
+  const statusInfo = statusConfig[request.status] || statusConfig.PENDING;
   const StatusIcon = statusInfo?.icon || Clock;
 
   // Helper to get display data based on type
@@ -1985,6 +1999,17 @@ const RequestCard = ({ request, type, onView, onEdit, onDelete }) => {
             { icon: Calendar, text: request.date ? new Date(request.date).toLocaleDateString() : "N/A" },
             { icon: Phone, text: request.phone || "N/A" },
             { icon: Mail, text: request.email || "N/A" },
+          ]
+        };
+      case "planning":
+        return {
+          title: request.eventName || "Untitled Event",
+          subtitle: request.eventType || "Event",
+          badge: `${Math.round((request.tasksCompleted / (request.totalTasks || 1)) * 100)}% Done`,
+          details: [
+            { icon: Calendar, text: request.eventDate ? new Date(request.eventDate).toLocaleDateString() : "N/A" },
+            { icon: Users, text: `${request.confirmedGuests || 0} Guests` },
+            { icon: DollarSign, text: `₹${request.totalBudgetSpent || 0} / ₹${request.totalBudgetAllocated || 0}` }
           ]
         };
       case "leads":

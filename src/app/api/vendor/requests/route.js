@@ -20,7 +20,6 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
 
-    // Handle single request fetching by ID
     const requestId = searchParams.get("id");
     if (requestId) {
       try {
@@ -58,7 +57,6 @@ export async function GET(request) {
     }
 
 
-    // Query parameters for listing
     const page = parseInt(searchParams.get("page")) || 1;
     const limit = parseInt(searchParams.get("limit")) || 10;
     const status = searchParams.get("status");
@@ -68,7 +66,6 @@ export async function GET(request) {
     const sortBy = searchParams.get("sortBy") || "submittedAt";
     const sortOrder = searchParams.get("sortOrder") || "desc";
 
-    // Build filter object
     const filter = {};
 
     if (status && status !== "all") {
@@ -94,7 +91,6 @@ export async function GET(request) {
     const sort = {};
     sort[sortBy] = sortOrder === "asc" ? 1 : -1;
 
-    // Execute queries
     const [requests, totalCount] = await Promise.all([
       VendorRequest.find(filter)
         .sort(sort)
@@ -110,7 +106,6 @@ export async function GET(request) {
     const hasNextPage = page < totalPages;
     const hasPrevPage = page > 1;
 
-    // Get status counts for dashboard
     const statusCounts = await VendorRequest.aggregate([
       {
         $group: {
@@ -159,14 +154,12 @@ export async function GET(request) {
   }
 }
 
-// POST - Create new vendor request (from both forms)
 export async function POST(request) {
   try {
     await connectToDatabase();
 
     const body = await request.json();
 
-    // Check if email already exists
     const existingRequest = await VendorRequest.findOne({
       email: body.email,
     });
@@ -182,7 +175,6 @@ export async function POST(request) {
       );
     }
 
-    // Create new vendor request
     const vendorRequest = new VendorRequest({
       ...body,
       submittedAt: new Date(),
@@ -190,7 +182,6 @@ export async function POST(request) {
 
     await vendorRequest.save();
 
-    // Remove password from response
     const responseData = vendorRequest.toObject();
     delete responseData.password;
 
@@ -229,7 +220,6 @@ export async function POST(request) {
   }
 }
 
-// PUT - Update vendor request (for admin panel)
 export async function PUT(request) {
   try {
     await connectToDatabase();
@@ -249,13 +239,11 @@ export async function PUT(request) {
 
     const body = await request.json();
 
-    // Remove fields that shouldn't be updated via this endpoint
     const updateData = { ...body };
     delete updateData._id;
     delete updateData.createdAt;
     delete updateData.submittedAt;
 
-    // If status is being updated, set reviewedAt
     if (updateData.status) {
       updateData.reviewedAt = new Date();
     }
@@ -276,7 +264,6 @@ export async function PUT(request) {
       message: "Vendor request updated successfully",
     });
   } catch (error) {
-    console.error("PUT /api/vendor-requests error:", error);
 
     // Handle validation errors
     if (error.name === "ValidationError") {
@@ -306,7 +293,6 @@ export async function PUT(request) {
   }
 }
 
-// DELETE - Delete vendor request
 export async function DELETE(request) {
   try {
     await connectToDatabase();
@@ -335,7 +321,6 @@ export async function DELETE(request) {
       message: "Vendor request deleted successfully",
     });
   } catch (error) {
-    console.error("DELETE /api/vendor-requests error:", error);
 
     if (error.name === "CastError") {
       return NextResponse.json({ success: false, error: "Invalid request ID format" }, { status: 400 });

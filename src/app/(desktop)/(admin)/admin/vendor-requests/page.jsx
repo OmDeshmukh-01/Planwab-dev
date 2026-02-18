@@ -20,6 +20,7 @@ export default function RequestsPage() {
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [mounted, setMounted] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
+  const [stats, setStats] = useState(null); // Add state for stats
 
   useEffect(() => {
     setMounted(true);
@@ -225,13 +226,25 @@ export default function RequestsPage() {
         return { label: "Booking Requests", icon: CalendarDays, description: "Manage detailed booking requests" };
       case "leads":
         return { label: "Leads Requests", icon: Rocket, description: "Manage lead generation requests" };
+      case "planning":
+        return { label: "Planning Tools", icon: CalendarDays, description: "Manage planned events and tools" };
       default:
         return { label: "Vendor Requests", icon: UserCheck, description: "Manage vendor registration requests" };
     }
   };
 
+  const handleStatsUpdate = useCallback((newStats) => {
+    setStats(newStats);
+  }, []);
+
   const typeConfig = getTypeConfig();
-  const tabs = [{ id: "all", label: `All ${typeConfig.label}`, icon: List, description: typeConfig.description }];
+  const tabs = [{
+    id: "all",
+    label: `All ${typeConfig.label}`,
+    icon: List,
+    description: typeConfig.description,
+    badge: stats?.total,
+  }];
 
   const getBreadcrumbs = () => {
     const crumbs = [{ label: "Dashboard", href: "/admin" }, { label: "Requests", href: "/admin/requests" }, { label: typeConfig.label }];
@@ -424,6 +437,7 @@ export default function RequestsPage() {
                   onEditRequest={handleEditRequest}
                   refreshTrigger={refreshTrigger}
                   onDeleteSuccess={handleDeleteSuccess}
+                  onStatsUpdate={handleStatsUpdate} // Pass callback
                 />
               )}
 
@@ -478,6 +492,14 @@ const TabButton = ({ tab, isActive, onClick }) => (
         {tab.description}
       </span>
     </div>
+    {tab.badge !== undefined && (
+      <span className={`ml-2 px-2.5 py-0.5 rounded-full text-xs font-semibold ${isActive
+        ? "bg-indigo-600 text-white"
+        : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 group-hover:bg-gray-300 dark:group-hover:bg-gray-600"
+        }`}>
+        {tab.badge}
+      </span>
+    )}
     {isActive && (
       <motion.div
         layoutId="activeTabIndicator"

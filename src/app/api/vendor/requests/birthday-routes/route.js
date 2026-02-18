@@ -20,7 +20,6 @@ export async function POST(request) {
         });
 
         if (existingBooking) {
-            // If booking exists, update the user details instead of erroring
             if (body.userDetails) {
                 existingBooking.userDetails = {
                     ...existingBooking.userDetails,
@@ -39,7 +38,6 @@ export async function POST(request) {
             );
         }
 
-        // Generate a readable Booking ID (e.g., BDAY-123456)
         const generateBookingId = () => {
             const timestamp = Date.now().toString().slice(-4);
             const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
@@ -50,7 +48,7 @@ export async function POST(request) {
             sessionId: body.sessionId,
             bookingId: generateBookingId(),
             userDetails: body.userDetails || {},
-            status: "draft",
+            status: "RECIVED",
         });
 
         await booking.save();
@@ -111,12 +109,12 @@ export async function PATCH(request) {
             updateData.venueName = body.venueName;
             updateData.venueLocation = body.venueLocation;
             updateData.venuePrice = body.venuePrice;
-            updateData.status = "details_added";
+            updateData.status = "PROCESSING";
         }
 
         if (body.bookingDetails) {
             updateData.bookingDetails = body.bookingDetails;
-            updateData.status = "completed";
+            updateData.status = "COMPLETED";
             updateData.submittedAt = new Date();
         }
 
