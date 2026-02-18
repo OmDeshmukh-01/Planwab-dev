@@ -168,8 +168,6 @@ export default function Sidebar({ isOpen }) {
               <div
                 key={item.name}
                 className="space-y-1"
-                onMouseEnter={() => !isExpanded && setExpandedItems(prev => ({ ...prev, [item.name]: true }))}
-                onMouseLeave={() => isExpanded && !isActive && setExpandedItems(prev => ({ ...prev, [item.name]: false }))}
               >
                 <button
                   onClick={() => toggleExpand(item.name)}

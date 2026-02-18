@@ -55,7 +55,7 @@ import { useUser } from "@clerk/clerk-react";
 const REQUESTS_PER_PAGE = 10;
 
 const statusConfig = {
-  RECIVED: { color: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300", icon: Mail },
+  RECEIVED: { color: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300", icon: Mail },
   PROCESSING: { color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300", icon: SlidersHorizontal },
   PENDING: { color: "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300", icon: Clock },
   COMPLETED: { color: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300", icon: CheckCircle },
@@ -77,7 +77,7 @@ const categoryOptions = [
 
 const experienceOptions = ["0-1", "1-3", "3-5", "5-10", "10+"];
 const teamSizeOptions = ["1", "2-5", "6-10", "11-20", "20+"];
-const statusOptions = ["RECIVED", "PROCESSING", "PENDING", "COMPLETED", "FAILED"];
+const statusOptions = ["RECEIVED", "PROCESSING", "PENDING", "COMPLETED", "FAILED"];
 
 export default function AllVendorRequests({ requestType = "vendor", onViewRequest, onEditRequest, onDeleteSuccess, refreshTrigger, onStatsUpdate }) {
   const [requests, setRequests] = useState([]);

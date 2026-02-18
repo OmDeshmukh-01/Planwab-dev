@@ -60,7 +60,7 @@ const DetailsBookingRequestSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["RECIVED", "PROCESSING", "PENDING", "COMPLETED", "FAILED"],
+      enum: ["RECEIVED", "PROCESSING", "PENDING", "COMPLETED", "FAILED"],
       default: "PENDING",
     },
     vendorResponse: {

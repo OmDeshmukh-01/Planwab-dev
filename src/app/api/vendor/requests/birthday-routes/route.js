@@ -48,7 +48,7 @@ export async function POST(request) {
             sessionId: body.sessionId,
             bookingId: generateBookingId(),
             userDetails: body.userDetails || {},
-            status: "RECIVED",
+            status: "RECEIVED",
         });
 
         await booking.save();

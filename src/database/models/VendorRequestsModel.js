@@ -181,8 +181,8 @@ const VendorRequestSchema = new mongoose.Schema(
     // Status Management
     status: {
       type: String,
-      enum: ["RECIVED", "PROCESSING", "PENDING", "COMPLETED", "FAILED"],
-      default: "RECIVED",
+      enum: ["RECEIVED", "PROCESSING", "PENDING", "COMPLETED", "FAILED"],
+      default: "RECEIVED",
       required: true,
     },
 
@@ -227,7 +227,7 @@ VendorRequestSchema.virtual("fullContactInfo").get(function () {
 
 // Pre-save middleware to set reviewedAt when status changes
 VendorRequestSchema.pre("save", function (next) {
-  if (this.isModified("status") && this.status !== "RECIVED") {
+  if (this.isModified("status") && this.status !== "RECEIVED") {
     this.reviewedAt = new Date();
   }
   next();
