@@ -44,6 +44,8 @@ import {
   Instagram,
   Linkedin,
   UserCheck2,
+  List as ListIcon,
+  SlidersHorizontal,
 } from "lucide-react";
 
 // ============================================================================
@@ -157,11 +159,11 @@ const categoryColors = {
 };
 
 const statusConfig = {
-  pending: { color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300", icon: Clock },
-  approved: { color: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300", icon: CheckCircle },
-  rejected: { color: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300", icon: XCircle },
-  under_review: { color: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300", icon: UserCheck2 },
-  contacted: { color: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300", icon: MessageCircle },
+  RECEIVED: { color: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300", icon: Mail },
+  PROCESSING: { color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300", icon: SlidersHorizontal },
+  PENDING: { color: "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300", icon: Clock },
+  COMPLETED: { color: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300", icon: CheckCircle },
+  FAILED: { color: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300", icon: XCircle },
 };
 
 // ============================================================================
@@ -423,11 +425,10 @@ function ViewVendorRequestContent({
   }
 
   const CategoryIcon = categoryIcons[request.category] || Briefcase;
-  const statusInfo = statusConfig[request.status] || statusConfig.pending;
-  const StatusIcon = statusInfo.icon;
+  const statusInfo = statusConfig[request.status] || statusConfig.PENDING;
+  const StatusIcon = statusInfo?.icon || Clock;
   const gradientColor = categoryColors[request.category] || "from-indigo-500 to-purple-500";
 
-  // Helper to get display values based on request type
   const getDisplayValues = () => {
     if (requestType === "birthday") {
       return {

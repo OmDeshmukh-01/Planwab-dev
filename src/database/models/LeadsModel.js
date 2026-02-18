@@ -63,8 +63,8 @@ const LeadSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["new", "contacted", "qualified", "converted", "lost"],
-      default: "new",
+      enum: ["RECEIVED", "PROCESSING", "PENDING", "COMPLETED", "FAILED"],
+      default: "RECEIVED",
       index: true, // ✅ NEW: Added index
     },
     ipAddress: {
