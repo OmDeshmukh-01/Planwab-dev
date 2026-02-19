@@ -5,11 +5,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Calendar, Search, Star, Shield, Zap } from 'lucide-react';
 
 const promoImages = [
-    '/auth1.jpeg',
-    '/auth2.jpeg',
-    '/auth3.jpeg',
-    '/auth4.jpeg',
-    '/auth5.jpeg'
+    'https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430055/auth1_loj2l4.jpg',
+    'https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430059/auth2_xr22rz.jpg',
+    'https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430063/auth3_lo2rf4.jpg',
+    'https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430067/auth4_q0zyxj.jpg',
+    'https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430071/auth5_dpjpap.jpg'
 ];
 
 const features = [

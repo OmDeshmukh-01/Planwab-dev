@@ -112,22 +112,22 @@ export const categoryCards = [
 // ── Carousel Images per Category ──
 export const carouselImages = {
   Events: [
-    "/posters/deskHeroCarousel/events.png",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429490/events_osoyqb.png",
     "https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=900&q=80",
     "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=900&q=80",
   ],
   Wedding: [
-    "/posters/deskHeroCarousel/wedding.png",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429494/wedding_fplcb3.png",
     "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=900&q=80",
     "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=900&q=80",
   ],
   Anniversary: [
-    "/posters/deskHeroCarousel/anniversary.png",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429483/anniversary_eqkzag.png",
     "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=900&q=80",
     "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=900&q=80",
   ],
   Birthday: [
-    "/posters/deskHeroCarousel/birthday.png",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429487/birthday_e4yhtd.png",
     "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=900&q=80",
     "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=900&q=80",
   ],
@@ -135,18 +135,18 @@ export const carouselImages = {
 
 // ── Right-side Hero Images ──
 export const heroSideImages = {
-  Events: "/posters/deskHeroCarousel/eventsRight.png",
-  Wedding: "/posters/deskHeroCarousel/weddingRight.png",
-  Anniversary: "/posters/deskHeroCarousel/anniversaryRight.png",
-  Birthday: "/posters/deskHeroCarousel/birthdayRight.png",
+  Events: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429708/eventsRight_y1ay0u.jpg",
+  Wedding: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429711/weddingRight_e2atzb.jpg",
+  Anniversary: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429705/anniversaryRight_oxguwo.jpg",
+  Birthday: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429701/birthdayRight_tox6wr.jpg",
 };
 
 const CategoryButton = ({ category, imageSrc, active }) => {
   const inactiveImages = {
-    Wedding: "/WeddingHeaderCard.png",
-    Anniversary: "/AnniversaryHeaderCard.png",
-    Birthday: "/BirthdayHeaderCard.png",
-    Events: "/EventsHeaderCard.png",
+    Wedding: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429996/WeddingHeaderCard_vslgmt.png",
+    Anniversary: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429999/AnniversaryHeaderCard_garm4n.png",
+    Birthday: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429994/BirthdayHeaderCard_nat4mj.png",
+    Events: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429994/EventsHeaderCard_ppcemp.png",
   };
 
   const backgroundImage = active ? imageSrc : inactiveImages[category] || "/sample-image.png";
@@ -194,10 +194,10 @@ const CategoryButton = ({ category, imageSrc, active }) => {
 };
 
 const categoryGradients = {
-  Events: ["#2F4BA2", "#F59E0B"], // Blue & Yellow
-  Wedding: ["#2F4BA2", "#F59E0B"], // Same as Events
-  Anniversary: ["#EF4444", "#F97316"], // Red & Orange
-  Birthday: ["#FCD34D", "#D97706"], // Yellow & Golden
+  Events: ["#2F4BA2", "#F59E0B"],
+  Wedding: ["#2F4BA2", "#F59E0B"],
+  Anniversary: ["#EF4444", "#F97316"],
+  Birthday: ["#FCD34D", "#D97706"],
 };
 
 export default function DesktopHomePageWrapper() {
@@ -262,42 +262,42 @@ export default function DesktopHomePageWrapper() {
   const cardsData1 = [
     {
       title: `${activeCategory === "Default" ? "Event" : activeCategory} Planner`,
-      image: "/CardsCatPhotos/PlannerCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428626/PlannerCat_p16v2m.png",
       link: "/vendors/marketplace/planners",
     },
     {
       title: "Photographer",
-      image: "/CardsCatPhotos/PhotographerCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428623/PhotographerCat_ymq0vh.png",
       link: "/vendors/marketplace/photographers",
     },
     {
       title: "mehendi",
-      image: "/CardsCatPhotos/MehndiCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428620/MehndiCat_hdsxxo.png",
       link: "/vendors/marketplace/mehendi",
     },
     {
       title: "MakeUp",
-      image: "/CardsCatPhotos/MakeUpCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428617/MakeUpCat_lcp68d.png",
       link: "/vendors/marketplace/makeup",
     },
     {
       title: `${activeCategory} Venues`,
-      image: "https://cdn.yesmadam.com/images/live/category/Hydra%20Category_Wedding%20Season-18-11-25.gif",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771518098/Hydra_Category_Wedding_Season-18-11-25_yrbjzq.webp",
       link: "/vendors/marketplace/venues",
     },
     {
       title: "DJs & Sound",
-      image: "/CardsCatPhotos/DJCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428615/DJCat_hay9fu.png",
       link: "/vendors/marketplace/djs",
     },
     {
       title: "Dhol",
-      image: "/CardsCatPhotos/DholCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428613/DholCat_swqr0p.png",
       link: "/vendors/marketplace/dhol",
     },
     {
       title: "Caterers",
-      image: "/CardsCatPhotos/CaterorsCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428610/CaterorsCat_pch4d5.png",
       link: "/vendors/marketplace/catering",
     },
   ];
@@ -375,7 +375,7 @@ export default function DesktopHomePageWrapper() {
         description={`Find the best ${activeCategory.toLowerCase()} planners that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Planners`}
         buttonLink={`/vendors/marketplace?categories=planners`}
-        imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
+        imageSrc="https://res.cloudinary.com/dhkkvo36x/image/upload/v1771517863/plannerWeddingDesktopCarHeaderCard_p38nbw.png"
       />
 
       <LandingCarousel
@@ -391,7 +391,7 @@ export default function DesktopHomePageWrapper() {
         description={`Find the best ${activeCategory.toLowerCase()} photographers that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Photographers`}
         buttonLink={`/vendors/marketplace?categories=photographers`}
-        imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
+        imageSrc="https://res.cloudinary.com/dhkkvo36x/image/upload/v1771517679/8_ylmdua.avif"
         contentSide="right"
       />
       <LandingCarousel
@@ -405,7 +405,7 @@ export default function DesktopHomePageWrapper() {
       <CardsWithBanner
         heading="Top Categories For You ..."
         contentSide="right"
-        backgroundImage="https://images.jdmagicbox.com/standard/shopfront/8fcf090e6e47722f436205eb7d8eee92.jpg"
+        backgroundImage="https://res.cloudinary.com/dhkkvo36x/image/upload/v1771517964/8fcf090e6e47722f436205eb7d8eee92_sglrnq.webp"
         cards={cardsData1}
       />
       <CarouselHeader
@@ -413,7 +413,7 @@ export default function DesktopHomePageWrapper() {
         description={`Find the best ${activeCategory.toLowerCase()} venues that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Venues`}
         buttonLink={`/vendors/marketplace?categories=venues`}
-        imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
+        imageSrc="https://res.cloudinary.com/dhkkvo36x/image/upload/v1771517677/28_o9dlsz.webp"
         contentSide="left"
       />
       <LandingCarousel
@@ -429,7 +429,7 @@ export default function DesktopHomePageWrapper() {
         description={`Find the best ${activeCategory.toLowerCase()} makeup artists that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Makeup Artists`}
         buttonLink={`/vendors/marketplace?categories=makeup`}
-        imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
+        imageSrc="https://res.cloudinary.com/dhkkvo36x/image/upload/v1771517676/1001_trswp3.avif"
         contentSide="right"
       />
       <LandingCarousel
@@ -446,7 +446,7 @@ export default function DesktopHomePageWrapper() {
         description={`Find the best ${activeCategory.toLowerCase()} vendors that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Vendors`}
         buttonLink={`/vendors/marketplace?featured=true`}
-        imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
+        imageSrc="https://res.cloudinary.com/dhkkvo36x/image/upload/v1771517675/45_yzkzvh.avif"
         contentSide="left"
       />
       <LandingCarousel

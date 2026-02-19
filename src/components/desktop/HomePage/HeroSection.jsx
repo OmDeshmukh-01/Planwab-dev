@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import SearchSection from "./SearchSection";
 import { carouselImages, heroSideImages } from "../PagesWrapper/HomePageWrapper";
@@ -106,7 +106,20 @@ export default function HeroSection({ activeCategory, theme, categoryData }) {
     }),
   };
 
-  const sectionBottomImage =`${activeCategory.toLowerCase()}SectionBottom.png`;
+  const sectionBottomImage = useMemo(() => {
+    switch (activeCategory.toLowerCase()) {
+      case "events":
+        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430385/eventsSectionBottom_wluswz.png";
+      case "wedding":
+        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430390/weddingSectionBottom_ljso1g.png";
+      case "anniversary":
+        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430373/anniversarySectionBottom_vsstyv.png";
+      case "birthday":
+        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430377/birthdaySectionBottom_qaegfj.png";
+      default:
+        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430382/DholSectionBottom_zqsab2.png";
+    }
+  }, [activeCategory]);
 
   return (
     <section className="relative max-w-6xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg rounded-4xl shadow-2xl border border-white/40 dark:border-gray-700/50 mb-6">

@@ -147,7 +147,7 @@ const LeadCaptureModalMobile = ({ isOpen, onClose, actionType, title, subtitle }
             exit={{ opacity: 0 }}
             transition={OVERLAY_SPRING}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/60 backdrop-blur-md z-[100] flex items-center justify-center p-4 pointer-events-auto"
           >
             <motion.div
               initial={{ scale: 0.8, opacity: 0, y: 50, rotateX: -15 }}
@@ -155,18 +155,14 @@ const LeadCaptureModalMobile = ({ isOpen, onClose, actionType, title, subtitle }
               exit={{ scale: 0.8, opacity: 0, y: 50, rotateX: 15 }}
               transition={SPRING_CONFIG}
               onClick={(e) => e.stopPropagation()}
-              className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
-              style={{
-                transformStyle: "preserve-3d",
-                perspective: "1000px",
-              }}
+              className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden pointer-events-auto"
             >
               <button
-                onClick={onClose}
-                className="absolute top-4 right-4 p-2 rounded-full text-gray-500 hover:text-gray-700 transition-colors" 
-                aria-label="Close modal"
+                type="button"
+  onClick={onClose}
+                className="absolute top-4 right-4 p-2 rounded-full text-gray-500 hover:text-gray-700 transition-colors z-50" 
               >
-                <X size={20} />
+                <X size={24} />
               </button>
               <motion.div
                 initial={{ scaleX: 0 }}
