@@ -13,7 +13,6 @@ export async function POST(request) {
 
     const body = await request.json();
 
-    // Create new booking request with Clerk userId
     const newBookingRequest = await DetailsBookingRequest.create({
       ...body,
       userId, // Clerk user ID
@@ -50,7 +49,6 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const fetchAll = searchParams.get("all") === "true";
 
-    // Fetch all requests or only user's requests
     const query = fetchAll ? {} : { userId };
     const bookingRequests = await DetailsBookingRequest.find(query).sort({
       createdAt: -1,

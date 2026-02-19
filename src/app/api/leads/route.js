@@ -82,7 +82,6 @@ export async function POST(request) {
   const startTime = Date.now();
 
   try {
-    // Parallel operations for maximum speed
     const [_, body, headersList] = await Promise.all([
       connectToDatabase(),
       request.json(),
@@ -116,7 +115,6 @@ export async function POST(request) {
 
     const userAgent = headersList.get("user-agent") || "unknown";
 
-    // Check for duplicate within 24 hours
     const twentyFourHoursAgo = new Date(Date.now() - 86400000); // 24 hours ago
 
     const existingLead = await LeadsModel.findOne({
@@ -221,7 +219,6 @@ export async function POST(request) {
       );
     }
 
-    // Handle database connection errors
     if (error.name === "MongoNetworkError" || error.name === "MongoTimeoutError") {
       return NextResponse.json(
         { error: "Database connection issue. Please try again." },
@@ -270,7 +267,6 @@ export async function GET(request) {
 
     const skip = (page - 1) * limit;
 
-    // Parallel queries with lean() for performance
     const [leads, total] = await Promise.all([
       LeadsModel.find(query)
         .sort({ createdAt: -1 })
@@ -282,8 +278,7 @@ export async function GET(request) {
       LeadsModel.countDocuments(query),
     ]);
 
-    const executionTime = Date.now() - startTime;
-    console.log(`✅ Fetched ${leads.length} leads in ${executionTime}ms`);
+
 
     return NextResponse.json(
       {
@@ -352,7 +347,6 @@ export async function PUT(request) {
       message: "Lead updated successfully",
     });
   } catch (error) {
-    console.error("PUT /api/leads error:", error);
     return NextResponse.json(
       {
         success: false,
@@ -393,7 +387,6 @@ export async function DELETE(request) {
       message: "Lead deleted successfully",
     });
   } catch (error) {
-    console.error("DELETE /api/leads error:", error);
     return NextResponse.json(
       {
         success: false,

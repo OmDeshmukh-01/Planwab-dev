@@ -137,8 +137,8 @@ export async function GET(request) {
       lastMonthCount > 0
         ? Math.round(((thisMonthCount - lastMonthCount) / lastMonthCount) * 100)
         : thisMonthCount > 0
-        ? 100
-        : 0;
+          ? 100
+          : 0;
 
     return NextResponse.json(
       {
@@ -202,9 +202,9 @@ export async function PUT(request) {
     await connectToDatabase();
 
     const body = await request.json();
-    const { eventId, password, ...updateData } = body;
+    const { eventId, password: adminPassword, ...updateData } = body;
 
-    if (!verifyEventEditPassword(password)) {
+    if (!verifyEventEditPassword(adminPassword) && !verifyAdminPassword(adminPassword)) {
       return NextResponse.json({ success: false, message: "Invalid admin password" }, { status: 401 });
     }
 
@@ -218,7 +218,6 @@ export async function PUT(request) {
       );
     }
 
-    // Remove password from updateData before updating the event
     const { password: _, ...cleanUpdateData } = updateData;
 
     if (cleanUpdateData.eventDate) {
@@ -270,7 +269,6 @@ export async function DELETE(request) {
     const eventId = searchParams.get("id"); // Changed from "eventId" to "id"
     const password = searchParams.get("password"); // Add password extraction
 
-    // Verify admin password
     if (!verifyAdminPassword(password)) {
       return NextResponse.json({ success: false, message: "Invalid admin password" }, { status: 401 });
     }
