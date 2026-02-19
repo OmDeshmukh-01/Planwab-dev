@@ -410,7 +410,7 @@ export default function BirthdayPlannerWrapper() {
                     playsInline
                     className="w-full h-full object-cover opacity-30"
                 >
-                    <source src="/CatVideos/birthday-hero.mp4" type="video/mp4" />
+                    <source src="https://res.cloudinary.com/dhkkvo36x/video/upload/v1771429190/birthday-hero_khx3dv.mp4" type="video/mp4" />
                 </video>
                 <div className="absolute inset-0 bg-gradient-to-t from-[#0F0F1A] via-[#0F0F1A]/80 to-transparent"></div>
             </div>

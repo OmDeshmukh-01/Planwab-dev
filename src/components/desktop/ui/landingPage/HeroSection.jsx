@@ -56,18 +56,18 @@ const eventTypeSuggestions = [
   },
 ];
 const vendorCategories = [
-  { name: "Venues", icon: <Building2 size={20} />, src: "/Cat1.png" },
-  { name: "Photographers", icon: <Camera size={20} />, src: "/Cat2.png" },
-  { name: "Makeup", icon: <Paintbrush2 size={20} />, src: "/Cat3.png" },
-  { name: "Planners", icon: <UserCheck size={20} />, src: "/Cat4.png" },
-  { name: "Catering", icon: <UtensilsCrossed size={20} />, src: "/Cat5.png" },
-  { name: "Clothes Wear", icon: <Shirt size={20} />, src: "/Cat6.png" },
-  { name: "Mehendi", icon: <Hand size={20} />, src: "/Cat7.png" },
-  { name: "Cakes", icon: <CakeSlice size={20} />, src: "/Cat8.png" },
-  { name: "Jewellery", icon: <Gem size={20} />, src: "/Cat9.png" },
-  { name: "Invitations", icon: <Mail size={20} />, src: "/Cat10.png" },
-  { name: "DJs", icon: <Music size={20} />, src: "/Cat11.png" },
-  { name: "Hairstyling", icon: <Scissors size={20} />, src: "/Cat12.png" },
+  { name: "Venues", icon: <Building2 size={20} />, src: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430231/Cat1_vg9cfq.png" },
+  { name: "Photographers", icon: <Camera size={20} />, src: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430235/Cat2_uchjde.png" },
+  { name: "Makeup", icon: <Paintbrush2 size={20} />, src: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430239/Cat3_byrnbv.png" },
+  { name: "Planners", icon: <UserCheck size={20} />, src: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430243/Cat4_unmtrb.png" },
+  { name: "Catering", icon: <UtensilsCrossed size={20} />, src: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430247/Cat5_dbfwem.png" },
+  { name: "Clothes Wear", icon: <Shirt size={20} />, src: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430251/Cat6_bver4r.png" },
+  { name: "Mehendi", icon: <Hand size={20} />, src: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430255/Cat7_zdjl72.png" },
+  { name: "Cakes", icon: <CakeSlice size={20} />, src: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430259/Cat8_ysvpxa.png" },
+  { name: "Jewellery", icon: <Gem size={20} />, src: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430264/Cat9_hwvkqb.png" },
+  { name: "Invitations", icon: <Mail size={20} />, src: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430267/Cat10_vnhyxd.png" },
+  { name: "DJs", icon: <Music size={20} />, src: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430271/Cat11_vmmhpf.png" },
+  { name: "Hairstyling", icon: <Scissors size={20} />, src: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430275/Cat12_qumbwk.png" },
 ];
 
 export default function HeroSection() {

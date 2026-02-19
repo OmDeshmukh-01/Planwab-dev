@@ -7,17 +7,17 @@ import Link from "next/link";
 
 // --- 1. DATA ---
 const QUICK_LINKS = [
-  { label: "Venues", key: "venues", src: `venueQS.png` },
-  { label: "Makeup", key: "makeup", src: `makeupQS.png` },
-  { label: "Photo", key: "photographers", src: `photographerQS.png` },
-  { label: "Mehndi", key: "mehendi", src: `mehndiQS.png` },
-  { label: "Decor", key: "decor", src: `decorQS.png` },
-  { label: "Catering", key: "catering", src: `caterorQS.png` },
-  { label: "DJ & Music", key: "djs", src: `djQS.png` },
-  { label: "Cakes", key: "cake", src: `cakesQS.png` },
-  { label: "Pandit", key: "pandit", src: `panditQS.png` },
-  { label: "Dhol", key: "dhol", src: `dholQS.png` },
-  { label: "Planner", key: "planners", src: `plannerQS.png` },
+  { label: "Venues", key: "venues", src: `https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429853/venueQS_jopgvy.png` },
+  { label: "Makeup", key: "makeup", src: `https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429875/makeupQS_ndqqgp.png` },
+  { label: "Photo", key: "photographers", src: `https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429887/photographerQS_gum5la.png` },
+  { label: "Mehndi", key: "mehendi", src: `https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429879/mehndiQS_xymdoq.png` },
+  { label: "Decor", key: "decor", src: `https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429865/decorQS_dm66uo.png` },
+  { label: "Catering", key: "catering", src: `https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429861/caterorQS_kf3up5.png` },
+  { label: "DJ & Music", key: "djs", src: `https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429872/djQS_jpgyjf.png` },
+  { label: "Cakes", key: "cake", src: `https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429857/cakesQS_nmqtvp.png` },
+  { label: "Pandit", key: "pandit", src: `https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429883/panditQS_zyo3xh.png` },
+  { label: "Dhol", key: "dhol", src: `https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429868/dholQS_o7jy79.png` },
+  { label: "Planner", key: "planners", src: `https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429850/plannerQS_ghzthx.png` },
 ];
 
 // --- 2. HELPER HOOKS ---
@@ -167,7 +167,7 @@ const QuickServices = ({ category }) => {
           >
             <div className="w-28 h-28 rounded-2xl overflow-hidden flex items-center justify-center group-hover:bg-blue-100 transition-colors p-1">
               <SmartMedia
-                src={`/quickServicesPhotos/${item.src}`}
+                src={`${item.src}`}
                 type="image"
                 alt={item.label}
                 className="w-full h-full object-cove rounded-xl"

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
 import SmartMedia from "@/components/mobile/SmartMediaLoader";
 import { useParams } from "next/navigation";
@@ -12,8 +12,8 @@ const HeroSection = () => {
   // Video Sources (kept from your original)
   const videoSources = {
     wedding: "https://imageswedding.theweddingcompany.com/bh_prod_bucket/weddings/assets/goa-new-ph-potrait.mp4",
-    anniversary: "/CatVideos/AnniversaryCatVid.mp4",
-    birthday: "/CatVideos/BirthdayCatVid.mp4",
+    anniversary: "https://res.cloudinary.com/dhkkvo36x/video/upload/v1771515806/AnniversaryCatVid_jkx4rz.mp4",
+    birthday: "https://res.cloudinary.com/dhkkvo36x/video/upload/v1771515772/BirthdayCatVid_yrqzrd.mp4",
   };
 
   const categoryKey = category === "Default" ? "wedding" : category?.toLowerCase() || "wedding";
@@ -24,6 +24,19 @@ const HeroSection = () => {
     categoryKey === "wedding" ? "left-[229px]" : categoryKey === "anniversary" ? "left-[303px]" : "left-[220px]";
   const dynamicLeftSmall =
     categoryKey === "wedding" ? "left-[217px]" : categoryKey === "anniversary" ? "left-[290px]" : "left-[208px]";
+
+  const poster1Url = useMemo(() => {
+      switch (categoryKey?.toLowerCase()) {
+          case "wedding":
+              return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429802/wedding-poster_gotvxf.jpg";
+          case "anniversary":
+              return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429795/anniversary-poster_drhzkh.jpg";
+          case "birthday":
+              return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429798/birthday-poster_dmnevd.jpg";
+          default:
+              return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429802/wedding-poster_gotvxf.jpg";
+      }
+  }, [categoryKey]);  
 
   return (
     <div className="relative h-[100dvh] w-full overflow-hidden" ref={heroRef}>
@@ -36,7 +49,7 @@ const HeroSection = () => {
           objectFit="cover"
           autoPlay={true}
           priority={true}
-          poster={`/posters/${categoryKey}-poster.jpg`}
+          poster={poster1Url}
         />
         {/* Original Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />

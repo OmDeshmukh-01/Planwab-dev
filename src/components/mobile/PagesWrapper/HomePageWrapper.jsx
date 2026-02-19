@@ -76,17 +76,34 @@ const HeroSection = memo(() => {
   const searchParams = useSearchParams();
   const category = searchParams.get("category") || "Default";
   const videoSrc = useMemo(
-    () =>
-      category === "Default"
-        ? "/CatVideos/EventsHeroMob.mp4"
-        : `/CatVideos/${category}HeroMob.mp4`,
+    () => {
+      switch (category.toLowerCase()) {
+        case "wedding":
+          return "https://res.cloudinary.com/dhkkvo36x/video/upload/v1771428957/WeddingHeroMob_ndweyc.mp4";
+        case "birthday":
+          return "https://res.cloudinary.com/dhkkvo36x/video/upload/v1771428953/BirthdayHeroMob_wddyah.mp4";
+        case "anniversary":
+          return "https://res.cloudinary.com/dhkkvo36x/video/upload/v1771428951/AnniversaryHeroMob_hmmq74.mp4";
+        default:
+          return "https://res.cloudinary.com/dhkkvo36x/video/upload/v1771428954/EventsHeroMob_dy0z2p.mp4";
+      }
+    },
     [category]
   );
+
   const posterSrc = useMemo(
-    () =>
-      category === "Default"
-        ? "/CatVideos/DefaultHeroMobImg.png"
-        : `/CatVideos/${category}HeroMobImg.png`,
+    () => {
+      switch (category.toLowerCase()) {
+        case "wedding":
+          return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429085/WeddingHeroMobImg_v8w16x.png";
+        case "birthday":
+          return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429079/BirthdayHeroMobImg_gmqom3.png";
+        case "anniversary":
+          return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429076/AnniversaryHeroMobImg_iu7z7l.png";
+        default:
+          return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429083/DefaultHeroMobImg_gxqqxb.png";
+      }
+    },
     [category]
   );
 
@@ -121,11 +138,24 @@ const MainContent = ({ plannersSlot, trendingSlot, mostBookedSlot }) => {
   };
 
   const banner2Url = {
-    wedding: "banner10.png",
-    birthday: "banner3.png",
-    anniversary: "banner7.png",
-    default: "banner10.png",
+    wedding: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425626/banner10_ukrj9q.png",
+    birthday: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425618/banner3_bgzqkp.png",
+    anniversary: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425622/banner7_clybgt.png",
+    default: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425626/banner10_ukrj9q.png",
   };
+
+  const HeroNAPImageUrl = () => {
+    switch (currentCategory.toLowerCase()) {
+      case "wedding":
+        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425473/HeroNAPWedding_xtvli7.gif";
+      case "birthday":
+        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425476/HeroNAPBirthday_e3taul.gif";
+      case "anniversary":
+        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425475/HeroNAPAnniversary_gll7b8.gif";
+      default:
+        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425427/HeroNAPDefault_zewedb.gif";
+    }
+  }
 
   return (
     <div className="relative w-full min-h-screen bg-gray-50 text-slate-800 font-sans pb-0 mx-auto max-w-md overflow-hidden">
@@ -150,7 +180,7 @@ const MainContent = ({ plannersSlot, trendingSlot, mostBookedSlot }) => {
             className="w-full h-24 relative rounded-xl overflow-hidden"
           >
             <SmartMedia
-              src={`/HeroNAP${currentCategory}.gif`}
+              src={HeroNAPImageUrl()}
               type="image"
               className="w-full h-full object-cover object-center"
               priority={true}
@@ -171,7 +201,7 @@ const MainContent = ({ plannersSlot, trendingSlot, mostBookedSlot }) => {
             className="w-full aspect-[1/1.1] relative rounded-xl overflow-hidden"
           >
             <SmartMedia
-              src="/Banners/banner8.gif"
+              src="https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425624/banner8_kzqbfm.gif"
               type="image"
               className="w-full h-full object-cover object-center"
               priority={false}
@@ -190,7 +220,7 @@ const MainContent = ({ plannersSlot, trendingSlot, mostBookedSlot }) => {
             className="w-full aspect-[4/2.3] relative rounded-xl overflow-hidden"
           >
             <SmartMedia
-              src={`/Banners/${banner2Url[currentCategory?.toLowerCase()] || "banner2.png"}`}
+              src={`${banner2Url[currentCategory?.toLowerCase()] || "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425617/banner2_rwcpmi.png"}`}
               type="image"
               className="w-full h-full object-cover object-center"
               priority={false}
@@ -207,7 +237,7 @@ const MainContent = ({ plannersSlot, trendingSlot, mostBookedSlot }) => {
       <div className="mx-1 mt-6 px-2 mb-2">
         <div className="w-full aspect-[4/2.3] bg-gray-200 rounded-2xl overflow-hidden shadow-sm">
           <SmartMedia
-            src="/Banners/banner1.png"
+            src="https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425615/banner1_uxpiy7.png"
             type="image"
             className="w-full h-full object-cover object-center"
             loading="lazy"
