@@ -34,10 +34,6 @@ export async function GET(request) {
       return NextResponse.json({ success: true, data: event });
     }
 
-    if (!userId) {
-      return NextResponse.json({ success: false, message: "User ID is required" }, { status: 400 });
-    }
-
     const query = { userId };
     if (category && category !== "all") query.category = category;
     if (status && status !== "all") query.status = status;

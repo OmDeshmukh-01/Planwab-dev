@@ -82,24 +82,26 @@ const ToastProvider = ({ children }) => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, x: 100, scale: 0.9 }}
               transition={{ type: "spring", stiffness: 500, damping: 40 }}
-              className={`pointer-events-auto p-4 rounded-xl shadow-2xl border backdrop-blur-sm flex items-start gap-3 ${toast.type === "success"
-                ? "bg-green-50/95 dark:bg-green-900/95 border-green-300 dark:border-green-600 text-green-800 dark:text-green-100"
-                : toast.type === "error"
-                  ? "bg-red-50/95 dark:bg-red-900/95 border-red-300 dark:border-red-600 text-red-800 dark:text-red-100"
-                  : toast.type === "warning"
-                    ? "bg-yellow-50/95 dark:bg-yellow-900/95 border-yellow-300 dark:border-yellow-600 text-yellow-800 dark:text-yellow-100"
-                    : "bg-blue-50/95 dark:bg-blue-900/95 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-100"
-                }`}
+              className={`pointer-events-auto p-4 rounded-xl shadow-2xl border backdrop-blur-sm flex items-start gap-3 ${
+                toast.type === "success"
+                  ? "bg-green-50/95 dark:bg-green-900/95 border-green-300 dark:border-green-600 text-green-800 dark:text-green-100"
+                  : toast.type === "error"
+                    ? "bg-red-50/95 dark:bg-red-900/95 border-red-300 dark:border-red-600 text-red-800 dark:text-red-100"
+                    : toast.type === "warning"
+                      ? "bg-yellow-50/95 dark:bg-yellow-900/95 border-yellow-300 dark:border-yellow-600 text-yellow-800 dark:text-yellow-100"
+                      : "bg-blue-50/95 dark:bg-blue-900/95 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-100"
+              }`}
             >
               <div
-                className={`p-1 rounded-full ${toast.type === "success"
-                  ? "bg-green-200 dark:bg-green-700"
-                  : toast.type === "error"
-                    ? "bg-red-200 dark:bg-red-700"
-                    : toast.type === "warning"
-                      ? "bg-yellow-200 dark:bg-yellow-700"
-                      : "bg-blue-200 dark:bg-blue-700"
-                  }`}
+                className={`p-1 rounded-full ${
+                  toast.type === "success"
+                    ? "bg-green-200 dark:bg-green-700"
+                    : toast.type === "error"
+                      ? "bg-red-200 dark:bg-red-700"
+                      : toast.type === "warning"
+                        ? "bg-yellow-200 dark:bg-yellow-700"
+                        : "bg-blue-200 dark:bg-blue-700"
+                }`}
               >
                 {toast.type === "success" && <CheckCircle size={18} />}
                 {toast.type === "error" && <AlertCircle size={18} />}
@@ -313,10 +315,11 @@ const DeleteConfirmModal = ({ request, requestType = "vendor", onClose, onConfir
                     setError("");
                   }}
                   placeholder="Enter admin password"
-                  className={`w-full pl-10 pr-12 py-3 rounded-xl border-2 outline-none transition-all bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${error
-                    ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
-                    : "border-gray-200 dark:border-gray-600 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
-                    }`}
+                  className={`w-full pl-10 pr-12 py-3 rounded-xl border-2 outline-none transition-all bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
+                    error
+                      ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
+                      : "border-gray-200 dark:border-gray-600 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
+                  }`}
                   disabled={loading}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && password) {
@@ -388,7 +391,13 @@ const DeleteConfirmModal = ({ request, requestType = "vendor", onClose, onConfir
 export default function ViewVendorRequestTab({ request, requestType = "vendor", onBack, onEdit, onDelete }) {
   return (
     <ToastProvider>
-      <ViewVendorRequestContent request={request} requestType={requestType} onBack={onBack} onEdit={onEdit} onDelete={onDelete} />
+      <ViewVendorRequestContent
+        request={request}
+        requestType={requestType}
+        onBack={onBack}
+        onEdit={onEdit}
+        onDelete={onDelete}
+      />
     </ToastProvider>
   );
 }
@@ -435,7 +444,7 @@ function ViewVendorRequestContent({
         subtitle: `Booking ID: ${request.bookingId}`,
         category: "Birthday Party",
         icon: CalendarDays,
-      }
+      };
     }
     if (requestType === "booking") {
       return {
@@ -443,7 +452,7 @@ function ViewVendorRequestContent({
         subtitle: request.email,
         category: request.eventType || "General Booking",
         icon: Calendar,
-      }
+      };
     }
     if (requestType === "leads") {
       return {
@@ -451,15 +460,23 @@ function ViewVendorRequestContent({
         subtitle: request.phone,
         category: request.source || "General Lead",
         icon: User,
-      }
+      };
+    }
+    if (requestType === "planning-tools") {
+      return {
+        title: request.name || "Event",
+        subtitle: request.venue || "No Venue Selected",
+        category: request.category || "Event",
+        icon: CalendarDays,
+      };
     }
     return {
       title: request.businessName,
       subtitle: `${request.ownerName} • ${request.city}`,
       category: request.category,
       icon: CategoryIcon,
-    }
-  }
+    };
+  };
 
   const { title, subtitle, category: displayCategory, icon: DisplayIcon } = getDisplayValues();
 
@@ -517,9 +534,7 @@ function ViewVendorRequestContent({
                       </motion.span>
                     </div>
 
-                    <p className="text-white/90 text-lg font-medium mb-3">
-                      {subtitle}
-                    </p>
+                    <p className="text-white/90 text-lg font-medium mb-3">{subtitle}</p>
 
                     <div className="flex flex-wrap items-center gap-4 text-white/70 text-sm">
                       <span className="flex items-center gap-1.5">
@@ -536,11 +551,28 @@ function ViewVendorRequestContent({
                           {request.experience} years exp
                         </span>
                       )}
-                      {requestType !== "vendor" && (
+                      {requestType !== "vendor" && requestType !== "planning-tools" && (
                         <span className="flex items-center gap-1.5">
                           <Calendar size={15} />
                           {formatDate(request.eventDate || request.createdAt)}
                         </span>
+                      )}
+                      {requestType === "planning-tools" && (
+                        <>
+                          <span className="flex items-center gap-1.5">
+                            <Calendar size={15} />
+                            {formatDate(request.date)}
+                          </span>
+
+                          <span className="flex items-center gap-1.5">
+                            <Users size={15} />
+                            {request.guestCount || 0} Guests
+                          </span>
+
+                          <span className="flex items-center gap-1.5">
+                            <DollarSign size={15} />₹{request.budget?.toLocaleString() || 0}
+                          </span>
+                        </>
                       )}
                     </div>
                   </div>
@@ -611,7 +643,11 @@ function ViewVendorRequestContent({
           {/* ================================================================ */}
           <div className="p-4 md:p-6 lg:p-8 space-y-8">
             {/* Business/Event Details Section */}
-            <Section title={requestType === "vendor" ? "Business Details" : "Request Details"} icon={Briefcase} badge="Primary Info">
+            <Section
+              title={requestType === "vendor" ? "Business Details" : "Request Details"}
+              icon={Briefcase}
+              badge="Primary Info"
+            >
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {requestType === "vendor" && (
                   <>
@@ -641,15 +677,35 @@ function ViewVendorRequestContent({
                   <>
                     <InfoCard icon={User} label="Name" value={request.userDetails?.name} />
                     <InfoCard icon={Phone} label="Phone" value={request.userDetails?.phone} />
-                    <InfoCard icon={Calendar} label="Birthday Date" value={formatDate(request.userDetails?.birthdayDate)} />
-                    <InfoCard icon={Building2} label="Venue" value={request.venueName} className="lg:col-span-2" highlight />
+                    <InfoCard
+                      icon={Calendar}
+                      label="Birthday Date"
+                      value={formatDate(request.userDetails?.birthdayDate)}
+                    />
+                    <InfoCard
+                      icon={Building2}
+                      label="Venue"
+                      value={request.venueName}
+                      className="lg:col-span-2"
+                      highlight
+                    />
                     {request.venueLocation && <InfoCard icon={MapPin} label="Location" value={request.venueLocation} />}
-                    {request.venuePrice && <InfoCard icon={DollarSign} label="Venue Price" value={`₹${request.venuePrice}`} />}
-                    <InfoCard icon={Calendar} label="Event Date" value={formatDate(request.bookingDetails?.eventDate || request.createdAt)} />
+                    {request.venuePrice && (
+                      <InfoCard icon={DollarSign} label="Venue Price" value={`₹${request.venuePrice}`} />
+                    )}
+                    <InfoCard
+                      icon={Calendar}
+                      label="Event Date"
+                      value={formatDate(request.bookingDetails?.eventDate || request.createdAt)}
+                    />
                     <InfoCard icon={Users} label="Guests" value={request.bookingDetails?.guestCount} />
-                    {request.bookingDetails?.budget && <InfoCard icon={DollarSign} label="Budget" value={`₹${request.bookingDetails.budget}`} />}
+                    {request.bookingDetails?.budget && (
+                      <InfoCard icon={DollarSign} label="Budget" value={`₹${request.bookingDetails.budget}`} />
+                    )}
                     <InfoCard icon={Tag} label="Food Type" value={request.bookingDetails?.foodType} />
-                    {request.bookingDetails?.timeSlot && <InfoCard icon={Clock} label="Time Slot" value={request.bookingDetails.timeSlot} />}
+                    {request.bookingDetails?.timeSlot && (
+                      <InfoCard icon={Clock} label="Time Slot" value={request.bookingDetails.timeSlot} />
+                    )}
                     {request.bookingDetails?.specialRequests && (
                       <InfoCard
                         icon={MessageCircle}
@@ -672,12 +728,7 @@ function ViewVendorRequestContent({
                     {request.budget && <InfoCard icon={DollarSign} label="Budget" value={`₹${request.budget}`} />}
                     {request.timeSlot && <InfoCard icon={Clock} label="Time Slot" value={request.timeSlot} />}
                     {request.notes && (
-                      <InfoCard
-                        icon={FileText}
-                        label="Notes"
-                        value={request.notes}
-                        className="lg:col-span-full"
-                      />
+                      <InfoCard icon={FileText} label="Notes" value={request.notes} className="lg:col-span-full" />
                     )}
                   </>
                 )}
@@ -692,6 +743,27 @@ function ViewVendorRequestContent({
                         icon={MessageCircle}
                         label="Message"
                         value={request.message}
+                        className="lg:col-span-full"
+                      />
+                    )}
+                  </>
+                )}
+
+                {requestType === "planning-tools" && (
+                  <>
+                    <InfoCard icon={Calendar} label="Event Date" value={formatDate(request.date)} />
+                    <InfoCard icon={Clock} label="Time" value={request.time} />
+                    <InfoCard icon={Building2} label="Venue" value={request.venue} highlight />
+                    <InfoCard icon={Users} label="Guest Count" value={request.guestCount} />
+                    <InfoCard icon={DollarSign} label="Total Budget" value={`₹${request.budget?.toLocaleString()}`} />
+                    <InfoCard icon={Tag} label="Category" value={request.category} />
+                    <InfoCard icon={Globe} label="Public Event" value={request.isPublic ? "Yes" : "No"} />
+                    <InfoCard icon={KeyRound} label="Share Code" value={request.shareCode} />
+                    {request.description && (
+                      <InfoCard
+                        icon={FileText}
+                        label="Description"
+                        value={request.description}
                         className="lg:col-span-full"
                       />
                     )}
@@ -870,7 +942,17 @@ function ViewVendorRequestContent({
             )}
 
             {/* Registration/Request Status Details */}
-            <Section title={requestType === 'vendor' ? "Registration Details" : "Status & History"} icon={UserCheck} badge="Request Info">
+            <Section
+              title={
+                requestType === "vendor"
+                  ? "Registration Details"
+                  : requestType === "planning-tools"
+                    ? "Event Status"
+                    : "Status & History"
+              }
+              icon={UserCheck}
+              badge="Request Info"
+            >
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {requestType === "vendor" && (
                   <div className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl text-center border-2 border-green-200 dark:border-green-800 shadow-sm">
@@ -992,7 +1074,7 @@ function ViewVendorRequestContent({
                       }
 
                       window.location.href = `mailto:${request.email}?subject=${encodeURIComponent(
-                        subject
+                        subject,
                       )}&body=${encodeURIComponent(body)}`;
                     }}
                     className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg shadow-purple-500/25 hover:shadow-xl hover:shadow-purple-500/30 transition-all"
@@ -1079,8 +1161,9 @@ const Section = ({ title, icon: Icon, children, badge, tip }) => (
 const InfoCard = ({ icon: Icon, label, value, className = "", copyable, onCopy, copied, highlight = false }) => (
   <motion.div
     whileHover={copyable ? { scale: 1.02, y: -2 } : { y: -1 }}
-    className={`group p-5 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl border-2 border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md transition-all duration-300 ${className} ${highlight ? "ring-2 ring-purple-500 ring-opacity-50" : ""
-      }`}
+    className={`group p-5 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl border-2 border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md transition-all duration-300 ${className} ${
+      highlight ? "ring-2 ring-purple-500 ring-opacity-50" : ""
+    }`}
   >
     <div className="flex items-start justify-between mb-3">
       <div className="flex items-center gap-3">

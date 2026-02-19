@@ -554,18 +554,18 @@ export default function CategoryGrid() {
 
   const currentCategory = activeCategory || "Wedding";
   // Tailwind classes with responsive breakpoints
-  const baseWidth = 171; // in px
-  const baseHeight = 90;
+  const baseWidth = 137; // in px
+  const baseHeight = 72;
   const widthClasses = {
     base: "w-[171px]",
     md: "md:w-[137px]",
-    lg: "lg:w-[172px]",
+    lg: "lg:w-[205px]",
   };
 
   const heightClasses = {
     base: "h-[90px]",
     md: "md:h-[72px]",
-    lg: "lg:h-[108px]",
+    lg: "lg:h-[110px]",
   };
 
   const cardWidthClass = `${widthClasses.base} ${widthClasses.md} ${widthClasses.lg}`;
@@ -577,7 +577,7 @@ export default function CategoryGrid() {
       {
         name: `${currentCategory === "Default" ? "Event" : currentCategory} Planner`,
         key: "planners",
-        image: "/CardsCatPhotos/PlannerCat.png",
+        image: "/CardsCatPhotos/desktop/plannerCatHeroDesktop.png",
         span: 1,
         widthClass: cardWidthClass,
         heightClass: cardHeightClass,
@@ -585,7 +585,7 @@ export default function CategoryGrid() {
       },
       {
         name: "Photographer",
-        image: "/CardsCatPhotos/PhotographerCat.png",
+        image: "/CardsCatPhotos/desktop/photographerCatHeroDesktop.png",
         key: "photographers",
         span: 1,
         widthClass: cardWidthClass,
@@ -595,7 +595,7 @@ export default function CategoryGrid() {
       {
         name: "mehendi",
         key: "mehendi",
-        image: "/CardsCatPhotos/MehndiCat.png",
+        image: "/CardsCatPhotos/desktop/mehendiCatHeroDesktop.png",
         span: 1,
         widthClass: cardWidthClass,
         heightClass: cardHeightClass,
@@ -604,7 +604,7 @@ export default function CategoryGrid() {
       {
         name: "MakeUp",
         key: "makeup",
-        image: "/CardsCatPhotos/MakeUpCat.png",
+        image: "/CardsCatPhotos/desktop/makeupCatHeroDesktop.png",
         span: 1,
         widthClass: cardWidthClass,
         heightClass: cardHeightClass,
@@ -622,7 +622,7 @@ export default function CategoryGrid() {
       {
         name: "DJs & Sound",
         key: "djs",
-        image: "/CardsCatPhotos/DJCat.png",
+        image: "/CardsCatPhotos/desktop/djCatHeroDesktop.png",
         span: 1,
         widthClass: cardWidthClass,
         heightClass: cardHeightClass,
@@ -631,7 +631,7 @@ export default function CategoryGrid() {
       {
         name: "Dhol",
         key: "dhol",
-        image: "/CardsCatPhotos/DholCat.png",
+        image: "/CardsCatPhotos/desktop/dholCatHeroDesktop.png",
         span: 1,
         widthClass: cardWidthClass,
         heightClass: cardHeightClass,
@@ -640,25 +640,25 @@ export default function CategoryGrid() {
       {
         name: "Caterers",
         key: "catering",
-        image: "/CardsCatPhotos/CaterorsCat.png",
+        image: "/CardsCatPhotos/desktop/caterersCatHeroDesktop.png",
         span: 1,
         widthClass: cardWidthClass,
         heightClass: cardHeightClass,
         pixelWidth: 160,
       },
       {
-        name: "Dhol",
-        key: "dhol",
-        image: "/CardsCatPhotos/DholCat.png",
+        name: "Anchor",
+        key: "anchor",
+        image: "/CardsCatPhotos/desktop/anchorCatHeroDesktop.png",
         span: 1,
         widthClass: cardWidthClass,
         heightClass: cardHeightClass,
         pixelWidth: 160,
       },
       {
-        name: "Caterers",
-        key: "catering",
-        image: "/CardsCatPhotos/CaterorsCat.png",
+        name: "Baraat",
+        key: "baraat",
+        image: "/CardsCatPhotos/desktop/baraatCatHeroDesktop.png",
         span: 1,
         widthClass: cardWidthClass,
         heightClass: cardHeightClass,
@@ -815,9 +815,9 @@ export default function CategoryGrid() {
   };
 
   return (
-    <div className="p-4 py-2 pt-4 bg-transparent rounded-2xl mx-auto max-w-5xl z-30 mb-22">
-      {/* <div className="flex items-center justify-between mb-8">
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 leading-none">What are you looking for?</h2>
+    <div className="p-4 py-2 pt-2 bg-transparent rounded-2xl mx-auto max-w-5xl z-30 mb-22">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 leading-none"></h2>
 
         <div className="flex gap-2">
           <ScrollButton
@@ -837,7 +837,7 @@ export default function CategoryGrid() {
             direction="right"
           />
         </div>
-      </div> */}
+      </div>
 
       <div
         ref={scrollRef}
