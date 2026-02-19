@@ -4,16 +4,16 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    ArrowLeft, 
-    ArrowRight, 
-    Search, 
-    Calendar, 
-    Users, 
-    Clock, 
-    User, 
-    Phone, 
-    CheckCircle, 
+import {
+    ArrowLeft,
+    ArrowRight,
+    Search,
+    Calendar,
+    Users,
+    Clock,
+    User,
+    Phone,
+    CheckCircle,
     MapPin,
     Star,
     Gift,
@@ -79,13 +79,12 @@ const InputField = ({ label, icon: Icon, error, ...props }) => (
             {label}
         </label>
         <input
-            className={`w-full bg-white dark:bg-white/5 border-2 ${
-                error ? 'border-rose-500' : 'border-gray-200 dark:border-white/10'
-            } rounded-xl py-3.5 px-4 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition-all`}
+            className={`w-full bg-white dark:bg-white/5 border-2 ${error ? 'border-rose-500' : 'border-gray-200 dark:border-white/10'
+                } rounded-xl py-3.5 px-4 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 transition-all`}
             {...props}
         />
         {error && (
-            <motion.p 
+            <motion.p
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="text-rose-500 text-xs font-medium flex items-center gap-1"
@@ -126,18 +125,16 @@ const StepBadge = ({ step, isActive, isCompleted }) => {
 
     return (
         <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${
-                isCompleted 
-                    ? 'bg-green-500 text-white' 
-                    : isActive 
-                    ? 'bg-gradient-to-br from-pink-500 to-purple-600 text-white shadow-lg' 
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold transition-all ${isCompleted
+                ? 'bg-green-500 text-white'
+                : isActive
+                    ? 'bg-gradient-to-br from-pink-500 to-purple-600 text-white shadow-lg'
                     : 'bg-gray-200 dark:bg-white/10 text-gray-400'
-            }`}>
+                }`}>
                 {isCompleted ? <Check size={20} /> : config.number}
             </div>
-            <div className={`transition-colors ${
-                isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-600'
-            }`}>
+            <div className={`transition-colors ${isActive ? 'text-gray-900 dark:text-white' : 'text-gray-400 dark:text-gray-600'
+                }`}>
                 <div className="text-xs font-medium">{config.label}</div>
             </div>
         </div>
@@ -149,16 +146,15 @@ const HotelCard = ({ hotel, onSelect, type, isSelected }) => (
         whileHover={{ y: -4 }}
         whileTap={{ scale: 0.98 }}
         onClick={() => onSelect(hotel)}
-        className={`group relative bg-white dark:bg-white/5 border-2 ${
-            isSelected ? 'border-pink-500 ring-4 ring-pink-500/20' : 'border-gray-200 dark:border-white/10'
-        } rounded-2xl overflow-hidden hover:border-pink-500 dark:hover:border-pink-500 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl`}
+        className={`group relative bg-white dark:bg-white/5 border-2 ${isSelected ? 'border-pink-500 ring-4 ring-pink-500/20' : 'border-gray-200 dark:border-white/10'
+            } rounded-2xl overflow-hidden hover:border-pink-500 dark:hover:border-pink-500 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl`}
     >
         {isSelected && (
             <div className="absolute top-4 left-4 z-10 bg-pink-500 text-white px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-lg">
                 <Check size={14} /> Selected
             </div>
         )}
-        
+
         <div className="relative h-48 overflow-hidden">
             <img
                 src={hotel.images[0] || '/placeholder.jpg'}
@@ -167,11 +163,10 @@ const HotelCard = ({ hotel, onSelect, type, isSelected }) => (
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div className="absolute top-4 right-4">
-                <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-xl shadow-xl ${
-                    type === 'premium'
-                        ? 'bg-amber-500/95 text-white border border-amber-300/50'
-                        : 'bg-emerald-500/95 text-white border border-emerald-300/50'
-                }`}>
+                <span className={`px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-xl shadow-xl ${type === 'premium'
+                    ? 'bg-amber-500/95 text-white border border-amber-300/50'
+                    : 'bg-emerald-500/95 text-white border border-emerald-300/50'
+                    }`}>
                     {type === 'premium' ? '✨ Premium' : '🎁 Free'}
                 </span>
             </div>
@@ -182,7 +177,7 @@ const HotelCard = ({ hotel, onSelect, type, isSelected }) => (
                 {hotel.name}
             </h3>
             <p className="text-gray-500 dark:text-gray-400 text-sm flex items-center gap-1.5 mb-4">
-                <MapPin size={14} className="text-pink-500 flex-shrink-0" /> 
+                <MapPin size={14} className="text-pink-500 flex-shrink-0" />
                 <span className="line-clamp-1">{hotel.location}</span>
             </p>
 
@@ -273,8 +268,8 @@ export default function BirthdayPlannerWrapper() {
                         setUserFormData({
                             name: booking.userDetails.name || '',
                             phone: booking.userDetails.phone || '',
-                            birthdayDate: booking.userDetails.birthdayDate 
-                                ? new Date(booking.userDetails.birthdayDate).toISOString().split('T')[0] 
+                            birthdayDate: booking.userDetails.birthdayDate
+                                ? new Date(booking.userDetails.birthdayDate).toISOString().split('T')[0]
                                 : ''
                         });
                     }
@@ -292,8 +287,8 @@ export default function BirthdayPlannerWrapper() {
 
                     if (booking.bookingDetails) {
                         setBookingFormData({
-                            eventDate: booking.bookingDetails.eventDate 
-                                ? new Date(booking.bookingDetails.eventDate).toISOString().split('T')[0] 
+                            eventDate: booking.bookingDetails.eventDate
+                                ? new Date(booking.bookingDetails.eventDate).toISOString().split('T')[0]
                                 : '',
                             guestCount: booking.bookingDetails.guestCount || '',
                             timeSlot: booking.bookingDetails.timeSlot || '',
@@ -356,104 +351,107 @@ export default function BirthdayPlannerWrapper() {
         }
     }, [currentStep, sessionId, isHydrating, selectedHotel, router, basePath]);
 
-// ============================================================================
-// FETCH VENUES WITH DEBOUNCE
-// ============================================================================
+    // ============================================================================
+    // FETCH VENUES WITH DEBOUNCE
+    // ============================================================================
 
-useEffect(() => {
-    const fetchVenues = async () => {
-        if (currentStep !== 'hotels') return;
+    useEffect(() => {
+        const fetchVenues = async () => {
+            if (currentStep !== 'hotels') return;
 
-        try {
-            setIsHotelsLoading(true);
-            
-            // Build query parameters
-            const params = new URLSearchParams({
-                category: 'venues',  // Changed from 'categories' to 'category' for single value
-                limit: '50',
-                sortBy: 'rating',
-                sortOrder: 'desc'
-            });
+            try {
+                setIsHotelsLoading(true);
 
-            // Add search if exists
-            if (debouncedSearch) {
-                params.append('search', debouncedSearch);
-            }
-
-            const url = `/api/vendor?${params.toString()}`;
-            console.log('Fetching venues from:', url); // Debug log
-            
-            const response = await fetch(url);
-            const data = await response.json();
-
-            console.log('API Response:', data); // Debug log
-
-            if (data.success && data.data) {
-                const venues = data.data;
-                console.log(`Found ${venues.length} venues`); // Debug log
-                
-                const free = [];
-                const paid = [];
-
-                venues.forEach(vendor => {
-                    // Price normalization - check multiple price fields
-                    const price = 
-                        vendor.normalizedPrice ||
-                        vendor.perDayPrice?.min ||
-                        vendor.basePrice ||
-                        vendor.price?.min ||
-                        vendor.startingPrice ||
-                        0;
-
-                    const normalizedVendor = {
-                        _id: vendor._id,
-                        name: vendor.name,
-                        location: vendor.address?.city || vendor.location || 'Location Unavailable',
-                        isPaid: price >= 60000,
-                        images: vendor.images?.length > 0 
-                            ? vendor.images 
-                            : (vendor.defaultImage ? [vendor.defaultImage] : ['/placeholder.jpg']),
-                        price: price > 0 ? price : null
-                    };
-
-                    if (price >= 60000) {
-                        paid.push(normalizedVendor);
-                    } else {
-                        free.push(normalizedVendor);
-                    }
+                // Build query parameters
+                const params = new URLSearchParams({
+                    category: 'venues',
+                    limit: '50',
+                    sortBy: 'createdAt',
+                    sortOrder: 'desc'
                 });
 
-                // Sort by price
-                free.sort((a, b) => (a.price || 0) - (b.price || 0));
-                paid.sort((a, b) => (b.price || 0) - (a.price || 0));
-
-                console.log(`Free venues: ${free.length}, Paid venues: ${paid.length}`); // Debug log
-
-                setFreeHotels(free.slice(0, 6));
-                setPaidHotels(paid.slice(0, 6));
-
-                // Show toast if no results
-                if (venues.length === 0) {
-                    toast.info('No venues found matching your criteria');
+                // Add search if exists
+                if (debouncedSearch) {
+                    params.append('search', debouncedSearch);
                 }
-            } else {
-                console.error('API returned unsuccessful response:', data);
-                toast.error(data.message || "Failed to load venues");
+
+                const url = `/api/vendor?${params.toString()}`;
+
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+
+
+                if (data.success && data.data) {
+                    const venues = data.data;
+
+
+                    const free = [];
+                    const paid = [];
+
+                    venues.forEach(vendor => {
+                        // Price normalization - check multiple price fields
+                        const price =
+                            vendor.normalizedPrice ||
+                            vendor.perDayPrice?.min ||
+                            vendor.basePrice ||
+                            vendor.price?.min ||
+                            vendor.startingPrice ||
+                            0;
+
+                        const normalizedVendor = {
+                            _id: vendor._id,
+                            name: vendor.name,
+                            location: vendor.address?.city || vendor.location || 'Location Unavailable',
+                            isPaid: price >= 60000,
+                            images: vendor.images?.length > 0
+                                ? vendor.images
+                                : (vendor.defaultImage ? [vendor.defaultImage] : ['/placeholder.jpg']),
+                            price: price > 0 ? price : null,
+                            createdAt: vendor.createdAt 
+                        };
+
+                        if (price >= 60000) {
+                            paid.push(normalizedVendor);
+                        } else {
+                            free.push(normalizedVendor);
+                        }
+                    });
+
+                    const sortByLatest = (a, b) => new Date(b.createdAt) - new Date(a.createdAt);
+                    free.sort(sortByLatest);
+                    paid.sort(sortByLatest);
+
+
+
+
+
+                    setFreeHotels(free.slice(0, 6));
+                    setPaidHotels(paid.slice(0, 6));
+
+                    // Show toast if no results
+                    if (venues.length === 0) {
+                        toast.info('No venues found matching your criteria');
+                    }
+                } else {
+                    console.error('API returned unsuccessful response:', data);
+                    toast.error(data.message || "Failed to load venues");
+                    setFreeHotels([]);
+                    setPaidHotels([]);
+                }
+            } catch (error) {
+                console.error("Failed to fetch venues:", error);
+                toast.error("Failed to load venues. Please try again.");
                 setFreeHotels([]);
                 setPaidHotels([]);
+            } finally {
+                setIsHotelsLoading(false);
             }
-        } catch (error) {
-            console.error("Failed to fetch venues:", error);
-            toast.error("Failed to load venues. Please try again.");
-            setFreeHotels([]);
-            setPaidHotels([]);
-        } finally {
-            setIsHotelsLoading(false);
-        }
-    };
+        };
 
-    fetchVenues();
-}, [currentStep, debouncedSearch]);
+        fetchVenues();
+    }, [currentStep, debouncedSearch]);
 
     // ============================================================================
     // HANDLERS
@@ -469,8 +467,8 @@ useEffect(() => {
 
         setIsUserSubmitting(true);
         try {
-            const newSessionId = (typeof crypto !== 'undefined' && crypto.randomUUID 
-                ? crypto.randomUUID() 
+            const newSessionId = (typeof crypto !== 'undefined' && crypto.randomUUID
+                ? crypto.randomUUID()
                 : 'session_' + Date.now());
 
             const response = await fetch('/api/vendor/requests/birthday-routes', {
@@ -633,7 +631,7 @@ useEffect(() => {
                             <PartyPopper size={20} />
                             <span className="font-bold">Birthday Celebration Planner</span>
                         </motion.div>
-                        
+
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600 mb-4">
                             Plan Your Perfect Birthday
                         </h1>
@@ -653,9 +651,9 @@ useEffect(() => {
                     >
                         <div className="bg-white dark:bg-white/5 rounded-2xl p-6 shadow-lg border border-gray-200 dark:border-white/10">
                             <div className="flex items-center justify-between mb-4">
-                                <StepBadge 
-                                    step="details" 
-                                    isActive={currentStep === 'home'} 
+                                <StepBadge
+                                    step="details"
+                                    isActive={currentStep === 'home'}
                                     isCompleted={currentStep !== 'home'}
                                 />
                                 <div className="flex-1 mx-4">
@@ -667,9 +665,9 @@ useEffect(() => {
                                         />
                                     </div>
                                 </div>
-                                <StepBadge 
-                                    step="venue" 
-                                    isActive={currentStep === 'hotels'} 
+                                <StepBadge
+                                    step="venue"
+                                    isActive={currentStep === 'hotels'}
                                     isCompleted={currentStep === 'booking'}
                                 />
                                 <div className="flex-1 mx-4">
@@ -681,9 +679,9 @@ useEffect(() => {
                                         />
                                     </div>
                                 </div>
-                                <StepBadge 
-                                    step="booking" 
-                                    isActive={currentStep === 'booking'} 
+                                <StepBadge
+                                    step="booking"
+                                    isActive={currentStep === 'booking'}
                                     isCompleted={false}
                                 />
                             </div>
@@ -849,10 +847,10 @@ useEffect(() => {
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                                     {freeHotels.map(hotel => (
-                                                        <HotelCard 
-                                                            key={hotel._id} 
-                                                            hotel={hotel} 
-                                                            type="free" 
+                                                        <HotelCard
+                                                            key={hotel._id}
+                                                            hotel={hotel}
+                                                            type="free"
                                                             onSelect={handleSelectHotel}
                                                             isSelected={selectedHotel?._id === hotel._id}
                                                         />
@@ -875,10 +873,10 @@ useEffect(() => {
                                                 </div>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                                     {paidHotels.map(hotel => (
-                                                        <HotelCard 
-                                                            key={hotel._id} 
-                                                            hotel={hotel} 
-                                                            type="premium" 
+                                                        <HotelCard
+                                                            key={hotel._id}
+                                                            hotel={hotel}
+                                                            type="premium"
                                                             onSelect={handleSelectHotel}
                                                             isSelected={selectedHotel?._id === hotel._id}
                                                         />
@@ -947,7 +945,7 @@ useEffect(() => {
                                             <div className="flex-1">
                                                 <h4 className="font-bold text-xl text-gray-900 dark:text-white mb-1">{selectedHotel.name}</h4>
                                                 <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1.5">
-                                                    <MapPin size={14} className="text-pink-500" /> 
+                                                    <MapPin size={14} className="text-pink-500" />
                                                     {selectedHotel.location}
                                                 </p>
                                             </div>
@@ -993,15 +991,14 @@ useEffect(() => {
                                             Special Requests & Requirements
                                         </label>
                                         <textarea
-                                            className={`w-full bg-white dark:bg-white/5 border-2 ${
-                                                bookingErrors.specialRequests ? 'border-rose-500' : 'border-gray-200 dark:border-white/10'
-                                            } rounded-xl py-3.5 px-4 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 min-h-[140px] transition-all resize-none`}
+                                            className={`w-full bg-white dark:bg-white/5 border-2 ${bookingErrors.specialRequests ? 'border-rose-500' : 'border-gray-200 dark:border-white/10'
+                                                } rounded-xl py-3.5 px-4 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-pink-500 focus:ring-4 focus:ring-pink-500/10 min-h-[140px] transition-all resize-none`}
                                             placeholder="Dietary restrictions, special decorations, cake preferences, music requests, accessibility needs, etc."
                                             value={bookingFormData.specialRequests}
                                             onChange={e => setBookingFormData({ ...bookingFormData, specialRequests: e.target.value })}
                                         />
                                         {bookingErrors.specialRequests && (
-                                            <motion.p 
+                                            <motion.p
                                                 initial={{ opacity: 0, y: -5 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 className="text-rose-500 text-xs font-medium flex items-center gap-1"
@@ -1092,7 +1089,7 @@ useEffect(() => {
                                                 #{confirmationData.bookingId}
                                             </span>
                                         </div>
-                                        
+
                                         <div className="bg-gradient-to-br from-pink-50 to-purple-50 dark:from-white/5 dark:to-white/10 rounded-2xl p-6 text-left space-y-4">
                                             <div className="flex items-start gap-3">
                                                 <MapPin className="text-pink-500 mt-1 flex-shrink-0" size={20} />
@@ -1102,23 +1099,23 @@ useEffect(() => {
                                                     <div className="text-sm text-gray-600 dark:text-gray-400">{confirmationData.hotel?.location}</div>
                                                 </div>
                                             </div>
-                                            
+
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                                 <div className="flex items-start gap-3">
                                                     <Calendar className="text-pink-500 mt-1" size={20} />
                                                     <div>
                                                         <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Date</div>
                                                         <div className="font-bold text-gray-900 dark:text-white">
-                                                            {new Date(confirmationData.bookingDetails?.eventDate).toLocaleDateString('en-US', { 
-                                                                weekday: 'long', 
-                                                                year: 'numeric', 
-                                                                month: 'long', 
-                                                                day: 'numeric' 
+                                                            {new Date(confirmationData.bookingDetails?.eventDate).toLocaleDateString('en-US', {
+                                                                weekday: 'long',
+                                                                year: 'numeric',
+                                                                month: 'long',
+                                                                day: 'numeric'
                                                             })}
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div className="flex items-start gap-3">
                                                     <Clock className="text-pink-500 mt-1" size={20} />
                                                     <div>
@@ -1128,7 +1125,7 @@ useEffect(() => {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div className="flex items-start gap-3">
                                                     <Users className="text-pink-500 mt-1" size={20} />
                                                     <div>
@@ -1140,7 +1137,7 @@ useEffect(() => {
                                                 </div>
                                             </div>
                                         </div>
-                                        
+
                                         <div className="bg-blue-50 dark:bg-blue-500/10 rounded-xl p-4 text-sm text-gray-700 dark:text-gray-300">
                                             📱 Confirmation details have been sent to your phone number
                                         </div>
@@ -1159,7 +1156,7 @@ useEffect(() => {
                                     >
                                         📄 Download Receipt
                                     </button>
-                                    
+
                                     <div className="text-gray-600 dark:text-gray-400 text-sm">
                                         Need help? Contact our support team
                                     </div>
