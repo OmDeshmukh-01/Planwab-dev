@@ -201,7 +201,6 @@ export async function PUT(request) {
             message: "Booking updated successfully",
         });
     } catch (error) {
-        console.error("PUT /api/birthday-routes error:", error);
         return NextResponse.json(
             {
                 success: false,
@@ -245,7 +244,6 @@ export async function DELETE(request) {
             message: "Booking deleted successfully",
         });
     } catch (error) {
-        console.error("DELETE /api/birthday-routes error:", error);
         return NextResponse.json(
             {
                 success: false,

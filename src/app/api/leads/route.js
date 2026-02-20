@@ -79,8 +79,6 @@ function validateUrl(url) {
 }
 
 export async function POST(request) {
-  const startTime = Date.now();
-
   try {
     const [_, body, headersList] = await Promise.all([
       connectToDatabase(),
@@ -127,8 +125,6 @@ export async function POST(request) {
       .exec();
 
     if (existingLead) {
-      const executionTime = Date.now() - startTime;
-      console.log(`⚡ Duplicate detected in ${executionTime}ms`);
       return NextResponse.json(
         {
           success: true,
@@ -141,7 +137,6 @@ export async function POST(request) {
             currentUrl: existingLead.currentUrl,
           },
           isExisting: true,
-          _executionTime: executionTime,
         },
         { status: 200 }
       );
@@ -167,9 +162,6 @@ export async function POST(request) {
     // Create lead
     const lead = await LeadsModel.create(leadData);
 
-    const executionTime = Date.now() - startTime;
-    console.log(`✅ Lead created in ${executionTime}ms`);
-
     return NextResponse.json(
       {
         success: true,
@@ -183,14 +175,10 @@ export async function POST(request) {
           createdAt: lead.createdAt,
         },
         isExisting: false,
-        _executionTime: executionTime,
       },
       { status: 201 }
     );
   } catch (error) {
-    const executionTime = Date.now() - startTime;
-    console.error(`❌ Error in ${executionTime}ms:`, error);
-
     // Handle validation errors
     if (error.name === "ValidationError") {
       const validationErrors = Object.values(error.errors).map((e) => e.message);
@@ -238,8 +226,6 @@ export async function POST(request) {
 }
 
 export async function GET(request) {
-  const startTime = Date.now();
-
   try {
     await connectToDatabase();
 
@@ -272,13 +258,11 @@ export async function GET(request) {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .select("-__v -userAgent -ipAddress -metadata") // Exclude sensitive data
+        .select("-__v -userAgent -ipAddress -metadata")
         .lean()
         .exec(),
       LeadsModel.countDocuments(query),
     ]);
-
-
 
     return NextResponse.json(
       {
@@ -292,14 +276,10 @@ export async function GET(request) {
           hasNext: page < Math.ceil(total / limit),
           hasPrev: page > 1,
         },
-        _executionTime: executionTime,
       },
       { status: 200 }
     );
   } catch (error) {
-    const executionTime = Date.now() - startTime;
-    console.error(`❌ GET Error in ${executionTime}ms:`, error);
-
     return NextResponse.json(
       {
         error: "Failed to fetch leads",
