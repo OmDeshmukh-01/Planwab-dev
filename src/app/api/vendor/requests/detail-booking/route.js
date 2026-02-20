@@ -28,7 +28,6 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error creating booking request:", error);
     return NextResponse.json(
       {
         success: false,
@@ -63,7 +62,6 @@ export async function GET(request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error fetching booking requests:", error);
     return NextResponse.json(
       {
         success: false,
@@ -136,7 +134,6 @@ export async function PUT(request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error updating booking request:", error);
     return NextResponse.json(
       {
         success: false,
@@ -199,7 +196,6 @@ export async function DELETE(request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error deleting booking request:", error);
     return NextResponse.json(
       {
         success: false,
