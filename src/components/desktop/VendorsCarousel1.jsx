@@ -380,7 +380,7 @@ export const LandingCarousel = memo(
     const isInCart = (itemId) => cartItems.includes(itemId);
 
     return (
-      <section className="py-8 md:py-12 md:pt-8 pt-6 relative group/section mx-auto px-8 w-[90%]">
+      <section className="py-8 md:py-12 md:pt-8 pt-6 relative group/section mx-auto w-[100%] px-8">
         {/* Header */}
         {/* <div className="flex items-end justify-between mb-8 px-2">
           <motion.div

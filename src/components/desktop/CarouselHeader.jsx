@@ -16,7 +16,7 @@ export default function CarouselHeader({
   const isRight = contentSide === "right";
 
   return (
-    <section className="mt-5 mx-auto w-full">
+    <section className="mx-auto w-full">
       <div className={`relative max-w-7xl mx-auto px-4 flex items-center ${contentSide === "right" ? "justify-start" : "justify-end"}`}>
         {/* Image */}
         <div className="w-[70%] h-[260px] md:h-[300px] rounded-2xl overflow-hidden">
