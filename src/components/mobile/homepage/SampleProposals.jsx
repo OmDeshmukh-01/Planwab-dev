@@ -96,8 +96,8 @@ const SampleProposal = ({ category }) => {
       </div>
 
       {/* Carousel Container */}
-      <div className="relative w-full px-4 lg:px-10">
-        <div className="relative w-full aspect-[4/2.3] lg:aspect-[21/9] overflow-hidden rounded-xl bg-gray-100 shadow-sm transform-gpu">
+      <div className="relative w-full px-4 lg:px-10 bg-gradient-to-b from-transparent via-[#FFEFF4]/70 to-[#FFEFF4]/70">
+        <div className="relative w-full aspect-[4/2.3] lg:aspect-[21/9] overflow-hidden rounded-xl bg-transparent shadow-sm transform-gpu">
           <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
               key={currentIndex}

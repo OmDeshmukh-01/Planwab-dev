@@ -35,6 +35,7 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
+
 ```
 Planwab-dev
 ├─ .dockerignore
@@ -46,134 +47,14 @@ Planwab-dev
 ├─ package.json
 ├─ postcss.config.mjs
 ├─ public
-│  ├─ AnniversaryCat.png
-│  ├─ AnniversaryDesign.png
-│  ├─ AnniversaryHeaderCard.png
-│  ├─ anniversarySectionBottom.png
-│  ├─ auth1.jpeg
-│  ├─ auth2.jpeg
-│  ├─ auth3.jpeg
-│  ├─ auth4.jpeg
-│  ├─ auth5.jpeg
-│  ├─ Banners
-│  │  ├─ banner1.png
-│  │  ├─ banner10.png
-│  │  ├─ banner2.png
-│  │  ├─ banner3.png
-│  │  ├─ banner4.png
-│  │  ├─ banner5.gif
-│  │  ├─ banner6.png
-│  │  ├─ banner7.png
-│  │  ├─ banner8.gif
-│  │  ├─ banner9.png
-│  │  ├─ sampleProposal1.png
-│  │  ├─ sampleProposal2.png
-│  │  └─ sampleProposal3.png
-│  ├─ BirthdayCat.png
-│  ├─ BirthdayDesign.png
-│  ├─ BirthdayHeaderCard.png
-│  ├─ birthdaySectionBottom.png
-│  ├─ CardsCatPhotos
-│  │  ├─ Birthday_table.png
-│  │  ├─ CakesCardPhoto.png
-│  │  ├─ CakesCatB.png
-│  │  ├─ CateringCardPhoto.png
-│  │  ├─ CaterorsCat.png
-│  │  ├─ CaterorsCatB.png
-│  │  ├─ DecorationCardPhoto.png
-│  │  ├─ DecoratorCatB.png
-│  │  ├─ DholCat.png
-│  │  ├─ DJCat.png
-│  │  ├─ DJCatB.png
-│  │  ├─ EntertainmentCardPhoto.png
-│  │  ├─ GiftsAndFavoursCardPhoto.png
-│  │  ├─ InvitationsCardPhoto.png
-│  │  ├─ MakeUpCardPhoto.png
-│  │  ├─ MakeUpCat.png
-│  │  ├─ MakeUpCatB.png
-│  │  ├─ MehndiCardPhoto.png
-│  │  ├─ MehndiCat.png
-│  │  ├─ PhotographerCat.png
-│  │  ├─ PhotographerCatB.png
-│  │  ├─ PhotoGraphyCardPhoto.png
-│  │  ├─ PlannerCat.png
-│  │  ├─ PlannerCatB.png
-│  │  ├─ PlannersCardPhoto.png
-│  │  ├─ SecurityCardPhoto.png
-│  │  ├─ SoundCardPhoto.png
-│  │  └─ TransportCardPhoto.png
-│  ├─ Cat1.png
-│  ├─ Cat10.png
-│  ├─ Cat11.png
-│  ├─ Cat12.png
-│  ├─ Cat2.png
-│  ├─ Cat3.png
-│  ├─ Cat4.png
-│  ├─ Cat5.png
-│  ├─ Cat6.png
-│  ├─ Cat7.png
-│  ├─ Cat8.png
-│  ├─ Cat9.png
-│  ├─ CatVideos
-│  │  ├─ AnniversaryCatVid.mp4
-│  │  ├─ AnniversaryHeroMob.mp4
-│  │  ├─ AnniversaryHeroMobImg.png
-│  │  ├─ birthday-hero.mp4
-│  │  ├─ BirthdayCatVid.mp4
-│  │  ├─ BirthdayHeroMob.mp4
-│  │  ├─ BirthdayHeroMobImg.png
-│  │  ├─ DefaultHeroMobImg.png
-│  │  ├─ EventsHeroMob.mp4
-│  │  ├─ WeddingHeroMob.mp4
-│  │  └─ WeddingHeroMobImg.png
-│  ├─ DholSectionBottom.png
-│  ├─ EventsHeaderCard.png
-│  ├─ eventsSectionBottom.png
 │  ├─ file.svg
 │  ├─ globe.svg
 │  ├─ GlowLoadingGif.gif
-│  ├─ heroimage.webp
-│  ├─ HeroNAPAnniversary.gif
-│  ├─ HeroNAPBirthday.gif
-│  ├─ HeroNAPDefault.gif
-│  ├─ HeroNAPWedding.gif
-│  ├─ Loading
-│  │  ├─ 404NotFoundVideo.mp4
-│  │  └─ loading1.mp4
 │  ├─ logo.svg
 │  ├─ next.svg
 │  ├─ planwablogo.ico
 │  ├─ planwablogo.png
-│  ├─ posters
-│  │  ├─ anniversary-poster.jpg
-│  │  ├─ birthday-poster.jpg
-│  │  ├─ deskHeroCarousel
-│  │  │  ├─ anniversary.png
-│  │  │  ├─ anniversaryRight.png
-│  │  │  ├─ birthday.png
-│  │  │  ├─ birthdayRight.png
-│  │  │  ├─ events.png
-│  │  │  ├─ eventsRight.png
-│  │  │  ├─ wedding.png
-│  │  │  └─ weddingRight.png
-│  │  └─ wedding-poster.jpg
-│  ├─ quickServicesPhotos
-│  │  ├─ cakesQS.png
-│  │  ├─ caterorQS.png
-│  │  ├─ decorQS.png
-│  │  ├─ dholQS.png
-│  │  ├─ djQS.png
-│  │  ├─ makeupQS.png
-│  │  ├─ mehndiQS.png
-│  │  ├─ panditQS.png
-│  │  ├─ photographerQS.png
-│  │  ├─ plannerQS.png
-│  │  └─ venueQS.png
 │  ├─ vercel.svg
-│  ├─ WeddingCat.png
-│  ├─ WeddingDesign.png
-│  ├─ WeddingHeaderCard.png
-│  ├─ weddingSectionBottom.png
 │  └─ window.svg
 ├─ README.md
 ├─ src
@@ -359,6 +240,9 @@ Planwab-dev
 │  │  │     ├─ loading.js
 │  │  │     └─ page.js
 │  │  ├─ api
+│  │  │  ├─ admin
+│  │  │  │  └─ dashboard
+│  │  │  │     └─ route.js
 │  │  │  ├─ leads
 │  │  │  │  └─ route.js
 │  │  │  ├─ media
@@ -366,6 +250,8 @@ Planwab-dev
 │  │  │  ├─ orders
 │  │  │  │  └─ route.js
 │  │  │  ├─ planned-events
+│  │  │  │  ├─ get-all
+│  │  │  │  │  └─ route.js
 │  │  │  │  ├─ route.js
 │  │  │  │  └─ [id]
 │  │  │  │     └─ route.js

@@ -6,6 +6,7 @@ import NextTopLoader from "nextjs-toploader";
 import { Toaster } from "sonner";
 import ReactQueryProvider from "../components/providers/ReactQueryProvider";
 import ClientModalWrapper from "../components/shared/ClientModalWrapper";
+import { GoogleAnalytics } from '@next/third-parties/google'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -114,6 +115,7 @@ export default function RootLayout({ children }) {
           <body className={`${geistSans.variable} ${geistMono.variable} font-sans bg-gray-50 text-gray-900`}>
             <NextTopLoader color="#2563eb" height={3} crawl={false} showSpinner={false} easing="linear" speed={300} shadow={false} zIndex={1600} />
             {children}
+            <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || "G-ML8HLB62X6"} />
             <Toaster position="bottom-center" richColors closeButton />
             <ClientModalWrapper />
           </body>

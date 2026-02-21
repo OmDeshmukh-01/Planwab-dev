@@ -70,7 +70,7 @@ const WhyWeBetter = () => {
       {/* Main Content */}
       <div className="flex flex-col items-center px-5 pb-4 md:px-0 md:pb-12">
         {/* Header Text */}
-        <div className="text-center max-w-2xl mx-auto bg-white">
+        <div className="text-center w-[100vw] bg-[#F0F7F4]">
           <h2 className="pb-2 font-serif text-3xl font-semibold text-[#121212] md:pb-4 lg:text-5xl">
             Why are we better?
           </h2>

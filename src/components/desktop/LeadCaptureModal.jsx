@@ -162,7 +162,7 @@ const LeadCaptureModal = ({ isOpen, onClose, actionType, title, subtitle }) => {
               exit={{ scale: 0.8, opacity: 0, y: 50, rotateX: 15 }}
               transition={SPRING_CONFIG}
               onClick={(e) => e.stopPropagation()}
-              className="relative h-[95vh] w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
+              className="relative h-[550px] w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
               style={{
                 transformStyle: "preserve-3d",
                 perspective: "1000px",

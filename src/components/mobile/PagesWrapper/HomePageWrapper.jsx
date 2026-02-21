@@ -158,7 +158,7 @@ const MainContent = ({ plannersSlot, trendingSlot, mostBookedSlot }) => {
   }
 
   return (
-    <div className="relative w-full min-h-screen bg-gray-50 text-slate-800 font-sans pb-0 mx-auto max-w-md overflow-hidden">
+    <div className="relative w-full min-h-screen bg-white text-slate-800 font-sans pb-0 mx-auto max-w-md overflow-hidden">
       <HeroSection />
 
       <div className="w-full bg-black py-2.5 px-4 flex items-center justify-between relative overflow-hidden z-20 shadow-md">
@@ -251,7 +251,7 @@ const MainContent = ({ plannersSlot, trendingSlot, mostBookedSlot }) => {
         <SampleProposal category={currentCategory} />
       </Suspense>
 
-      <div className="rotate-180 bottom-5 z-50 opacity-100 pointer-events-none mb-9">
+      <div className="rotate-180 bottom-5 z-50 opacity-100 pointer-events-none mb-9 bg-gradient-to-b from-transparent via-[#FFEFF4]/70 to-[#FFEFF4]/70">
         <img
           alt=""
           loading="lazy"
