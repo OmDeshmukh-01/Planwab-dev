@@ -386,19 +386,6 @@ export default function DesktopHomePageWrapper() {
           <FloatingLines
             linesGradient={categoryGradients[activeCategory] || categoryGradients.Wedding}
             enabledWaves={["top", "middle", "bottom"]}
-            lineCount={[6, 6, 6]}
-            lineDistance={[5, 5, 5]}
-            topWavePosition={{ x: 2, y: 0.2, rotate: -0.4 }}
-            middleWavePosition={{ x: 2, y: 0.0, rotate: 0.2 }}
-            bottomWavePosition={{ x: 2.0, y: -0.7, rotate: -1 }}
-            animationSpeed={1}
-            interactive={true}
-            bendRadius={5.0}
-            bendStrength={-0.5}
-            mouseDamping={0.05}
-            parallax={true}
-            parallaxStrength={0.2}
-            mixBlendMode="screen"
           />
         </div>
         {/* ── Hero with overlapping cards ── */}

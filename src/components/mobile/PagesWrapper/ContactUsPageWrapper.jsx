@@ -20,6 +20,7 @@ import {
   AlertCircle,
   ExternalLink,
 } from "lucide-react";
+import { toast } from "sonner";
 
 const ContactUsPageWrapper = () => {
   const [formData, setFormData] = useState({
@@ -142,20 +143,50 @@ const ContactUsPageWrapper = () => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    setErrors({});
+ 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setIsSubmitted(true);
-      setFormData({
-        name: "",
-        email: "",
-        phone: "",
-        subject: "",
-        message: "",
-        userType: "customer",
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
       });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit form");
+      }
+
+      if (data.success) {
+        toast.success("Message sent successfully!", {
+          description: "Our support team will get back to you within 24 hours.",
+        });
+
+        setIsSubmitted(true);
+        setFormData({
+          name: "",
+          email: "",
+          phone: "",
+          subject: "",
+          message: "",
+          userType: "customer",
+        });
+      } else {
+        throw new Error(data.error || "Submission failed");
+      }
     } catch (error) {
-      setErrors({ general: "Failed to send message. Please try again." });
+      console.error("Form submission error:", error);
+
+      toast.error("Failed to send message", {
+        description: error.message || "Please try again later.",
+      });
+
+      setErrors({
+        general: error.message || "Failed to send message. Please try again.",
+      });
     } finally {
       setIsSubmitting(false);
     }

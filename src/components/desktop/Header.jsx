@@ -1006,9 +1006,9 @@ const AccordionButton = ({ icon: Icon, label, name, openAccordion, toggleAccordi
 );
 
 const categories = [
-  { name: "Wedding", image: "/WeddingCat.png" },
-  { name: "Anniversary", image: "/AnniversaryCat.png" },
-  { name: "Birthday", image: "/BirthdayCat.png" },
+  { name: "Wedding", image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430828/WeddingCat_qz1gdd.png" },
+  { name: "Anniversary", image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430833/AnniversaryCat_iyr77x.png" },
+  { name: "Birthday", image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430838/BirthdayCat_adjjnh.png" },
 ];
 
 export default function DesktopHeader() {

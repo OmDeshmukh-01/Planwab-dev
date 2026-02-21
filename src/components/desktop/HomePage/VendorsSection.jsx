@@ -229,9 +229,9 @@ export default function VendorsCatSection() {
   const displayVendors = vendorsData.slice(0, 11);
 
   return (
-    <section className="py-24 bg-gray-50 dark:bg-gray-900 relative overflow-hidden">
+    <section className="py-24 bg-gray-50 dark:bg-gray-900 relative overflow-hidden !pt-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
@@ -258,7 +258,7 @@ export default function VendorsCatSection() {
           <p className="text-lg text-gray-600 dark:text-gray-400 leading-relaxed">
             Connect with our carefully curated network of top-tier vendors who will bring your dream event to life
           </p>
-        </motion.div>
+        </motion.div> */}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
