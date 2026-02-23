@@ -3,13 +3,15 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, Calendar, Users, Briefcase, Settings, Star, FileClock, ChevronDown, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Calendar, IdCard, ShoppingCart, Users, Briefcase, Settings, Star, FileClock, ChevronDown, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const navItems = [
   { name: "Dashboard", href: "/admin/dashboard", icon: LayoutDashboard },
   { name: "Events", href: "/admin/events", icon: Calendar },
   { name: "Vendors", href: "/admin/vendors", icon: Briefcase },
+  { name: "Vendor Profile", href: "/admin/vendors/profile", icon: IdCard },
+  { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
   {
     name: "Requests",
     icon: FileClock,

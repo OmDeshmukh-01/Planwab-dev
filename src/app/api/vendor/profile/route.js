@@ -42,7 +42,7 @@ const checkCredibility = async (username) => {
   }
 };
 
-// GET - Fetch vendor profile by username
+// GET - Fetch vendor profile(s)
 export async function GET(request) {
   try {
     await connectToDatabase();
@@ -50,22 +50,29 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const username = searchParams.get("username");
 
-    if (!username) {
-      return NextResponse.json({ success: false, message: "Username is required" }, { status: 400 });
+    // If username is provided, fetch a single profile natively 
+    if (username) {
+      const profile = await VendorProfile.findOne({ username }).select("-password");
+
+      if (!profile) {
+        return NextResponse.json({ success: false, message: "Vendor profile not found" }, { status: 404 });
+      }
+
+      const credibility = await checkCredibility(username);
+
+      return NextResponse.json({
+        success: true,
+        data: profile,
+        credibility,
+      });
     }
 
-    const profile = await VendorProfile.findOne({ username }).select("-password");
-
-    if (!profile) {
-      return NextResponse.json({ success: false, message: "Vendor profile not found" }, { status: 404 });
-    }
-
-    const credibility = await checkCredibility(username);
+    // Otherwise, fetch all vendor profiles for lists
+    const profiles = await VendorProfile.find({}).sort({ createdAt: -1 }).select("-password");
 
     return NextResponse.json({
       success: true,
-      data: profile,
-      credibility,
+      data: profiles,
     });
   } catch (error) {
     return NextResponse.json({ success: false, message: "Server error", error: error.message }, { status: 500 });

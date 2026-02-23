@@ -1,15 +1,24 @@
 "use client";
 
 import DashboardStatsCard from "@/components/desktop/admin/DashboardStatsCard";
-import { Calendar, Briefcase, Users, PieChart } from "lucide-react";
+import {
+  Users, Briefcase, Star, Layers, IdCard,
+  ShoppingCart, SendHorizontal, Cake, CalendarCheck, Megaphone
+} from "lucide-react";
 import { useState, useEffect } from "react";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
-    totalEvents: 0,
-    activeVendors: 0,
-    newUsers: 0,
-    revenue: 0,
+    totalVendors: 0,
+    featuredVendors: 0,
+    totalUsers: 0,
+    totalCategories: 0,
+    totalVendorProfiles: 0,
+    totalOrders: 0,
+    vendorRequests: 0,
+    totalBirthdayRequests: 0,
+    totalBookingRequests: 0,
+    totalLeadsRequests: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -34,31 +43,67 @@ export default function DashboardPage() {
   return (
     <div>
       <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-6">Dashboard</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6">
         <DashboardStatsCard
-          title="Total Events"
-          value={loading ? "..." : stats.totalEvents}
-          description="Upcoming & Past Events"
-          icon={Calendar}
-        />
-        <DashboardStatsCard
-          title="Active Vendors"
-          value={loading ? "..." : stats.activeVendors}
-          description="Verified Marketplace Vendors"
+          title="Total Vendors"
+          value={stats.totalVendors}
           icon={Briefcase}
+          loading={loading}
         />
         <DashboardStatsCard
-          title="New Users This Month"
-          value={loading ? "..." : stats.newUsers.toLocaleString()}
-          description="+15% from last month"
-          icon={Users}
+          title="Featured Vendors"
+          value={stats.featuredVendors}
+          icon={Star}
+          loading={loading}
         />
-        {/* <DashboardStatsCard
-          title="Revenue (This Month)"
-          value={loading ? "..." : `$${stats.revenue.toLocaleString()}`}
-          description="From Vendor Subscriptions"
-          icon={PieChart}
-        /> */}
+        <DashboardStatsCard
+          title="Total Users"
+          value={stats.totalUsers}
+          icon={Users}
+          loading={loading}
+        />
+        <DashboardStatsCard
+          title="Total Categories"
+          value={stats.totalCategories}
+          icon={Layers}
+          loading={loading}
+        />
+        <DashboardStatsCard
+          title="Vendor Profiles"
+          value={stats.totalVendorProfiles}
+          icon={IdCard}
+          loading={loading}
+        />
+        <DashboardStatsCard
+          title="Total Orders"
+          value={stats.totalOrders}
+          icon={ShoppingCart}
+          loading={loading}
+        />
+        <DashboardStatsCard
+          title="Vendor Requests"
+          value={stats.vendorRequests}
+          icon={SendHorizontal}
+          loading={loading}
+        />
+        <DashboardStatsCard
+          title="Birthday Requests"
+          value={stats.totalBirthdayRequests}
+          icon={Cake}
+          loading={loading}
+        />
+        <DashboardStatsCard
+          title="Booking Requests"
+          value={stats.totalBookingRequests}
+          icon={CalendarCheck}
+          loading={loading}
+        />
+        <DashboardStatsCard
+          title="Leads Requests"
+          value={stats.totalLeadsRequests}
+          icon={Megaphone}
+          loading={loading}
+        />
       </div>
 
       <div className="mt-8 bg-white dark:bg-gray-800/50 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">

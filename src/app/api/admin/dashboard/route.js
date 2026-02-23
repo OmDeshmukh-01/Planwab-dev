@@ -1,30 +1,58 @@
 import { NextResponse } from "next/server";
 import connectToDatabase from "@/database/mongoose";
-import PlannedEvent from "@/database/models/PlannedEvent";
 import Vendor from "@/database/models/VendorModel";
 import User from "@/database/models/userModel";
+import VendorProfile from "@/database/models/VendorProfileModel";
+import Order from "@/database/models/Orders";
+import VendorRequest from "@/database/models/VendorRequestsModel";
+import BirthdayBooking from "@/database/models/BirthdayBooking";
+import DetailsBookingRequest from "@/database/models/DetailsBookingRequestModel";
+import Lead from "@/database/models/LeadsModel";
 
 export async function GET() {
     try {
         await connectToDatabase();
-        const startOfMonth = new Date();
-        startOfMonth.setDate(1);
-        startOfMonth.setHours(0, 0, 0, 0);
 
-        const [totalEvents, activeVendors, newUsers] = await Promise.all([
-            PlannedEvent.countDocuments(),
-            Vendor.countDocuments({ isActive: true, isVerified: true }),
-            User.countDocuments({ createdAt: { $gte: startOfMonth } }),
+        const [
+            totalVendors,
+            featuredVendors,
+            totalUsers,
+            categories,
+            totalVendorProfiles,
+            totalOrders,
+            vendorRequests,
+            totalBirthdayRequests,
+            totalBookingRequests,
+            totalLeadsRequests
+        ] = await Promise.all([
+            Vendor.countDocuments(),
+            Vendor.countDocuments({ isFeatured: true }),
+            User.countDocuments(),
+            Vendor.distinct("category"),
+            VendorProfile.countDocuments(),
+            Order.countDocuments(),
+            VendorRequest.countDocuments(),
+            BirthdayBooking.countDocuments(),
+            DetailsBookingRequest.countDocuments(),
+            Lead.countDocuments()
         ]);
+
+        const totalCategories = categories.length;
 
         return NextResponse.json(
             {
                 success: true,
                 data: {
-                    totalEvents,
-                    activeVendors,
-                    newUsers,
-                    
+                    totalVendors,
+                    featuredVendors,
+                    totalUsers,
+                    totalCategories,
+                    totalVendorProfiles,
+                    totalOrders,
+                    vendorRequests,
+                    totalBirthdayRequests,
+                    totalBookingRequests,
+                    totalLeadsRequests
                 },
             },
             { status: 200 }

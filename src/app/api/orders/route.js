@@ -11,7 +11,7 @@ export async function POST(req) {
     const razorpay = new Razorpay({
       key_id: process.env.RAZORPAY_LIVE_KEY_ID,
       key_secret: process.env.RAZORPAY_LIVE_KEY_SECRET,
-    }); 
+    });
 
     const body = await req.json();
     const { items, eventDetails, contactDetails, priceDetails, paymentMethod, userId } = body;
@@ -123,11 +123,16 @@ export async function GET(req) {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
 
-    if (!userId) {
-      return NextResponse.json({ success: false, message: "User ID is required" }, { status: 400 });
+    // If userId is provided, fetch just those orders natively
+    if (userId) {
+      const orders = await Order.find({ userId }).sort({ createdAt: -1 });
+      return NextResponse.json({ success: true, data: orders });
     }
-    const orders = await Order.find({ userId }).sort({ createdAt: -1 });
-    return NextResponse.json({ success: true, orders });
+
+    // Otherwise fetch all orders (admin view)
+    const allOrders = await Order.find({}).sort({ createdAt: -1 });
+    return NextResponse.json({ success: true, data: allOrders });
+
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
