@@ -116,7 +116,7 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
     }
 
     if (statusFilter !== "all") {
-      filtered = filtered.filter((event) => event.status === statusFilter);
+      filtered = filtered.filter((event) => (event.status || "pending") === statusFilter);
     }
 
     if (typeFilter !== "all") {
@@ -129,14 +129,21 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
       if (sortBy === "date" || sortBy === "eventDate") {
         const dateA = a.eventDetails?.selectedDate || `${a.eventDetails?.year}-${a.eventDetails?.month || "01"}-01`;
         const dateB = b.eventDetails?.selectedDate || `${b.eventDetails?.year}-${b.eventDetails?.month || "01"}-01`;
-        aVal = new Date(dateA);
-        bVal = new Date(dateB);
+        const timeA = new Date(dateA).getTime();
+        const timeB = new Date(dateB).getTime();
+        aVal = isNaN(timeA) ? 0 : timeA;
+        bVal = isNaN(timeB) ? 0 : timeB;
+      } else if (sortBy === "createdAt") {
+        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        aVal = isNaN(timeA) ? 0 : timeA;
+        bVal = isNaN(timeB) ? 0 : timeB;
       } else if (sortBy === "budget") {
         aVal = parseFloat(a.budgetDetails?.valueRaw) || 0;
         bVal = parseFloat(b.budgetDetails?.valueRaw) || 0;
       } else if (sortBy === "contactName") {
-        aVal = a.contactName || "";
-        bVal = b.contactName || "";
+        aVal = (a.contactName || a.username || "").toLowerCase();
+        bVal = (b.contactName || b.username || "").toLowerCase();
       } else if (sortBy === "category") {
         aVal = a.category || "";
         bVal = b.category || "";
@@ -145,6 +152,7 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
         bVal = b[sortBy] || "";
       }
 
+      if (aVal === bVal) return 0;
       if (sortOrder === "asc") {
         return aVal > bVal ? 1 : -1;
       } else {
@@ -175,7 +183,7 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
     }
 
     const total = allEventsData.length;
-    const pending = allEventsData.filter((e) => e.status === "pending").length;
+    const pending = allEventsData.filter((e) => !e.status || e.status === "pending").length;
     const confirmed = allEventsData.filter((e) => e.status === "confirmed").length;
     const inProgress = allEventsData.filter((e) => e.status === "in-progress").length;
     const completed = allEventsData.filter((e) => e.status === "completed").length;
@@ -340,10 +348,9 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
     await fetchEvents();
   };
 
-  const hasActiveFilters = searchQuery || statusFilter !== "all" || typeFilter !== "all";
+  const hasActiveFilters = !!(searchQuery || statusFilter !== "all");
 
   const statusOptions = [
-    { value: "all", label: "All Status" },
     { value: "pending", label: "Pending" },
     { value: "confirmed", label: "Confirmed" },
     { value: "in-progress", label: "In Progress" },
@@ -354,7 +361,6 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
   const typeOptions = useMemo(() => {
     const uniqueCategories = new Set(allEventsData.map((e) => e.category).filter(Boolean));
     return [
-      { value: "all", label: "All Categories" },
       ...Array.from(uniqueCategories).map((cat) => ({
         value: cat,
         label: cat.charAt(0).toUpperCase() + cat.slice(1),
@@ -365,7 +371,7 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
   const sortOptions = [
     { value: "createdAt", label: "Created Date" },
     { value: "date", label: "Event Date" },
-    { value: "contactName", label: "Contact Name" },
+    { value: "contactName", label: "Event / Client Name" },
     { value: "category", label: "Category" },
     { value: "budget", label: "Budget" },
   ];
@@ -386,6 +392,11 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
           value={stats.pending}
           color="bg-yellow-500"
           lightBg="bg-yellow-50 dark:bg-yellow-900/20"
+          onClick={() => {
+            setStatusFilter(statusFilter === "pending" ? "all" : "pending");
+            setCurrentPage(1);
+          }}
+          isActive={statusFilter === "pending"}
         />
         <StatsCard
           icon={CheckCircle}
@@ -393,6 +404,11 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
           value={stats.confirmed}
           color="bg-blue-500"
           lightBg="bg-blue-50 dark:bg-blue-900/20"
+          onClick={() => {
+            setStatusFilter(statusFilter === "confirmed" ? "all" : "confirmed");
+            setCurrentPage(1);
+          }}
+          isActive={statusFilter === "confirmed"}
         />
         <StatsCard
           icon={Sparkles}
@@ -400,6 +416,11 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
           value={stats["in-progress"]}
           color="bg-purple-500"
           lightBg="bg-purple-50 dark:bg-purple-900/20"
+          onClick={() => {
+            setStatusFilter(statusFilter === "in-progress" ? "all" : "in-progress");
+            setCurrentPage(1);
+          }}
+          isActive={statusFilter === "in-progress"}
         />
         <StatsCard
           icon={DollarSign}
@@ -446,17 +467,16 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                  showFilters || hasActiveFilters
-                    ? "bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300"
-                    : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${showFilters || hasActiveFilters
+                  ? "bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300"
+                  : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  }`}
               >
                 <SlidersHorizontal size={16} />
                 <span className="hidden sm:inline">Filters</span>
                 {hasActiveFilters && (
                   <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center">
-                    {(searchQuery ? 1 : 0) + (statusFilter !== "all" ? 1 : 0) + (typeFilter !== "all" ? 1 : 0)}
+                    {searchQuery ? 1 : 0}
                   </span>
                 )}
               </button>
@@ -464,22 +484,20 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
               <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden">
                 <button
                   onClick={() => setViewMode("table")}
-                  className={`p-2.5 transition-colors ${
-                    viewMode === "table"
-                      ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600"
-                      : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
+                  className={`p-2.5 transition-colors ${viewMode === "table"
+                    ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600"
+                    : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
                   title="Table View"
                 >
                   <ListIcon size={16} />
                 </button>
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2.5 transition-colors ${
-                    viewMode === "grid"
-                      ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600"
-                      : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
+                  className={`p-2.5 transition-colors ${viewMode === "grid"
+                    ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600"
+                    : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
                   title="Grid View"
                 >
                   <LayoutGrid size={16} />
@@ -518,26 +536,6 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
               >
                 <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                   <FilterDropdown
-                    label="Status"
-                    options={statusOptions}
-                    value={statusFilter}
-                    onChange={(val) => {
-                      setStatusFilter(val);
-                      setCurrentPage(1);
-                    }}
-                    icon={CheckCircle}
-                  />
-                  <FilterDropdown
-                    label="Category"
-                    options={typeOptions}
-                    value={typeFilter}
-                    onChange={(val) => {
-                      setTypeFilter(val);
-                      setCurrentPage(1);
-                    }}
-                    icon={Building2}
-                  />
-                  <FilterDropdown
                     label="Sort By"
                     options={sortOptions}
                     value={sortBy}
@@ -549,11 +547,10 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
                   />
                   <button
                     onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${
-                      sortOrder === "desc"
-                        ? "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
-                        : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
-                    }`}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${sortOrder === "desc"
+                      ? "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                      : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+                      }`}
                     title={sortOrder === "asc" ? "Ascending" : "Descending"}
                   >
                     {sortOrder === "asc" ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
@@ -582,11 +579,51 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-900/50">
                 <tr>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Event / Client
+                  <th
+                    className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
+                    onClick={() => {
+                      if (sortBy === "contactName") {
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                      } else {
+                        setSortBy("contactName");
+                        setSortOrder("asc");
+                      }
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <div className="flex items-center gap-1">
+                      Event / Client
+                      <span className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {sortBy === "contactName" ? (
+                          sortOrder === "asc" ? <ArrowUpRight size={14} className="text-indigo-500" /> : <ArrowDownRight size={14} className="text-indigo-500" />
+                        ) : (
+                          <ArrowUpRight size={14} />
+                        )}
+                      </span>
+                    </div>
                   </th>
-                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Date
+                  <th
+                    className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors group"
+                    onClick={() => {
+                      if (sortBy === "createdAt" || sortBy === "date") {
+                        setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+                      } else {
+                        setSortBy("createdAt");
+                        setSortOrder("desc");
+                      }
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <div className="flex items-center gap-1">
+                      Date
+                      <span className="text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {(sortBy === "createdAt" || sortBy === "date") ? (
+                          sortOrder === "asc" ? <ArrowUpRight size={14} className="text-indigo-500" /> : <ArrowDownRight size={14} className="text-indigo-500" />
+                        ) : (
+                          <ArrowDownRight size={14} />
+                        )}
+                      </span>
+                    </div>
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">
                     City
@@ -771,11 +808,10 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
                           setDeleteError("");
                         }}
                         placeholder="Enter admin password"
-                        className={`w-full pl-4 pr-12 py-3 rounded-xl border-2 outline-none transition-all bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                          deleteError
-                            ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
-                            : "border-gray-200 dark:border-gray-600 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
-                        }`}
+                        className={`w-full pl-4 pr-12 py-3 rounded-xl border-2 outline-none transition-all bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${deleteError
+                          ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
+                          : "border-gray-200 dark:border-gray-600 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
+                          }`}
                         disabled={deleteLoading}
                         onKeyDown={(e) => {
                           if (e.key === "Enter" && deletePassword) {
@@ -844,8 +880,14 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
   );
 }
 
-const StatsCard = ({ icon: Icon, label, value, trend, color, lightBg }) => (
-  <div className={`${lightBg} rounded-xl p-4 border border-gray-200 dark:border-gray-700`}>
+const StatsCard = ({ icon: Icon, label, value, trend, color, lightBg, onClick, isActive }) => (
+  <div
+    onClick={onClick}
+    className={`${lightBg} rounded-xl p-4 border ${isActive
+      ? "border-indigo-500 dark:border-indigo-400 ring-2 ring-indigo-500/20"
+      : "border-gray-200 dark:border-gray-700"
+      } ${onClick ? "cursor-pointer hover:shadow-md transition-all" : ""}`}
+  >
     <div className="flex items-center justify-between mb-2">
       <div className={`p-2 rounded-lg ${color} text-white`}>
         <Icon size={16} />
@@ -898,11 +940,10 @@ const FilterDropdown = ({ label, options, value, onChange, icon: Icon }) => {
                     onChange(option.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full px-3 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between ${
-                    value === option.value
-                      ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600"
-                      : "text-gray-700 dark:text-gray-300"
-                  }`}
+                  className={`w-full px-3 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between ${value === option.value
+                    ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600"
+                    : "text-gray-700 dark:text-gray-300"
+                    }`}
                 >
                   <span className="truncate">{option.label}</span>
                   {value === option.value && <CheckCircle size={14} className="flex-shrink-0" />}
@@ -950,8 +991,8 @@ const EventTableRow = ({ event, onView, onEdit, onDelete }) => {
             {eventDate
               ? new Date(eventDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })
               : event.eventDetails?.year && event.eventDetails?.month
-              ? `${event.eventDetails.month} ${event.eventDetails.year}`
-              : "N/A"}
+                ? `${event.eventDetails.month} ${event.eventDetails.year}`
+                : "N/A"}
           </span>
         </div>
       </td>
@@ -1073,8 +1114,8 @@ const EventCard = ({ event, onView, onEdit, onDelete }) => {
               {eventDate
                 ? new Date(eventDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })
                 : event.eventDetails?.year && event.eventDetails?.month
-                ? `${event.eventDetails.month} ${event.eventDetails.year}`
-                : "N/A"}
+                  ? `${event.eventDetails.month} ${event.eventDetails.year}`
+                  : "N/A"}
             </span>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
@@ -1204,11 +1245,10 @@ const Pagination = ({ currentPage, totalPages, total, limit, onPageChange }) => 
               <button
                 key={page}
                 onClick={() => onPageChange(page)}
-                className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${
-                  currentPage === page
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
+                className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${currentPage === page
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  }`}
               >
                 {page}
               </button>

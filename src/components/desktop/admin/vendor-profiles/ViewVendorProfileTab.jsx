@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useContext, createContext, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     MapPin,
@@ -20,7 +21,8 @@ import {
     Image as ImageIcon,
     Video,
     ThumbsUp,
-    Tag
+    Tag,
+    ExternalLink
 } from "lucide-react";
 
 // ============================================================================
@@ -121,6 +123,7 @@ export default function ViewVendorProfileTab({ profile, onBack }) {
 function ViewVendorProfileContent({ profile, onBack }) {
     const [copiedField, setCopiedField] = useState(null);
     const { addToast } = useToast();
+    const router = useRouter();
 
     if (!profile) {
         return (
@@ -219,6 +222,17 @@ function ViewVendorProfileContent({ profile, onBack }) {
                                 </div>
 
                                 <div className="flex gap-3 flex-shrink-0">
+                                    <motion.button
+                                        whileHover={{ scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() =>
+                                            router.push(`/vendor/${profile.category}/profile/${profile.username}`)
+                                        }
+                                        className="px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl font-medium text-sm flex items-center gap-2 transition-all border border-indigo-400 shadow-md"
+                                    >
+                                        <ExternalLink size={16} className="hidden sm:block" />
+                                        <span className="hidden sm:inline">View Profile</span>
+                                    </motion.button>
                                     <motion.button
                                         whileHover={{ scale: 1.02 }}
                                         whileTap={{ scale: 0.98 }}
