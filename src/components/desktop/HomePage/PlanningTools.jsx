@@ -13,9 +13,9 @@ const FeaturedCard = ({ item }) => {
   // Determine background image based on type (mimicking the original CSS classes)
   const bgImage =
     item.backgroundType === "venues"
-      ? "https://images.unsplash.com/photo-1595407753234-0882f1e77954?w=600&q=80"
+      ? "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771603289/Venue-PlanningTools_sbblvw.png"
       : item.backgroundType === "vendors"
-      ? "/CardsCatPhotos/PlannerCat.png"
+      ? "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771603260/Planner-PlanningTools_lb5igu.png"
       : "https://images.unsplash.com/photo-1595407753234-0882f1e77954?w=600&q=80"; // Fallback/Unsplash
 
   return (
@@ -169,7 +169,7 @@ export default function WeddingPlanningTools({ heading, description }) {
       title: "Planning tools",
       description: "Custom planning tools to manage your checklist, budget, guests and vendors.",
       linkText: "Discover our tools",
-      linkHref: "/planning-tools",
+      linkHref: "/events/events/planning-tools",
       icon: "https://cdn1.weddingwire.in/assets/svg/original/illustration/notebook.svg",
       iconAlt: "illustration notebook",
     },

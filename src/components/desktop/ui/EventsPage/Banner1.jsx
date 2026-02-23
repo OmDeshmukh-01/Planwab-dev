@@ -7,22 +7,22 @@ import Link from "next/link";
 const categoryData = {
     wedding: {
         steps: ["Verified Vendors", "Stunning Venues", "Expert Planners"],
-        image: "/WeddingDesign.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430671/WeddingDesign_zvgfma.png",
         buttonTheme: "bg-rose-900 hover:bg-rose-950 dark:bg-rose-800 dark:hover:bg-rose-700 text-white",
     },
     anniversary: {
         steps: ["Your Love Story", "Our Celebration", "Perfect Anniversaries"],
-        image: "/AnniversaryDesign.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430673/AnniversaryDesign_m5cmeq.png",
         buttonTheme: "bg-amber-900 hover:bg-amber-950 dark:bg-amber-800 dark:hover:bg-amber-700 text-white",
     },
     birthday: {
         steps: ["No Stress, Just Fun", "Let Us Plan the Party!", "One Click to Your Perfect Party"],
-        image: "/BirthdayDesign.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430673/BirthdayDesign_onfg26.png",
         buttonTheme: "bg-yellow-400 hover:bg-yellow-500 text-slate-900 font-bold",
     },
     default: {
         steps: ["Vendor Booking", "Venue Consultation", "Event Planning"],
-        image: "/BirthdayDesign.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771430673/BirthdayDesign_onfg26.png",
         buttonTheme: "bg-slate-700 hover:bg-slate-800 text-white",
     },
 };

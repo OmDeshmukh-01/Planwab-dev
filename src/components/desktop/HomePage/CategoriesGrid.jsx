@@ -554,201 +554,422 @@ export default function CategoryGrid() {
 
   const currentCategory = activeCategory || "Wedding";
   // Tailwind classes with responsive breakpoints
-  const baseWidth = 171;   // in px
-const baseHeight = 90; 
-const widthClasses = {
-  base: "w-[171px]",
-  md: "md:w-[137px]",
-  lg: "lg:w-[172px]",
-};
+  const baseWidth = 137; // in px
+  const baseHeight = 72;
+  const widthClasses = {
+    base: "w-[171px]",
+    md: "md:w-[137px]",
+    lg: "lg:w-[205px]",
+  };
 
-const heightClasses = {
-  base: "h-[90px]",
-  md: "md:h-[72px]",
-  lg: "lg:h-[108px]",
-};
+  const heightClasses = {
+    base: "h-[90px]",
+    md: "md:h-[72px]",
+    lg: "lg:h-[110px]",
+  };
 
-const cardWidthClass = `${widthClasses.base} ${widthClasses.md} ${widthClasses.lg}`;
-const cardHeightClass = `${heightClasses.base} ${heightClasses.md} ${heightClasses.lg}`;
-
+  const cardWidthClass = `${widthClasses.base} ${widthClasses.md} ${widthClasses.lg}`;
+  const cardHeightClass = `${heightClasses.base} ${heightClasses.md} ${heightClasses.lg}`;
 
   // Categories for Wedding/Anniversary/Events
-const categories = useMemo(
-  () => [
-    {
-      name: `${currentCategory === "Default" ? "Event" : currentCategory} Planner`,
-      key: "planners",
-      image: "/CardsCatPhotos/PlannerCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Photographer",
-      image: "/CardsCatPhotos/PhotographerCat.png",
-      key: "photographers",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "mehendi",
-      key: "mehendi",
-      image: "/CardsCatPhotos/MehndiCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "MakeUp",
-      key: "makeup",
-      image: "/CardsCatPhotos/MakeUpCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: `${currentCategory} Venues`,
-      key: "venues",
-      image: "https://cdn.yesmadam.com/images/live/category/Hydra%20Category_Wedding%20Season-18-11-25.gif",
-      span: 2,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "DJs & Sound",
-      key: "djs",
-      image: "/CardsCatPhotos/DJCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Dhol",
-      key: "dhol",
-      image: "/CardsCatPhotos/DholCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Caterers",
-      key: "catering",
-      image: "/CardsCatPhotos/CaterorsCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-        {
-      name: "Dhol",
-      key: "dhol",
-      image: "/CardsCatPhotos/DholCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Caterers",
-      key: "catering",
-      image: "/CardsCatPhotos/CaterorsCat.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-  ],
-  [currentCategory]
-);
+  const CategoriesEvents = useMemo(
+    () => [
+      {
+        name: `${currentCategory === "Default" ? "Event" : currentCategory} Planner`,
+        key: "planners",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428071/plannerCatHeroDesktop_mwbfmq.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Photographer",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428068/photographerCatHeroDesktop_y1cwnd.png",
+        key: "photographers",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "mehendi",
+        key: "mehendi",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428066/mehendiCatHeroDesktop_zlzx53.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "MakeUp",
+        key: "makeup",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428052/makeupCatHeroDesktop_uw2rkm.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: `${currentCategory} Venues`,
+        key: "venues",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771518098/Hydra_Category_Wedding_Season-18-11-25_yrbjzq.webp",
+        span: 2,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "DJs & Sound",
+        key: "djs",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428064/djCatHeroDesktop_olswsk.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Dhol",
+        key: "dhol",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428062/dholCatHeroDesktop_rjcrwr.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Caterers",
+        key: "catering",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428059/caterersCatHeroDesktop_kc7jyx.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Anchor",
+        key: "anchor",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428054/anchorCatHeroDesktop_rpfbau.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Baraat",
+        key: "baraat",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428057/baraatCatHeroDesktop_rp8ra2.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+    ],
+    [currentCategory],
+  );
 
-  // Categories for Birthday
-const categoriesBirthday = useMemo(
-  () => [
-    {
-      name: `${currentCategory === "Default" ? "Event" : currentCategory} Planner`,
-      key: "planners",
-      image: "/CardsCatPhotos/PlannerCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Decorator",
-      key: "decor",
-      image: "/CardsCatPhotos/DecoratorCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "DJs & Sound",
-      key: "djs",
-      image: "/CardsCatPhotos/DJCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Photographer",
-      key: "photographers",
-      image: "/CardsCatPhotos/PhotographerCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: `${currentCategory} Venues`,
-      key: "venues",
-      image: "https://cdn.yesmadam.com/images/live/category/Hydra%20Category_Wedding%20Season-18-11-25.gif",
-      span: 2,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Caterers",
-      key: "catering",
-      image: "/CardsCatPhotos/CaterorsCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "Cake",
-      key: "cake",
-      image: "/CardsCatPhotos/CakesCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-    {
-      name: "MakeUp",
-      key: "makeup",
-      image: "/CardsCatPhotos/MakeUpCatB.png",
-      span: 1,
-      widthClass: cardWidthClass,
-      heightClass: cardHeightClass,
-      pixelWidth: 160,
-    },
-  ],
-  [currentCategory]
-);
+  const CategoriesWedding = useMemo(
+    () => [
+      {
+        name: `${currentCategory === "Default" ? "Event" : currentCategory} Planner`,
+        key: "planners",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597584/plannerWeddingCatHeroDesktop_f5hdb1.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Photographer",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597583/photographerWeddingCatHeroDesktop_j5kxfn.png",
+        key: "photographers",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "mehendi",
+        key: "mehendi",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597582/mehendiWeddingCatHeroDesktop_zjkwol.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "MakeUp",
+        key: "makeup",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771598315/makeupWeddingCatHeroDesktop_cw4ndt.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: `${currentCategory} Venues`,
+        key: "venues",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771518098/Hydra_Category_Wedding_Season-18-11-25_yrbjzq.webp",
+        span: 2,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "DJs & Sound",
+        key: "djs",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597580/djWeddingCatHeroDesktop_akhvca.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Dhol",
+        key: "dhol",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597579/dholWeddingCatHeroDesktop_yuhvya.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Caterers",
+        key: "catering",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597578/caterersWeddingCatHeroDesktop_oqx7qk.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Anchor",
+        key: "anchor",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597577/anchorWeddingCatHeroDesktop_x9dzrb.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Baraat",
+        key: "baraat",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597577/baraatWeddingCatHeroDesktop_obrm7p.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+    ],
+    [currentCategory],
+  );
 
-  const activeCategories = currentCategory === "Birthday" ? categoriesBirthday : categories;
+   const CategoriesAnniversary = useMemo(
+    () => [
+      {
+        name: `${currentCategory === "Default" ? "Event" : currentCategory} Planner`,
+        key: "planners",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597925/plannerAnniversaryCatHeroDesktop_xatquu.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Photographer",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597895/photographerAnniversaryCatHeroDesktop_uiabio.png",
+        key: "photographers",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "mehendi",
+        key: "mehendi",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597894/mehendiAnniversaryCatHeroDesktop_gtsycz.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "MakeUp",
+        key: "makeup",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771598266/makeupAnniversaryCatHeroDesktop_hnre32.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: `${currentCategory} Venues`,
+        key: "venues",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771518098/Hydra_Category_Wedding_Season-18-11-25_yrbjzq.webp",
+        span: 2,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "DJs & Sound",
+        key: "djs",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597893/djAnniversaryCatHeroDesktop_eotgsh.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Dhol",
+        key: "dhol",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597895/dholAnniversaryCatHeroDesktop_qlzsm5.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Caterers",
+        key: "catering",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597897/caterersAnniversaryCatHeroDesktop_s5mmxz.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Anchor",
+        key: "anchor",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597894/anchorAnniversaryCatHeroDesktop_c2psuu.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Baraat",
+        key: "baraat",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597895/baraatAnniversaryCatHeroDesktop_ikhtiu.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+    ],
+    [currentCategory],
+  );
+
+  const CategoriesBirthday = useMemo(
+    () => [
+      {
+        name: `${currentCategory === "Default" ? "Event" : currentCategory} Planner`,
+        key: "planners",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771598853/plannerBirthdayCatHeroDesktop_deyixk.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Photographer",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771598851/photographerBirthdayCatHeroDesktop_knxmlx.png",
+        key: "photographers",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "mehendi",
+        key: "mehendi",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771598849/mehendiBirthdayCatHeroDesktop_gnamzs.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "MakeUp",
+        key: "makeup",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771598652/makeupBirthdayCatHeroDesktop_h7xydj.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: `${currentCategory} Venues`,
+        key: "venues",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771518098/Hydra_Category_Wedding_Season-18-11-25_yrbjzq.webp",
+        span: 2,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "DJs & Sound",
+        key: "djs",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771598652/djBirthdayCatHeroDesktop_g0uoyl.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Dhol",
+        key: "dhol",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771598651/dholBirthdayCatHeroDesktop_pxqr4y.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Caterers",
+        key: "catering",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771598649/caterersBirthdayCatHeroDesktop_dditb3.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Anchor",
+        key: "anchor",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771598646/anchorBirthdayCatHeroDesktop_ltkbui.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+      {
+        name: "Baraat",
+        key: "baraat",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771598649/baraatBirthdayCatHeroDesktop_tdpxvc.png",
+        span: 1,
+        widthClass: cardWidthClass,
+        heightClass: cardHeightClass,
+        pixelWidth: 160,
+      },
+    ],
+    [currentCategory],
+  );
+
+  const activeCategories = useMemo(() => {
+    switch (currentCategory?.toLowerCase()) {
+      case "wedding":
+        return CategoriesWedding;
+      case "anniversary":
+        return CategoriesAnniversary; 
+      case "birthday":
+        return CategoriesBirthday;
+      default:
+        return CategoriesEvents;
+    }
+  },
+    [currentCategory, CategoriesWedding, CategoriesAnniversary, CategoriesBirthday, CategoriesEvents],
+  )
 
   const checkScroll = useCallback(() => {
     if (!scrollRef.current) return;
@@ -794,7 +1015,7 @@ const categoriesBirthday = useMemo(
         router.push(url);
       });
     },
-    [router]
+    [router],
   );
 
   const handleCategoryClick = (e, item) => {
@@ -818,9 +1039,9 @@ const categoriesBirthday = useMemo(
   };
 
   return (
-    <div className="p-4 py-2 pt-4 bg-transparent rounded-2xl mx-auto max-w-5xl z-30 mb-22">
-      {/* <div className="flex items-center justify-between mb-8">
-        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 leading-none">What are you looking for?</h2>
+    <div className="p-4 py-2 pt-2 bg-transparent rounded-2xl mx-auto max-w-5xl z-30 mb-22">
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-xl md:text-2xl font-semibold text-gray-900 leading-none"></h2>
 
         <div className="flex gap-2">
           <ScrollButton
@@ -840,7 +1061,7 @@ const categoriesBirthday = useMemo(
             direction="right"
           />
         </div>
-      </div> */}
+      </div>
 
       <div
         ref={scrollRef}
@@ -925,10 +1146,7 @@ const categoriesBirthday = useMemo(
             className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
           >
             <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-full shadow-xl border border-gray-200">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              >
+              <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: "linear" }}>
                 <Loader2 className="w-5 h-5 text-blue-500" />
               </motion.div>
               <span className="text-sm font-medium text-gray-700">Loading...</span>

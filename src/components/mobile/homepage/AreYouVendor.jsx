@@ -584,7 +584,7 @@ const AreYouAVendorSection = ({ haptic, setIsDrawerOpen }) => {
               className="w-full aspect-[1/1.1] relative rounded-xl overflow-hidden"
             >
               <SmartMedia
-                src={`/Banners/banner5.gif`}
+                src={`https://res.cloudinary.com/dhkkvo36x/image/upload/v1771427662/banner5_vrse69.gif`}
                 type="image"
                 className="w-full h-full object-cover object-center"
                 loaderImage="/GlowLoadingGif.gif"

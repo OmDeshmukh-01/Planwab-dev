@@ -40,12 +40,12 @@ const HeroSection = () => {
       mobile: "https://imageswedding.theweddingcompany.com/bh_prod_bucket/weddings/assets/goa-new-ph-potrait.mp4",
     },
     anniversary: {
-      desktop: "/CatVideos/AnniversaryCatVid.mp4",
-      mobile: "/CatVideos/AnniversaryCatVid.mp4",
+      desktop: "https://res.cloudinary.com/dhkkvo36x/video/upload/v1771429264/AnniversaryCatVid_rpfzch.mp4",
+      mobile: "https://res.cloudinary.com/dhkkvo36x/video/upload/v1771515806/AnniversaryCatVid_jkx4rz.mp4",
     },
     birthday: {
-      desktop: "/CatVideos/BirthdayCatVid.mp4",
-      mobile: "/CatVideos/BirthdayCatVid.mp4",
+      desktop: "https://res.cloudinary.com/dhkkvo36x/video/upload/v1771429266/BirthdayCatVid_ieco0n.mp4",
+      mobile: "https://res.cloudinary.com/dhkkvo36x/video/upload/v1771515772/BirthdayCatVid_yrqzrd.mp4",
     },
   };
 

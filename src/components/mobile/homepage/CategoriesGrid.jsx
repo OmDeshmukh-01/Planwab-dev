@@ -520,14 +520,14 @@ const CategoryGrid = ({ currentCategory }) => {
       {
         name: `${currentCategory === "Default" ? "Event" : currentCategory} Planner`,
         key: "planners",
-        image: "/CardsCatPhotos/PlannerCat.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428626/PlannerCat_p16v2m.png",
         span: 1,
         widthClass: "w-20",
         pixelWidth: 80,
       },
       {
         name: "Photographer",
-        image: "/CardsCatPhotos/PhotographerCat.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428623/PhotographerCat_ymq0vh.png",
         key: "photographers",
         span: 1,
         widthClass: "w-20",
@@ -536,7 +536,7 @@ const CategoryGrid = ({ currentCategory }) => {
       {
         name: "mehendi",
         key: "mehendi",
-        image: "/CardsCatPhotos/MehndiCat.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428620/MehndiCat_hdsxxo.png",
         span: 1,
         widthClass: "w-20",
         pixelWidth: 80,
@@ -544,7 +544,7 @@ const CategoryGrid = ({ currentCategory }) => {
       {
         name: "MakeUp",
         key: "makeup",
-        image: "/CardsCatPhotos/MakeUpCat.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428617/MakeUpCat_lcp68d.png",
         span: 1,
         widthClass: "w-20",
         pixelWidth: 80,
@@ -553,7 +553,7 @@ const CategoryGrid = ({ currentCategory }) => {
         name: `${currentCategory} Venues`,
         key: "venues",
         // Use a smaller, optimized static image if possible instead of a heavy GIF for thumbnails
-        image: "https://cdn.yesmadam.com/images/live/category/Hydra%20Category_Wedding%20Season-18-11-25.gif",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771518098/Hydra_Category_Wedding_Season-18-11-25_yrbjzq.webp",
         span: 2,
         widthClass: "w-40",
         pixelWidth: 160,
@@ -561,16 +561,16 @@ const CategoryGrid = ({ currentCategory }) => {
       {
         name: "DJs & Sound",
         key: "djs",
-        image: "/CardsCatPhotos/DJCat.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428615/DJCat_hay9fu.png",
         span: 1,
         widthClass: "w-20",
         pixelWidth: 80,
       },
-      { name: "Dhol", key: "dhol", image: "/CardsCatPhotos/DholCat.png", span: 1, widthClass: "w-20", pixelWidth: 80 },
+      { name: "Dhol", key: "dhol", image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428613/DholCat_swqr0p.png", span: 1, widthClass: "w-20", pixelWidth: 80 },
       {
         name: "Caterers",
         key: "catering",
-        image: "/CardsCatPhotos/CaterorsCat.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428610/CaterorsCat_pch4d5.png",
         span: 1,
         widthClass: "w-20",
         pixelWidth: 80,
@@ -584,7 +584,7 @@ const CategoryGrid = ({ currentCategory }) => {
       {
         name: `${currentCategory === "Default" ? "Event" : currentCategory} Planner`,
         key: "planners",
-        image: "/CardsCatPhotos/PlannerCatB.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428442/PlannerCatB_fknksy.png",
         span: 1,
         widthClass: "w-20",
         pixelWidth: 80,
@@ -592,7 +592,7 @@ const CategoryGrid = ({ currentCategory }) => {
       {
         name: "Decorator",
         key: "decor",
-        image: "/CardsCatPhotos/DecoratorCatB.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428432/DecoratorCatB_t45nbm.png",
         span: 1,
         widthClass: "w-20",
         pixelWidth: 80,
@@ -600,7 +600,7 @@ const CategoryGrid = ({ currentCategory }) => {
       {
         name: "DJs & Sound",
         key: "djs",
-        image: "/CardsCatPhotos/DJCatB.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428436/DJCatB_zpnp70.png",
         span: 1,
         widthClass: "w-20",
         pixelWidth: 80,
@@ -608,7 +608,7 @@ const CategoryGrid = ({ currentCategory }) => {
       {
         name: "Photographer",
         key: "photographers",
-        image: "/CardsCatPhotos/PhotographerCatB.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428440/PhotographerCatB_t77bej.png",
         span: 1,
         widthClass: "w-20",
         pixelWidth: 80,
@@ -617,7 +617,7 @@ const CategoryGrid = ({ currentCategory }) => {
         name: `${currentCategory} Venues`,
         key: "venues",
         // Use a smaller, optimized static image if possible instead of a heavy GIF for thumbnails
-        image: "https://cdn.yesmadam.com/images/live/category/Hydra%20Category_Wedding%20Season-18-11-25.gif",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771518098/Hydra_Category_Wedding_Season-18-11-25_yrbjzq.webp",
         span: 2,
         widthClass: "w-40",
         pixelWidth: 160,
@@ -625,7 +625,7 @@ const CategoryGrid = ({ currentCategory }) => {
       {
         name: "Caterers",
         key: "catering",
-        image: "/CardsCatPhotos/CaterorsCatB.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428432/CaterorsCatB_imq5qx.png",
         span: 1,
         widthClass: "w-20",
         pixelWidth: 80,
@@ -633,7 +633,7 @@ const CategoryGrid = ({ currentCategory }) => {
       {
         name: "Cake",
         key: "cake",
-        image: "/CardsCatPhotos/CakesCatB.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428430/CakesCatB_njrf4g.png",
         span: 1,
         widthClass: "w-20",
         pixelWidth: 80,
@@ -641,7 +641,7 @@ const CategoryGrid = ({ currentCategory }) => {
       {
         name: "MakeUp",
         key: "makeup",
-        image: "/CardsCatPhotos/MakeUpCatB.png",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428437/MakeUpCatB_xpendj.png",
         span: 1,
         widthClass: "w-20",
         pixelWidth: 80,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCategoryStore } from "@/GlobalState/CategoryStore";
@@ -82,28 +82,28 @@ export const categoryCards = [
   {
     name: "Events",
     icon: "🎉",
-    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=400&q=80",
+    image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771602239/ActiveEventsHeaderCard_jo4yxd.png",
     tagline: "Every occasion, perfectly planned.",
     description: "Discover top vendors and venues for all your celebrations — corporate, social, or personal.",
   },
   {
     name: "Wedding",
     icon: "💒",
-    image: "https://images.unsplash.com/photo-1519741497674-611481863552?w=400&q=80",
+    image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771602240/ActiveWeddingHeaderCard_kvd3z2.png",
     tagline: "Moments that Matter, Made Simple.",
     description: "From intimate ceremonies to grand celebrations, find the perfect vendors for your big day.",
   },
   {
     name: "Anniversary",
     icon: "💝",
-    image: "https://images.unsplash.com/photo-1529636798458-92182e662485?w=400&q=80",
+    image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771602236/ActiveAnniversaryHeaderCard_stf6mh.png",
     tagline: "Celebrate Love, Year After Year.",
     description: "Create unforgettable anniversary celebrations with curated vendors and venues.",
   },
   {
     name: "Birthday",
     icon: "🎂",
-    image: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=400&q=80",
+    image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771602237/ActiveBirthdayHeaderCard_stxmry.png",
     tagline: "Make Every Birthday Legendary.",
     description: "Throw the ultimate birthday bash with the best planners, decorators, and caterers.",
   },
@@ -112,41 +112,41 @@ export const categoryCards = [
 // ── Carousel Images per Category ──
 export const carouselImages = {
   Events: [
-    "/posters/deskHeroCarousel/events.png",
-    "https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=900&q=80",
-    "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=900&q=80",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429490/events_osoyqb.png",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771602596/2-events_itxlqr.png",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771602725/3-events_x8v1qz.png",
   ],
   Wedding: [
-    "/posters/deskHeroCarousel/wedding.png",
-    "https://images.unsplash.com/photo-1606800052052-a08af7148866?w=900&q=80",
-    "https://images.unsplash.com/photo-1583939003579-730e3918a45a?w=900&q=80",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429494/wedding_fplcb3.png",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771602598/2-wedding_gsecdb.png",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771602727/3-wedding_wdk5wh.png",
   ],
   Anniversary: [
-    "/posters/deskHeroCarousel/anniversary.png",
-    "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=900&q=80",
-    "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=900&q=80",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429483/anniversary_eqkzag.png",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771602594/2-anniversary_l9kstj.png",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771602720/3-anniversary_djd9fh.png",
   ],
   Birthday: [
-    "/posters/deskHeroCarousel/birthday.png",
-    "https://images.unsplash.com/photo-1464349153735-7db50ed83c84?w=900&q=80",
-    "https://images.unsplash.com/photo-1513151233558-d860c5398176?w=900&q=80",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429487/birthday_e4yhtd.png",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771602595/2-birthday_bqgm3o.png",
+    "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771602722/3-birthday_gahoir.png",
   ],
 };
 
 // ── Right-side Hero Images ──
 export const heroSideImages = {
-  Events: "/posters/deskHeroCarousel/eventsRight.png",
-  Wedding: "/posters/deskHeroCarousel/weddingRight.png",
-  Anniversary: "/posters/deskHeroCarousel/anniversaryRight.png",
-  Birthday: "/posters/deskHeroCarousel/birthdayRight.png",
+  Events: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429708/eventsRight_y1ay0u.jpg",
+  Wedding: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429711/weddingRight_e2atzb.jpg",
+  Anniversary: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429705/anniversaryRight_oxguwo.jpg",
+  Birthday: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429701/birthdayRight_tox6wr.jpg",
 };
 
 const CategoryButton = ({ category, imageSrc, active }) => {
   const inactiveImages = {
-    Wedding: "/WeddingHeaderCard.png",
-    Anniversary: "/AnniversaryHeaderCard.png",
-    Birthday: "/BirthdayHeaderCard.png",
-    Events: "/EventsHeaderCard.png",
+    Wedding: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429996/WeddingHeaderCard_vslgmt.png",
+    Anniversary: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429999/AnniversaryHeaderCard_garm4n.png",
+    Birthday: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429994/BirthdayHeaderCard_nat4mj.png",
+    Events: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429994/EventsHeaderCard_ppcemp.png",
   };
 
   const backgroundImage = active ? imageSrc : inactiveImages[category] || "/sample-image.png";
@@ -194,10 +194,10 @@ const CategoryButton = ({ category, imageSrc, active }) => {
 };
 
 const categoryGradients = {
-  Events: ["#2F4BA2", "#F59E0B"], // Blue & Yellow
-  Wedding: ["#2F4BA2", "#F59E0B"], // Same as Events
-  Anniversary: ["#EF4444", "#F97316"], // Red & Orange
-  Birthday: ["#FCD34D", "#D97706"], // Yellow & Golden
+  Events: ["#2F4BA2", "#F59E0B"],
+  Wedding: ["#2F4BA2", "#F59E0B"],
+  Anniversary: ["#EF4444", "#F97316"],
+  Birthday: ["#FCD34D", "#D97706"],
 };
 
 export default function DesktopHomePageWrapper() {
@@ -262,53 +262,117 @@ export default function DesktopHomePageWrapper() {
   const cardsData1 = [
     {
       title: `${activeCategory === "Default" ? "Event" : activeCategory} Planner`,
-      image: "/CardsCatPhotos/PlannerCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428626/PlannerCat_p16v2m.png",
       link: "/vendors/marketplace/planners",
     },
     {
       title: "Photographer",
-      image: "/CardsCatPhotos/PhotographerCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428623/PhotographerCat_ymq0vh.png",
       link: "/vendors/marketplace/photographers",
     },
     {
       title: "mehendi",
-      image: "/CardsCatPhotos/MehndiCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428620/MehndiCat_hdsxxo.png",
       link: "/vendors/marketplace/mehendi",
     },
     {
       title: "MakeUp",
-      image: "/CardsCatPhotos/MakeUpCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428617/MakeUpCat_lcp68d.png",
       link: "/vendors/marketplace/makeup",
     },
     {
       title: `${activeCategory} Venues`,
-      image: "https://cdn.yesmadam.com/images/live/category/Hydra%20Category_Wedding%20Season-18-11-25.gif",
+      image:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771518098/Hydra_Category_Wedding_Season-18-11-25_yrbjzq.webp",
       link: "/vendors/marketplace/venues",
     },
     {
       title: "DJs & Sound",
-      image: "/CardsCatPhotos/DJCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428615/DJCat_hay9fu.png",
       link: "/vendors/marketplace/djs",
     },
     {
       title: "Dhol",
-      image: "/CardsCatPhotos/DholCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428613/DholCat_swqr0p.png",
       link: "/vendors/marketplace/dhol",
     },
     {
       title: "Caterers",
-      image: "/CardsCatPhotos/CaterorsCat.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428610/CaterorsCat_pch4d5.png",
       link: "/vendors/marketplace/catering",
     },
   ];
 
+  const CarouselHeaderImages = {
+    events: {
+      featured:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594539/FeaturedVendorsEventsDesktopCarHeaderCard_efnzy5.avif",
+      planners:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594691/PlannersEventsDesktopCarHeaderCard_g7uva8.png",
+      photographers:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594540/PhotoGrapherEventsDesktopCarHeaderCard_dhs5tk.avif",
+      venues:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594540/VenuesEventsDesktopCarHeaderCard_itlslv.webp",
+      makeup:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594540/MakeUpEventsDesktopCarHeaderCard_z8xdef.avif",
+
+      cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597012/EventsCWB_femplz.webp",
+    },
+    wedding: {
+      featured:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/FeaturedVendorsWeddingDesktopCarHeaderCard_ycnu2l.avif",
+      planners:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771517863/plannerWeddingDesktopCarHeaderCard_p38nbw.png",
+      photographers:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/PhotoGrapherWeddingDesktopCarHeaderCard_vqbl4p.avif",
+      venues:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/VenuesWeddingDesktopCarHeaderCard_n3iamk.webp",
+      makeup:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/MakeUpWeddingDesktopCarHeaderCard_bmnfxf.avif",
+
+      cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597043/WeddingCWB_g5s05q.webp",
+    },
+    anniversary: {
+      featured:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595640/FeaturedVendorsAnniversaryDesktopCarHeaderCard_ah2nd6.avif",
+      planners:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595655/PlannersAnniversaryDesktopCarHeaderCard_hasn0v.png",
+      photographers:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595642/PhotoGrapherAnniversaryDesktopCarHeaderCard_pvczsj.avif",
+      venues:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595641/VenuesAnniversaryDesktopCarHeaderCard_r5eci4.webp",
+      makeup:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595640/MakeUpAnniversaryDesktopCarHeaderCard_ei91ro.avif",
+
+      cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597071/AnniversaryCWB_h9zf4i.webp",
+    },
+    birthday: {
+      featured:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595843/FeaturedVendorsBirthdayDesktopCarHeaderCard_txxlmq.avif",
+      planners:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595857/PlannersBirthdayDesktopCarHeaderCard_aw3owa.png",
+      photographers:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595846/PhotoGrapherBirthdayDesktopCarHeaderCard_pyxcu6.avif",
+      venues:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595844/VenuesBirthdayDesktopCarHeaderCard_y7mr16.webp",
+      makeup:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595844/MakeUpBirthdayDesktopCarHeaderCard_yqp2u4.avif",
+
+      cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597110/BirthdayCWB_xzl9iq.webp",
+    },
+  };
+
+  const carouselHeaderImagesCategoryWise = useMemo(() => {
+    return CarouselHeaderImages[activeCategory.toLowerCase()] || CarouselHeaderImages.wedding;
+  }, [activeCategory]);
+
   return (
-    <main className={`relative w-full overflow-x-hidden ${currentTheme?.bgLight} dark:bg-[#0d1117]`}>
+    <main className={`relative w-full overflow-x-hidden dark:bg-[#0d1117]`}>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
-        className="relative z-0"
+        className={`relative z-0 pb-10 ${currentTheme?.bgLight}`}
       >
         {/* <div
           className="absolute inset-0 -z-10 dark:hidden"
@@ -322,19 +386,6 @@ export default function DesktopHomePageWrapper() {
           <FloatingLines
             linesGradient={categoryGradients[activeCategory] || categoryGradients.Wedding}
             enabledWaves={["top", "middle", "bottom"]}
-            lineCount={[6, 6, 6]}
-            lineDistance={[5, 5, 5]}
-            topWavePosition={{ x: 2, y: 0.2, rotate: -0.4 }}
-            middleWavePosition={{ x: 2, y: 0.0, rotate: 0.2 }}
-            bottomWavePosition={{ x: 2.0, y: -0.7, rotate: -1 }}
-            animationSpeed={1}
-            interactive={true}
-            bendRadius={5.0}
-            bendStrength={-0.5}
-            mouseDamping={0.05}
-            parallax={true}
-            parallaxStrength={0.2}
-            mixBlendMode="screen"
           />
         </div>
         {/* ── Hero with overlapping cards ── */}
@@ -352,7 +403,7 @@ export default function DesktopHomePageWrapper() {
               >
                 <div className="flex min-w-full min-h-full gap-2 items-center bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50 rounded-2xl p-1.5 shadow-inner border border-gray-200/50 dark:border-gray-700/50">
                   {categoryCards.map((cat) => {
-                    const isActive = activeCategory === cat.name;
+                    const isActive = activeCategory === cat.name.toLowerCase();
                     return (
                       <div key={cat.name} onClick={() => handleCategoryChange(cat.name)} className="w-full">
                         <CategoryButton category={cat.name} imageSrc={cat.image} active={isActive} />
@@ -367,15 +418,19 @@ export default function DesktopHomePageWrapper() {
           {/* ── Main Content Card ── */}
           <HeroSection activeCategory={activeCategory} theme={currentTheme} categoryData={activeCategoryData} />
         </div>
+        <WeddingPlanningTools />
+        {/* White merging effect — light mode only */}
+        <div className="pointer-events-none absolute bottom-0 left-0 w-full h-22 dark:hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
+        </div>
       </motion.div>
       {/* ── Rest of Page ── */}
-      <WeddingPlanningTools />
       <CarouselHeader
         title={`${activeCategory} Planners`}
         description={`Find the best ${activeCategory.toLowerCase()} planners that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Planners`}
-        buttonLink={`/vendors/marketplace?categories=${activeCategory.toLowerCase()}`}
-        imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
+        buttonLink={`/vendors/marketplace?categories=planners`}
+        imageSrc={carouselHeaderImagesCategoryWise.planners}
       />
 
       <LandingCarousel
@@ -390,8 +445,8 @@ export default function DesktopHomePageWrapper() {
         title={`${activeCategory} Photographers`}
         description={`Find the best ${activeCategory.toLowerCase()} photographers that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Photographers`}
-        buttonLink={`/vendors/marketplace?categories=${activeCategory.toLowerCase()}`}
-        imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
+        buttonLink={`/vendors/marketplace?categories=photographers`}
+        imageSrc={carouselHeaderImagesCategoryWise.photographers}
         contentSide="right"
       />
       <LandingCarousel
@@ -405,15 +460,15 @@ export default function DesktopHomePageWrapper() {
       <CardsWithBanner
         heading="Top Categories For You ..."
         contentSide="right"
-        backgroundImage="https://images.jdmagicbox.com/standard/shopfront/8fcf090e6e47722f436205eb7d8eee92.jpg"
+        backgroundImage={carouselHeaderImagesCategoryWise.cardsWithBanner1}
         cards={cardsData1}
       />
       <CarouselHeader
         title={`${activeCategory} Venues`}
         description={`Find the best ${activeCategory.toLowerCase()} venues that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Venues`}
-        buttonLink={`/vendors/marketplace?categories=${activeCategory.toLowerCase()}`}
-        imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
+        buttonLink={`/vendors/marketplace?categories=venues`}
+        imageSrc={carouselHeaderImagesCategoryWise.venues}
         contentSide="left"
       />
       <LandingCarousel
@@ -428,8 +483,8 @@ export default function DesktopHomePageWrapper() {
         title={`${activeCategory} Makeup Artists`}
         description={`Find the best ${activeCategory.toLowerCase()} makeup artists that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Makeup Artists`}
-        buttonLink={`/vendors/marketplace?categories=${activeCategory.toLowerCase()}`}
-        imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
+        buttonLink={`/vendors/marketplace?categories=makeup`}
+        imageSrc={carouselHeaderImagesCategoryWise.makeup}
         contentSide="right"
       />
       <LandingCarousel
@@ -445,8 +500,8 @@ export default function DesktopHomePageWrapper() {
         title={`${activeCategory} Featured Vendors.`}
         description={`Find the best ${activeCategory.toLowerCase()} vendors that will bring your vision to life and keep things running smoothly.`}
         buttonText={`Explore ${activeCategory} Vendors`}
-        buttonLink={`/vendors/marketplace?categories=${activeCategory.toLowerCase()}`}
-        imageSrc="https://www.weddingwire.in/assets/img/listing-sector-banner/28.webp"
+        buttonLink={`/vendors/marketplace?featured=true`}
+        imageSrc={carouselHeaderImagesCategoryWise.featured}
         contentSide="left"
       />
       <LandingCarousel

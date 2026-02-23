@@ -16,21 +16,21 @@ const SampleProposal = ({ category }) => {
       id: 1,
       title: `Rahul And Priya's ${category?.toLowerCase() || "Wedding"} Celebration`,
       location: "Enjoyable Moments",
-      image: "/Banners/sampleProposal1.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771427948/sampleProposal1_wyzddm.png",
       theme: "Traditional Gold",
     },
     {
       id: 2,
       title: "Our Simple Process for Customers",
       location: "Simplied and Easy Steps",
-      image: "/Banners/sampleProposal2.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771427950/sampleProposal2_qhp3vm.png",
       theme: "Floral Pastel",
     },
     {
       id: 3,
       title: "Budget Estimation Process",
       location: "Planned Budget Tracker",
-      image: "/Banners/sampleProposal3.png",
+      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771427952/sampleProposal3_b4pys1.png",
       theme: "Modern Chic",
     },
   ];
@@ -96,8 +96,8 @@ const SampleProposal = ({ category }) => {
       </div>
 
       {/* Carousel Container */}
-      <div className="relative w-full px-4 lg:px-10">
-        <div className="relative w-full aspect-[4/2.3] lg:aspect-[21/9] overflow-hidden rounded-xl bg-gray-100 shadow-sm transform-gpu">
+      <div className="relative w-full px-4 lg:px-10 bg-gradient-to-b from-transparent via-[#FFEFF4]/70 to-[#FFEFF4]/70">
+        <div className="relative w-full aspect-[4/2.3] lg:aspect-[21/9] overflow-hidden rounded-xl bg-transparent shadow-sm transform-gpu">
           <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
               key={currentIndex}

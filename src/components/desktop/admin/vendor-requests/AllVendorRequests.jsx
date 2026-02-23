@@ -149,8 +149,8 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
           requestsArray = result.data || [];
         } else if (requestType === "leads") {
           requestsArray = result.leads || result.data || [];
-        } else if (requestType === "planning") {
-          requestsArray = result.data || [];
+        } else if (requestType === "planning-tools") {
+          requestsArray = result.tools || result.data || [];
         } else {
           requestsArray = result.data?.requests || [];
           setApiStats(result.data?.statusStats);
@@ -204,10 +204,11 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
             request.source?.toLowerCase().includes(query)
           );
         }
-        if (requestType === "planning") {
+        if (requestType === "planning-tools") {
           return (
-            request.eventName?.toLowerCase().includes(query) ||
-            request.eventType?.toLowerCase().includes(query)
+            request.name?.toLowerCase().includes(query) ||
+            request.userId?.toLowerCase().includes(query) ||
+            request.category?.toLowerCase().includes(query)
           );
         }
         return (
@@ -367,8 +368,8 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
         endpoint = `/api/vendor/requests/detail-booking?id=${selectedRequest._id}&adminPassword=${encodeURIComponent(adminPassword)}`;
       } else if (requestType === "leads") {
         endpoint = `/api/leads?id=${selectedRequest._id}&adminPassword=${encodeURIComponent(adminPassword)}`;
-      } else if (requestType === "planning") {
-        endpoint = `/api/plannedevent?id=${selectedRequest._id}&adminPassword=${encodeURIComponent(adminPassword)}`;
+      } else if (requestType === "planning-tools") {
+        endpoint = `/api/planning-tools?id=${selectedRequest._id}&adminPassword=${encodeURIComponent(adminPassword)}`;
       }
 
       if (action === "delete") {
@@ -1824,68 +1825,92 @@ const RequestTableRow = ({ request, requestType, onAction }) => {
     )
   }
 
-  if (requestType === "planning") {
-    return (
-      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
-        <td className="px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-              {request.eventName?.charAt(0).toUpperCase() || "?"}
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                {request.eventName || "Untitled Event"}
-              </h3>
-              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-                <Sparkles size={12} />
-                {request.eventType || "N/A"}
-              </div>
-            </div>
-          </div>
-        </td>
-        <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-          <div className="flex items-center gap-2">
-            <Calendar size={14} className="text-gray-400" />
-            {request.eventDate ? new Date(request.eventDate).toLocaleDateString() : "N/A"}
-          </div>
-        </td>
-        <td className="px-4 py-3 hidden md:table-cell">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400">
-              <span>Progress</span>
-              <span>{Math.round((request.tasksCompleted / (request.totalTasks || 1)) * 100)}%</span>
-            </div>
-            <div className="w-24 h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-indigo-500 rounded-full"
-                style={{ width: `${Math.round((request.tasksCompleted / (request.totalTasks || 1)) * 100)}%` }}
-              />
-            </div>
-          </div>
-        </td>
-        <td className="px-4 py-3 hidden lg:table-cell">
-          <div className="flex flex-col gap-1 text-xs text-gray-600 dark:text-gray-300">
-            <div className="flex items-center gap-1">
-              <DollarSign size={12} className="text-gray-400" />
-              <span>{request.totalBudgetSpent} / {request.totalBudgetAllocated}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Users size={12} className="text-gray-400" />
-              <span>{request.confirmedGuests} confirmed</span>
-            </div>
-          </div>
-        </td>
-        <td className="px-4 py-3">
-          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${request.status === "completed" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"
-            }`}>
-            <span className="capitalize">{request.status || "ongoing"}</span>
-          </span>
-        </td>
-        <td className="px-4 py-3 text-right">
-          {/* Actions for planning could be added here if needed */}
-        </td>
-      </tr>
-    )
+  if (requestType === "planning-tools") {
+  return (
+  <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+    
+    {/* Event Name */}
+    <td className="px-4 py-3">
+      <div className="flex items-center gap-3">
+        <div>
+          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+            {request.name || "Unnamed Event"}
+          </h3>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {request.venue || "No Venue"}
+          </p>
+        </div>
+      </div>
+    </td>
+
+    {/* User ID */}
+    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+      {request.userId}
+    </td>
+
+    {/* Category */}
+    <td className="px-4 py-3 hidden md:table-cell text-sm text-gray-600 dark:text-gray-300 capitalize">
+      {request.category || "N/A"}
+    </td>
+    <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
+  {request.guestCount || 0}
+</td>
+
+{/* Venue */}
+<td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
+  {request.venue || "N/A"}
+</td>
+
+    {/* Date */}
+    <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
+      {request.date
+        ? new Date(request.date).toLocaleDateString()
+        : "N/A"}
+    </td>
+
+    {/* Budget */}
+    <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
+      ₹{request.budget?.toLocaleString() || 0}
+    </td>
+
+    {/* Status */}
+    <td className="px-4 py-3">
+      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 capitalize">
+        {request.status || "unknown"}
+      </span>
+    </td>
+
+    {/* Actions */}
+    <td className="px-4 py-3 text-right">
+      <div className="flex items-center justify-end gap-2">
+        <button
+          onClick={() => onAction("view", request)}
+          className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+          title="View Event"
+        >
+          <Eye size={16} />
+        </button>
+
+        <button
+          onClick={() => onAction("edit", request)}
+          className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+          title="Edit Event"
+        >
+          <Edit size={16} />
+        </button>
+
+        <button
+          onClick={() => onAction("delete", request)}
+          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+          title="Delete Event"
+        >
+          <Trash2 size={16} />
+        </button>
+      </div>
+    </td>
+  </tr>
+);
+
   }
 
   if (requestType === "planning-tools") {

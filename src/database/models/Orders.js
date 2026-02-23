@@ -52,7 +52,7 @@ const OrderSchema = new mongoose.Schema(
     orderStatus: {
       type: String,
       enum: ["PLACED", "CONFIRMED", "COMPLETED", "CANCELLED"],
-      default: "CONFIRMED", // Default confirmed because we save after payment
+      default: "CONFIRMED",
     },
     userId: { type: String, required: true },
   },

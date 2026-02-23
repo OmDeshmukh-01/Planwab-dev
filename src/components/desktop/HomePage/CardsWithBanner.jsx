@@ -13,7 +13,7 @@ const CardsWithBanner = ({
 
   return (
     <section 
-      className={`relative w-full min-h-[480px] bg-cover bg-no-repeat bg-center flex items-center px-4 sm:px-8 lg:px-16 py-10`}
+      className={`relative w-full min-h-[480px] bg-cover bg-no-repeat bg-center flex items-center px-4 sm:px-8 lg:px-16 py-10 mb-16`}
       style={{ 
         backgroundImage: `url("${backgroundImage}")`,
         backgroundColor: 'rgb(234, 249, 249)' // Fallback color from source
