@@ -10,7 +10,7 @@ export default clerkMiddleware(async (auth, req) => {
   const { pathname } = url;
 
   // 1. Auth Protection
- if (isAdminRoute(req)) {
+  if (isAdminRoute(req)) {
     await auth.protect();
   }
 
@@ -27,30 +27,38 @@ export default clerkMiddleware(async (auth, req) => {
   const { device } = userAgent(req);
   const isMobile = device.type === "mobile";
 
+  // FIX: Precisely target the /m directory, ignoring routes like /makeup or /my-account
+  const isMobilePath = pathname === "/m" || pathname.startsWith("/m/");
+
   // 4. PREVENT DIRECT ACCESS TO /m ON DESKTOP
-  // If a desktop user tries to go to planwab.com/m/..., force them to planwab.com/...
-  if (!isMobile && pathname.startsWith("/m")) {
-    const newPath = pathname.replace("/m", "");
-    url.pathname = newPath === "" ? "/" : newPath;
+  if (!isMobile && isMobilePath) {
+    // Safely remove the exact /m or /m/ prefix
+    const newPath = pathname.replace(/^\/m(\/|$)/, "/");
+    url.pathname = newPath || "/";
     return NextResponse.redirect(url);
   }
 
   // 5. ADAPTIVE REWRITE FOR MOBILE
-  // If mobile user visits "/", internally fetch "/m" but keep URL as "/"
   if (isMobile) {
-    // Prevent redirect loops if already on a rewritten path (rare but safe)
-    if (!pathname.startsWith("/m")) {
-      url.pathname = `/m${pathname}`;
-      return NextResponse.rewrite(url);
+    if (!isMobilePath) {
+      // FIX: Prevent rewriting "/" to "/m/" to avoid Next.js 308 trailing slash redirects
+      url.pathname = pathname === "/" ? "/m" : `/m${pathname}`;
+      
+      const response = NextResponse.rewrite(url);
+      // FIX: Google requires this header when doing Dynamic Serving on the same URL
+      response.headers.set("Vary", "User-Agent");
+      return response;
     }
   }
 
-  return NextResponse.next();
+  // Ensure desktop responses also tell Google that content varies by device
+  const response = NextResponse.next();
+  response.headers.set("Vary", "User-Agent");
+  return response;
 });
 
 export const config = {
   matcher: [
-    // FIX: Added 'mp4', 'webm', 'json' to the ignore list so videos load instantly
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest|mp4|webm|json)).*)",
     "/(api|trpc)(.*)",
   ],

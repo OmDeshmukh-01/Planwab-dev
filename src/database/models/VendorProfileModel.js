@@ -48,6 +48,10 @@ const postSchema = new mongoose.Schema({
       savedAt: { type: Date, default: Date.now },
     },
   ],
+  content: {
+      type: Object,
+      default: {},
+  },
   createdAt: { type: Date, default: Date.now },
 });
 

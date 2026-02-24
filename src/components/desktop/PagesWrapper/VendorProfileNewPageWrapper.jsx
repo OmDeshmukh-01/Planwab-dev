@@ -7,6 +7,10 @@ import { motion, AnimatePresence, useScroll, useTransform, LayoutGroup } from "f
 import {
   ArrowLeft,
   Share2,
+  ChefHat,
+  Languages,
+  HelpCircle,
+  Settings,
   MoreVertical,
   Download,
   Pencil,
@@ -8156,6 +8160,368 @@ const formatBio = (bio) => {
   });
 };
 
+const SUGGESTED_CATEGORIES = [
+  { id: 1, name: "Photography", count: 234, icon: Camera, color: "from-purple-500 to-violet-600" },
+  { id: 2, name: "Videography", count: 156, icon: Video, color: "from-pink-500 to-rose-600" },
+  { id: 3, name: "Catering", count: 189, icon: ChefHat, color: "from-orange-500 to-amber-600" },
+  { id: 4, name: "Decoration", count: 98, icon: Sparkles, color: "from-emerald-500 to-teal-600" },
+  { id: 5, name: "Venue", count: 67, icon: Building2, color: "from-blue-500 to-indigo-600" },
+];
+
+// Right Sidebar Component
+const RightSidebar = ({
+  categoryColor,
+  router,
+  vendorProfileId,
+  setShowQRModal,
+  setShowBookingDrawer,
+  setShowUpdateProfileDrawer,
+  setShowUploadModal,
+  setShowMoreOptions,
+  isVerified,
+}) => {
+  const { user, isSignedIn } = useUser();
+  const [similarProfiles, setSimilarProfiles] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [trustingStates, setTrustingStates] = useState({});
+  const [similarLimit, setSimilarLimit] = useState(5);
+  const [similarCategories, setSimilarCategories] = useState([]);
+  const [error, setError] = useState(null);
+  const [similarCategoriesLoading, setSimilarCategoriesLoading] = useState(false);
+
+  const QUICK_SETTINGS = [
+    { id: 1, label: "Account Settings", icon: Settings, action: "settings" },
+    { id: 4, label: "Manage Bookings", icon: Calendar, action: "booking" },
+    { id: 5, label: "Show QR", icon: HelpCircle, action: "show-qr" },
+    { id: 6, label: "Copy Link", icon: Languages, action: "copy-link" },
+  ];
+
+  useEffect(() => {
+    if (isSignedIn && isVerified) {
+    QUICK_SETTINGS.push({ id: 2, label: "Update Profile", icon: Pencil, action: "update" });
+    QUICK_SETTINGS.push({ id: 3, label: "Upload Media", icon: Upload, action: "upload" });
+  }
+  },[isSignedIn, isVerified]);
+
+  useEffect(() => {
+    if (vendorProfileId) {
+      fetchSimilarProfiles();
+      fetchSimilarCategories();
+    }
+  }, [vendorProfileId, similarLimit]);
+
+  const fetchSimilarProfiles = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(
+        `/api/vendor/profile/similar?vendorProfileId=${vendorProfileId}&limit=${similarLimit}`,
+      );
+      const data = await response.json();
+      if (data.success) {
+        setSimilarProfiles(data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching similar profiles:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchSimilarCategories = async () => {
+    try {
+      setSimilarCategoriesLoading(true);
+      setError(null);
+
+      const response = await fetch("/api/vendor/profile/similar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          vendorProfileId,
+          limit: 5,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        setSimilarCategories(result.data.similarCategories);
+      } else {
+        setError(result.error);
+      }
+      setSimilarCategoriesLoading(false);
+    } catch (err) {
+      console.error("Error fetching similar categories:", err);
+      setError("Failed to load categories");
+    } finally {
+      setSimilarCategoriesLoading(false);
+    }
+  };
+
+  const handleSimilarprofileClick = (profile) => {
+    if (profile?.vendorId) {
+      router.push(`/vendor/${profile.category}/${profile.vendorId}/profile`);
+    } else {
+      router.push(`/vendor/${profile.category}/profile/${profile.username}`);
+    }
+  };
+
+  const handleQuickSettingClick = (action) => {
+    switch (action) {
+      case "settings":
+        setShowMoreOptions(true);
+        break;
+      case "update":
+        setShowUpdateProfileDrawer(true);
+        break;
+      case "upload":
+        setShowUploadModal(true);
+        break;
+      case "show-qr":
+        setShowQRModal(true);
+        break;
+      case "booking":
+        setShowBookingDrawer(true);
+        break;
+      case "copy-link":
+        navigator.clipboard.writeText(window.location.href);
+        toast.success("Profile link copied to clipboard!");
+        break;
+      default:
+        console.warn("Unknown quick setting action:", action);
+    }
+  };
+
+  const ProfileSkeleton = () => (
+    <div className="flex items-center gap-3 p-3 animate-pulse">
+      <div className="w-12 h-12 rounded-full bg-slate-200 dark:bg-slate-700" />
+      <div className="flex-1 min-w-0">
+        <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded mb-2" />
+        <div className="h-3 w-32 bg-slate-200 dark:bg-slate-700 rounded" />
+      </div>
+      <div className="w-16 h-8 bg-slate-200 dark:bg-slate-700 rounded-full" />
+    </div>
+  );
+
+  return (
+    <div className="sticky top-[100px] space-y-4">
+      {/* Similar Profiles Card */}
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden"
+      >
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800">
+          <h3 className="font-bold text-slate-900 dark:text-white text-[15px]">Similar profiles for you</h3>
+        </div>
+
+        <div className="divide-y divide-slate-100 dark:divide-slate-800">
+          {loading ? (
+            <>
+              <ProfileSkeleton />
+              <ProfileSkeleton />
+              <ProfileSkeleton />
+              <ProfileSkeleton />
+              <ProfileSkeleton />
+            </>
+          ) : similarProfiles.length > 0 ? (
+            similarProfiles.map((profile, index) => {
+              const hasTrusted = profile.trustedBy?.includes(user?.id);
+              const isTrusting = trustingStates[profile._id];
+
+              return (
+                <motion.div
+                  key={profile._id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.1 * index, duration: 0.3 }}
+                  className="flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                >
+                  {/* Avatar */}
+                  <div
+                    className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 cursor-pointer ring-2 ring-transparent hover:ring-slate-200 dark:hover:ring-slate-700 transition-all"
+                    onClick={() => handleSimilarprofileClick(profile)}
+                  >
+                    <img
+                      src={
+                        profile.vendorAvatar ||
+                        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"
+                      }
+                      alt={profile.vendorName}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+
+                  {/* Info */}
+                  <div
+                    className="flex-1 min-w-0 cursor-pointer"
+                    onClick={() => handleSimilarprofileClick(profile)}
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <h4 className="font-semibold text-[13px] text-slate-900 dark:text-white truncate">
+                        {profile.vendorName}
+                      </h4>
+                      {profile.trust >= 5 && (
+                        <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                          <Check size={10} className="text-white" strokeWidth={3} />
+                        </div>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate capitalize">
+                      {profile.category?.replace(/-/g, " ")} • {profile.postsCount + profile.reelsCount} posts
+                    </p>
+                    {profile.location?.city && (
+                      <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
+                        {profile.location.city}
+                        {profile.location.state ? `, ${profile.location.state}` : ""}
+                      </p>
+                    )}
+                  </div>
+                </motion.div>
+              );
+            })
+          ) : (
+            <div className="p-6 text-center text-slate-500 dark:text-slate-400 text-[13px]">
+              No similar profiles found
+            </div>
+          )}
+        </div>
+
+        {/* View More */}
+        {similarProfiles.length > 0 && (
+          <div className="p-3 border-t border-slate-100 dark:border-slate-800">
+            <button
+              onClick={() => setSimilarLimit((prev) => prev + 5)}
+              className="w-full text-center text-[13px] font-semibold transition-colors cursor-pointer hover:opacity-80"
+              style={{ color: categoryColor.primary }}
+            >
+              View more suggestions
+            </button>
+          </div>
+        )}
+      </motion.div>
+
+      {/* Explore Categories Section */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800">
+          <h3 className="text-[14px] font-bold text-slate-800 dark:text-slate-100">Explore Categories</h3>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Discover vendors by category</p>
+        </div>
+        <div className="p-3 space-y-2">
+          {similarCategoriesLoading ? (
+            <div className="animate-pulse space-y-2">
+              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-3/4"></div>
+              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/2"></div>
+              <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-5/6"></div>
+            </div>
+          ) : similarCategories?.length > 0 ? (
+            similarCategories.map((category, index) => (
+              <motion.button
+                key={category._id || index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.04, duration: 0.3 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => router.push(`/vendors/marketplace/${category.category.toLowerCase()}`)}
+                className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group"
+              >
+                <div
+                  className={`w-9 h-9 rounded-lg bg-gradient-to-br ${category.color} flex items-center justify-center shadow-sm`}
+                >
+                  {category.icon}
+                </div>
+                <div className="flex-1 text-left">
+                  <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {category.displayName}
+                  </span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 block">
+                    {category.vendorCount} vendors
+                  </span>
+                </div>
+                <ChevronRight size={14} className="text-slate-400 group-hover:text-blue-500 transition-colors" />
+              </motion.button>
+            ))
+          ) : (
+            SUGGESTED_CATEGORIES?.map((category, index) => (
+              <motion.button
+                key={category._id || index}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.04, duration: 0.3 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => router.push(`/vendors/marketplace/${category.name.toLowerCase()}`)}
+                className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-all group"
+              >
+                <div
+                  className={`w-9 h-9 rounded-lg bg-gradient-to-br ${category.color} flex items-center justify-center shadow-sm`}
+                >
+                  <category.icon size={16} className="text-white" />
+                </div>
+                <div className="flex-1 text-left">
+                  <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    {category.name}
+                  </span>
+                </div>
+                <ChevronRight size={14} className="text-slate-400 group-hover:text-blue-500 transition-colors" />
+              </motion.button>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Quick Settings Section */}
+      <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+        <div className="p-4 border-b border-slate-100 dark:border-slate-800">
+          <h3 className="text-[14px] font-bold text-slate-800 dark:text-slate-100">Quick Settings</h3>
+        </div>
+        <div className="p-2">
+          {QUICK_SETTINGS.map((setting, index) => (
+            <motion.button
+              key={setting.id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: index * 0.03, duration: 0.3 }}
+              onClick={() => handleQuickSettingClick(setting.action)}
+              className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
+            >
+              <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center group-hover:bg-slate-200 dark:group-hover:bg-slate-700 transition-colors">
+                <setting.icon size={15} className="text-slate-500 dark:text-slate-400" />
+              </div>
+              <span className="text-[12px] font-medium text-slate-600 dark:text-slate-300 group-hover:text-slate-900 dark:group-hover:text-slate-100 transition-colors">
+                {setting.label}
+              </span>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+
+      {/* Footer Links */}
+      <div className="px-3 py-4">
+        <div className="flex flex-wrap gap-x-3 gap-y-1.5 text-[10px] text-slate-400 dark:text-slate-500">
+          <a href="/about" className="hover:text-slate-600 dark:hover:text-slate-300 hover:underline">
+            About
+          </a>
+          <a href="/pricing" className="hover:text-slate-600 dark:hover:text-slate-300 hover:underline">
+            pricing
+          </a>
+          <a href="/about/contact" className="hover:text-slate-600 dark:hover:text-slate-300 hover:underline">
+            contact us
+          </a>
+          <a href="/vendor/onboarding" className="hover:text-slate-600 dark:hover:text-slate-300 hover:underline">
+            join the profile hub
+          </a>
+          <a href="/about/blogs" className="hover:text-slate-600 dark:hover:text-slate-300 hover:underline">
+            blogs
+          </a>
+        </div>
+        <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-3">© 2025 VendorHub Corporation</p>
+      </div>
+    </div>
+  );
+};
+
 const VendorProfileNewPageWrapper = ({ initialProfile }) => {
   const { id, category } = useParams();
   const router = useRouter();
@@ -8786,7 +9152,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
     const newTrustState = !hasTrusted;
     const previousTrustState = hasTrusted;
     const previousTrustCount = trustCount;
-    const trustChange = newTrustState ? 5 : -5;
+    const trustChange = newTrustState ? 10 : -10;
     const newTrustCount = Math.max(0, previousTrustCount + trustChange);
 
     setHasTrusted(newTrustState);
@@ -8818,7 +9184,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
       setTrustCount(serverTrustCount);
 
       if (newTrustState) {
-        showUIConfirmation("Vendor trusted! +5", "success", Shield);
+        showUIConfirmation("Vendor trusted! +10", "success", Shield);
       } else {
         showUIConfirmation("Trust removed", "info", Shield);
       }
@@ -10882,402 +11248,296 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
 
   // Default UI (First UI - Enhanced and Fixed)
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 relative overflow-x-hidden">
-      {/* Onboarding Drawer */}
-      <VendorProfileOnboarding
-        vendor={vendor}
-        id={id}
-        onProfileCreated={handleProfileCreated}
-        isOpen={openOnboardingDrawer}
-        onClose={() => {
-          setOpenOnboardingDrawer(false);
-          updateURLParams({ onboarding: null });
-        }}
-      />
-
-      <ThumbsUpAnimation show={showThumbsUpAnimation} />
-      <FloatingConfirmation
-        show={showConfirmation.show}
-        icon={showConfirmation.icon}
-        message={showConfirmation.message}
-        type={showConfirmation.type}
-      />
-
-      {/* ============ FIXED HEADER WITH INTEGRATED TABS ============ */}
-      <div
-        className={`fixed top-[82px] mx-6 left-0 right-0 z-[40] transition-all duration-500 ease-out ${
-          isScrolledHeader
-            ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-lg border-b border-gray-200/50 dark:border-gray-800/50 rounded-xl"
-            : "bg-transparent"
-        }`}
-        style={{
-          willChange: isScrolledHeader ? "auto" : "transform, opacity",
-        }}
-      >
-        <div className="max-w-screen-xl mx-auto">
-          {/* Row 1: Navigation Controls */}
-          <div
-            className="flex items-center justify-between px-4 lg:px-6 py-3 pb-0"
-            style={{ paddingBottom: showHeaderTabs ? 0 : "8px" }}
-          >
-            <motion.button
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{
-                delay: 0.1,
-                duration: 0.6,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              whileTap={{ scale: 0.92 }}
-              whileHover={{ scale: 1.05 }}
-              onClick={handleBack}
-              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                isScrolledHeader ? "border-gray-200 dark:border-gray-700 shadow-sm" : "border-white/10 shadow-black/20"
-              }`}
-              style={{ willChange: "transform" }}
+      <div className="relative min-h-screen bg-slate-100 dark:bg-slate-950 overflow-x-hidden">
+        {/* Onboarding Drawer */}
+        <VendorProfileOnboarding
+          vendor={vendor}
+          id={id}
+          onProfileCreated={handleProfileCreated}
+          isOpen={openOnboardingDrawer}
+          onClose={() => {
+            setOpenOnboardingDrawer(false);
+            updateURLParams({ onboarding: null });
+          }}
+        />
+  
+        <ThumbsUpAnimation show={showThumbsUpAnimation} />
+        <FloatingConfirmation
+          show={showConfirmation.show}
+          icon={showConfirmation.icon}
+          message={showConfirmation.message}
+          type={showConfirmation.type}
+        />
+  
+        {/* ============ FIXED HEADER ============ */}
+        <div
+          className={`fixed top-[82px] max-w-[800px] mx-auto left-0 right-0 z-[40] transition-all duration-500 ease-out rounded-xl ${
+            isScrolledHeader
+              ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-slate-200/50 dark:border-slate-800/50"
+              : "bg-transparent"
+          }`}
+        >
+          <div className="px-4 lg:px-6">
+            {/* Row 1: Navigation Controls */}
+            <div
+              className="hidden items-center justify-between py-3 pb-0"
+              style={{ paddingBottom: showHeaderTabs ? 0 : "8px", display: isScrolledHeader ? "flex" : "none" }}
             >
-              <ArrowLeft
-                size={20}
-                className={`transition-colors duration-500 ease-out ${
-                  isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
-                }`}
-              />
-            </motion.button>
-
-            {profile.username && isScrolledHeader && (
-              <motion.div
-                initial={{ opacity: 0, x: -10 }}
+              <motion.button
+                initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{
-                  delay: 0.15,
-                  duration: 0.6,
-                  ease: [0.22, 1, 0.36, 1],
-                }}
-                className="flex items-center gap-2 flex-1 min-w-0 ml-2"
+                transition={{ delay: 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                whileTap={{ scale: 0.92 }}
+                whileHover={{ scale: 1.05 }}
+                onClick={handleBack}
+                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
+                  isScrolledHeader
+                    ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
+                    : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
+                }`}
               >
-                <span
-                  className={`text-sm font-bold truncate transition-colors duration-500 ease-out ${
-                    isScrolledHeader ? "text-gray-900 dark:text-white" : "text-white"
+                <ArrowLeft
+                  size={20}
+                  className={`transition-colors duration-500 ease-out ${
+                    isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                  }`}
+                />
+              </motion.button>
+  
+              {profile.username && isScrolledHeader && (
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.15, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex items-center gap-2 flex-1 min-w-0 ml-3"
+                >
+                  <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-white dark:ring-slate-800">
+                    <SmartMedia
+                      src={
+                        profile?.vendorAvatar ||
+                        (Array.isArray(vendor?.vendorProfile)
+                          ? vendor.vendorProfile[0]?.profilePicture
+                          : vendor?.vendorProfile?.profilePicture) ||
+                        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
+                      }
+                      type="image"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                  <span className="text-sm font-bold truncate text-slate-900 dark:text-white">{vendor?.name}</span>
+                  {vendor?.isVerified && (
+                    <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                      <Check size={10} className="text-white" strokeWidth={3} />
+                    </div>
+                  )}
+                </motion.div>
+              )}
+  
+              {/* Right: Action Buttons */}
+              <motion.div
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="flex items-center gap-2 flex-shrink-0"
+              >
+                <motion.button
+                  whileTap={{ scale: 0.92 }}
+                  whileHover={{ scale: 1.05 }}
+                  onClick={handleShare}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
+                    isScrolledHeader
+                      ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
+                      : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
                   }`}
                 >
-                  {"@" + vendor?.username}
-                </span>
-                {vendor?.isVerified && (
-                  <motion.div
-                    initial={{ scale: 0, rotate: -180 }}
-                    animate={{
-                      scale: 1,
-                      rotate: 0,
-                      transition: {
-                        delay: 0.35,
-                        duration: 0.5,
-                        ease: [0.34, 1.56, 0.64, 1],
-                      },
-                    }}
-                    className="w-4 h-4 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0"
-                  >
-                    <Check size={10} className="text-white" strokeWidth={3} />
-                  </motion.div>
-                )}
+                  <Share2
+                    size={18}
+                    className={`transition-colors duration-500 ease-out ${
+                      isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                    }`}
+                  />
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.92 }}
+                  whileHover={{ scale: 1.05 }}
+                  onClick={() => setShowMoreOptions(true)}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
+                    isScrolledHeader
+                      ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
+                      : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
+                  }`}
+                >
+                  <MoreVertical
+                    size={18}
+                    className={`transition-colors duration-500 ease-out ${
+                      isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                    }`}
+                  />
+                </motion.button>
               </motion.div>
-            )}
-
-            {/* Right: Action Buttons */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{
-                delay: 0.2,
-                duration: 0.6,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className="flex items-center gap-2 flex-shrink-0"
-            >
-              <motion.button
-                whileTap={{ scale: 0.92 }}
-                whileHover={{ scale: 1.05 }}
-                onClick={handleShare}
-                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                  isScrolledHeader
-                    ? "border-gray-200 dark:border-gray-700 shadow-sm"
-                    : "border-white/10 shadow-black/20"
-                }`}
-                style={{ willChange: "transform" }}
-              >
-                <Share2
-                  size={18}
-                  className={`transition-colors duration-500 ease-out ${
-                    isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
-                  }`}
-                />
-              </motion.button>
-              <motion.button
-                whileTap={{ scale: 0.92 }}
-                whileHover={{ scale: 1.05 }}
-                onClick={() => setShowMoreOptions(true)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                  isScrolledHeader
-                    ? "border-gray-200 dark:border-gray-700 shadow-sm"
-                    : "border-white/10 shadow-black/20"
-                }`}
-                style={{ willChange: "transform" }}
-              >
-                <MoreVertical
-                  size={18}
-                  className={`transition-colors duration-500 ease-out ${
-                    isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
-                  }`}
-                />
-              </motion.button>
-            </motion.div>
-          </div>
-
-          {/* Row 2: Tab Navigation (appears on scroll) */}
-          <AnimatePresence mode="wait">
-            {showHeaderTabs && !isCoverExpanded && isScrolledHeader && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{
-                  height: "auto",
-                  opacity: 1,
-                  transition: {
-                    height: {
-                      duration: 0.4,
-                      ease: [0.22, 1, 0.36, 1],
+            </div>
+  
+            {/* Row 2: Tab Navigation (appears on scroll) */}
+            <AnimatePresence mode="wait">
+              {showHeaderTabs && !isCoverExpanded && isScrolledHeader && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{
+                    height: "auto",
+                    opacity: 1,
+                    transition: {
+                      height: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+                      opacity: { duration: 0.3, delay: 0.1 },
                     },
-                    opacity: {
-                      duration: 0.3,
-                      delay: 0.1,
-                    },
-                  },
-                }}
-                exit={{
-                  height: 0,
-                  opacity: 0,
-                  transition: {
-                    height: {
-                      duration: 0.3,
-                      ease: [0.22, 1, 0.36, 1],
-                    },
-                    opacity: {
-                      duration: 0.2,
-                    },
-                  },
-                }}
-                className="overflow-hidden border-t border-gray-200/50 dark:border-gray-800/50"
-                style={{
-                  willChange: "height, opacity",
-                }}
-              >
-                <div className="relative">
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      transition: {
-                        delay: 0.15,
-                        duration: 0.4,
-                        ease: [0.22, 1, 0.36, 1],
-                      },
-                    }}
-                    className={`bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border-b border-gray-200/50 dark:border-gray-800/50 mt-2 transition-all duration-500 ease-out`}
-                  >
-                    <LayoutGroup id="header-tabs">
-                      <div className="flex overflow-x-auto no-scrollbar">
-                        {TABS.map((tab, index) => (
-                          <motion.button
-                            key={tab.id}
-                            initial={{ opacity: 0, y: 12 }}
-                            animate={{
-                              opacity: 1,
-                              y: 0,
-                              transition: {
-                                delay: 0.2 + index * 0.04,
-                                duration: 0.4,
-                                ease: [0.22, 1, 0.36, 1],
-                              },
-                            }}
-                            whileTap={{ scale: 0.96 }}
-                            whileHover={{
-                              scale: 1.02,
-                              transition: { duration: 0.2 },
-                            }}
-                            onClick={() => {
-                              setActiveTab(tab.id);
-                              const url = new URL(window.location.href);
-                              url.searchParams.set("tab", tab.id);
-                              if (tab.id !== "services") url.searchParams.delete("details");
-                              window.history.pushState({}, "", url.toString());
-                            }}
-                            className="flex-1 min-w-[82px] py-4 flex items-center justify-center gap-2 text-[12px] font-bold capitalize relative cursor-pointer"
-                            style={{
-                              color: activeTab === tab.id ? categoryColor.primary : "rgb(107, 114, 128)",
-                              transition: "color 0.3s cubic-bezier(0.22, 1, 0.36, 1)",
-                              willChange: activeTab === tab.id ? "auto" : "transform",
-                            }}
-                          >
-                            <motion.div
+                  }}
+                  exit={{
+                    height: 0,
+                    opacity: 0,
+                    transition: { height: { duration: 0.3, ease: [0.22, 1, 0.36, 1] }, opacity: { duration: 0.2 } },
+                  }}
+                  className="overflow-hidden border-t border-slate-200/50 dark:border-slate-800/50"
+                >
+                  <div className="relative">
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0, transition: { delay: 0.15, duration: 0.4, ease: [0.22, 1, 0.36, 1] } }}
+                      className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-b border-slate-200/50 dark:border-slate-800/50 mt-2 transition-all duration-500 ease-out rounded-t-xl"
+                    >
+                      <LayoutGroup id="header-tabs">
+                        <div className="flex overflow-x-auto no-scrollbar">
+                          {TABS.map((tab, index) => (
+                            <motion.button
+                              key={tab.id}
+                              initial={{ opacity: 0, y: 12 }}
                               animate={{
-                                scale: activeTab === tab.id ? 1 : 1,
-                                transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+                                opacity: 1,
+                                y: 0,
+                                transition: { delay: 0.2 + index * 0.04, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+                              }}
+                              whileTap={{ scale: 0.96 }}
+                              whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+                              onClick={() => {
+                                setActiveTab(tab.id);
+                                const url = new URL(window.location.href);
+                                url.searchParams.set("tab", tab.id);
+                                if (tab.id !== "services") url.searchParams.delete("details");
+                                window.history.pushState({}, "", url.toString());
+                              }}
+                              className="flex-1 min-w-[82px] py-4 flex items-center justify-center gap-2 text-[12px] font-bold capitalize relative cursor-pointer"
+                              style={{
+                                color: activeTab === tab.id ? categoryColor.primary : "rgb(107, 114, 128)",
+                                transition: "color 0.3s cubic-bezier(0.22, 1, 0.36, 1)",
                               }}
                             >
-                              <tab.icon size={19} />
-                            </motion.div>
-
-                            {activeTab === tab.id && (
                               <motion.div
-                                layoutId="header-tab-indicator"
-                                className="absolute bottom-0 left-3 right-3 h-[3px] rounded-full"
-                                style={{
-                                  background: `linear-gradient(90deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                                animate={{
+                                  scale: activeTab === tab.id ? 1 : 1,
+                                  transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
                                 }}
-                                transition={{
-                                  type: "spring",
-                                  stiffness: 500,
-                                  damping: 40,
-                                  mass: 0.8,
-                                }}
-                              />
-                            )}
-                          </motion.button>
-                        ))}
-                      </div>
-                    </LayoutGroup>
-                  </motion.div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-
-      {/* Main Content - Centered container */}
-      <main className="pb-10 !pt-[80px] lg:pt-24 max-w-screen-xl mx-auto">
-        {/* Hero Section */}
-        <section className="relative">
-          {/* Cover Image Container */}
-          <motion.div
-            layout
-            initial={false}
-            animate={{
-              height: isCoverExpanded ? "70rem" : "35rem",
-            }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            onClick={() => setIsCoverExpanded(!isCoverExpanded)}
-            className="relative overflow-hidden rounded-b-2xl lg:rounded-2xl lg:mx-6 xl:mx-8 cursor-pointer md:h-auto"
-            style={
-              {
-                // Override motion height on desktop via CSS
-              }
-            }
-          >
-            {/* Desktop: taller cover */}
-
-            {/* Actual Cover Image */}
-            <motion.div
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.8, ease: smoothEase }}
-              className="absolute inset-0 z-[1] cover-clickable"
-            >
-              {vendorLoading ? (
-                <div className="absolute inset-0 bg-gray-200 dark:bg-gray-800">
-                  <motion.div
-                    animate={{ x: ["-100%", "100%"] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                  />
-                </div>
-              ) : profile?.vendorCoverImage ? (
-                <SmartMedia
-                  src={profile.vendorCoverImage}
-                  type="image"
-                  className="w-full h-full object-cover"
-                  loaderImage="/GlowLoadingGif.gif"
-                  onLoad={() => setCoverImageLoaded(true)}
-                />
-              ) : vendor?.images?.[0] ? (
-                <SmartMedia
-                  src={vendor.images[4] || vendor.images[0]}
-                  type="image"
-                  className="w-full h-full object-cover"
-                  loaderImage="/GlowLoadingGif.gif"
-                  onLoad={() => setCoverImageLoaded(true)}
-                />
-              ) : (
-                <div className={`w-full h-full bg-gradient-to-br ${categoryColor.gradient}`} />
+                              >
+                                <tab.icon size={19} />
+                              </motion.div>
+                              {activeTab === tab.id && (
+                                <motion.div
+                                  layoutId="header-tab-indicator"
+                                  className="absolute bottom-0 left-3 right-3 h-[3px] rounded-full"
+                                  style={{
+                                    background: `linear-gradient(90deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                                  }}
+                                  transition={{ type: "spring", stiffness: 500, damping: 40, mass: 0.8 }}
+                                />
+                              )}
+                            </motion.button>
+                          ))}
+                        </div>
+                      </LayoutGroup>
+                    </motion.div>
+                  </div>
+                </motion.div>
               )}
-            </motion.div>
-
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/10 z-[2]" />
-            <motion.div
-              animate={{ opacity: isCoverExpanded ? 0 : 1 }}
-              className="absolute bottom-4 right-2 z-[3] text-white/50 text-[10px] bg-black/20 px-2 py-1 rounded-full backdrop-blur-sm pointer-events-none lg:text-xs"
-            >
-              Tap to expand
-            </motion.div>
-          </motion.div>
-
-          {/* Profile Card */}
-          <div className="relative px-4 pl-[13px] lg:px-6 xl:px-8 z-[5] mx-[100px]" style={{ marginTop: "-26.5rem" }}>
-            <motion.div
-              initial={{ opacity: 0, y: 40 }}
-              animate={{
-                opacity: 1,
-                y: cardBounce ? -16 : 0,
-              }}
-              transition={{
-                opacity: { duration: 0.6, ease: smoothEase },
-                y: {
-                  type: "spring",
-                  stiffness: cardBounce ? 300 : 400,
-                  damping: cardBounce ? 15 : 30,
-                  mass: 0.8,
-                },
-              }}
-              className="bg-white dark:bg-gray-900 rounded-[28px] p-5 lg:p-8 border border-gray-100 dark:border-gray-800 relative overflow-hidden"
-              style={{
-                boxShadow: `
-                0 4px 6px -1px rgba(0, 0, 0, 0.05),
-                0 10px 15px -3px rgba(0, 0, 0, 0.08),
-                0 20px 25px -5px rgba(0, 0, 0, 0.06),
-                0 25px 50px -12px rgba(${categoryColor.rgb}, 0.15)
-              `,
-              }}
-            >
-              {/* Subtle gradient accent */}
-              <div
-                className="absolute top-0 left-0 right-0 h-1 opacity-80"
-                style={{
-                  background: `linear-gradient(90deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-                }}
-              />
-
-              {/* Desktop: Two-column layout for profile header area */}
-              <div className="lg:flex lg:gap-8 lg:items-start">
-                {/* Left column: Avatar + Info + Rating */}
-                <div className="lg:flex-1">
-                  {/* Profile Header */}
-                  <div className="flex items-start gap-4 lg:gap-6 mb-2">
-                    {/* Profile Picture */}
+            </AnimatePresence>
+          </div>
+        </div>
+  
+        {/* Main Content - 2 Column Layout */}
+        <main className="pb-10 !pt-[100px] lg:pt-24 max-w-[1400px] mx-auto px-4 lg:px-6">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+            {/* Left Column - Main Content */}
+            <div className="min-w-0">
+              {/* ============ LINKEDIN-STYLE HERO CARD ============ */}
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, ease: smoothEase }}
+                className="bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm"
+              >
+                {/* Cover Image */}
+                <motion.div
+                  layout
+                  initial={false}
+                  animate={{ height: isCoverExpanded ? "20rem" : "12rem" }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  onClick={() => setIsCoverExpanded(!isCoverExpanded)}
+                  className="relative overflow-hidden cursor-pointer group"
+                >
+                  {vendorLoading ? (
+                    <div className="absolute inset-0 bg-slate-200 dark:bg-slate-800">
+                      <motion.div
+                        animate={{ x: ["-100%", "100%"] }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                      />
+                    </div>
+                  ) : profile?.vendorCoverImage ? (
+                    <SmartMedia
+                      src={profile.vendorCoverImage}
+                      type="image"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loaderImage="/GlowLoadingGif.gif"
+                      onLoad={() => setCoverImageLoaded(true)}
+                    />
+                  ) : vendor?.images?.[0] ? (
+                    <SmartMedia
+                      src={vendor.images[4] || vendor.images[0]}
+                      type="image"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loaderImage="/GlowLoadingGif.gif"
+                      onLoad={() => setCoverImageLoaded(true)}
+                    />
+                  ) : (
+                    <div className={`w-full h-full bg-gradient-to-br ${categoryColor.gradient}`} />
+                  )}
+  
+                  {/* Subtle gradient overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+  
+                  {/* Expand hint */}
+                  <motion.div
+                    animate={{ opacity: isCoverExpanded ? 0 : 1 }}
+                    className="absolute bottom-3 right-3 text-white/70 text-[10px] bg-black/30 px-2.5 py-1 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  >
+                    {isCoverExpanded ? "Click to collapse" : "Click to expand"}
+                  </motion.div>
+                </motion.div>
+  
+                {/* Profile Section */}
+                <div className="relative px-6 pb-6">
+                  {/* Profile Picture - LinkedIn Style Overlap */}
+                  <div className="flex items-end justify-between" style={{ marginTop: "-105px" }}>
                     <motion.div
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.3, duration: 0.5, ease: smoothEase }}
+                      transition={{ delay: 0.2, duration: 0.5, ease: smoothEase }}
                       whileTap={{ scale: 0.96 }}
                       onClick={() => setShowProfilePicture(true)}
-                      className="relative cursor-pointer group"
+                      className="relative cursor-pointer group z-10"
                     >
                       {vendorLoading ? (
-                        <div className="w-[96px] h-[96px] lg:w-[128px] lg:h-[128px] rounded-2xl bg-gray-200 dark:bg-gray-700 animate-pulse" />
+                        <div className="w-[180px] h-[180px] rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse ring-4 ring-white dark:ring-slate-900" />
                       ) : (
                         <div
-                          className="w-[96px] h-[96px] lg:w-[128px] lg:h-[128px] rounded-2xl overflow-hidden ring-[3px] ring-white dark:ring-gray-900 transition-transform duration-300 group-hover:scale-[1.02]"
-                          style={{
-                            boxShadow: `0 8px 24px -4px rgba(${categoryColor.rgb}, 0.35)`,
-                          }}
+                          className="w-[180px] h-[180px] rounded-full overflow-hidden ring-4 ring-white dark:ring-slate-900 transition-all duration-300 group-hover:ring-offset-2 group-hover:ring-offset-white dark:group-hover:ring-offset-slate-900"
+                          style={{ boxShadow: `0 8px 32px -8px rgba(${categoryColor.rgb}, 0.3)` }}
                         >
                           <SmartMedia
                             src={
@@ -11288,7 +11548,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
                               "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
                             }
                             type="image"
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                             loaderImage="/GlowLoadingGif.gif"
                           />
                         </div>
@@ -11297,1033 +11557,910 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
                         <motion.div
                           initial={{ scale: 0, rotate: -180 }}
                           animate={{ scale: 1, rotate: 0 }}
-                          transition={{
-                            delay: 0.5,
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 20,
-                          }}
-                          className="absolute -bottom-1.5 -right-1.5 w-7 h-7 lg:w-8 lg:h-8 rounded-full bg-blue-500 flex items-center justify-center ring-[2.5px] ring-white dark:ring-gray-900 shadow-lg"
+                          transition={{ delay: 0.4, type: "spring", stiffness: 500, damping: 20 }}
+                          className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center ring-3 ring-white dark:ring-slate-900 shadow-lg"
                         >
-                          <BadgeCheck size={15} className="text-white" />
+                          <BadgeCheck size={18} className="text-white" />
                         </motion.div>
                       )}
                     </motion.div>
-
-                    {/* Profile Info */}
-                    <div className="flex-1 min-w-0 pt-0.5">
-                      {vendorLoading ? (
-                        <div className="space-y-2.5">
-                          <div className="h-5 w-44 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                          <div className="h-4 w-28 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                          <div className="h-3.5 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse" />
-                        </div>
-                      ) : (
-                        <motion.div
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.35, duration: 0.5, ease: smoothEase }}
-                        >
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <h1 className="text-[17px] lg:text-[22px] xl:text-[26px] font-bold text-gray-900 dark:text-white truncate leading-tight">
-                              {vendor?.name}
-                            </h1>
-                            {vendor?.isPremium && (
-                              <motion.span
-                                initial={{ opacity: 0, scale: 0.5 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                transition={{ delay: 0.5, type: "spring", stiffness: 400 }}
-                                className="px-2 py-0.5 lg:px-3 lg:py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[8px] lg:text-[10px] font-bold rounded-full flex items-center gap-0.5 flex-shrink-0 shadow-md shadow-amber-500/30"
-                              >
-                                <Crown size={9} />
-                                PRO
-                              </motion.span>
-                            )}
-                          </div>
-
-                          <p
-                            className="text-[13px] lg:text-[15px] font-semibold mb-1"
-                            style={{ color: categoryColor.primary }}
-                          >
-                            {vendor?.category || "Photography"}
-                          </p>
-
-                          <p className="text-[12px] lg:text-[14px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
-                            <MapPin size={11} className="flex-shrink-0 lg:w-3.5 lg:h-3.5" />
-                            <span className="truncate">{vendor?.address?.city || "Mumbai, India"}</span>
-                          </p>
-
-                          {reviews?.length > 0 && (
-                            <motion.div
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ delay: 0.6 }}
-                              className="flex items-center gap-1.5 mt-1.5"
-                            >
-                              <Star size={13} className="text-amber-500 fill-amber-500 lg:w-4 lg:h-4" />
-                              <span className="text-[13px] lg:text-[15px] font-bold text-gray-900 dark:text-white">
-                                {(reviews.reduce((acc, r) => acc + (r.rating || 0), 0) / reviews.length).toFixed(1)}
-                              </span>
-                              <span className="text-[11px] lg:text-[13px] text-gray-500">({reviews.length})</span>
-                            </motion.div>
-                          )}
-                        </motion.div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right column on desktop: Action Buttons */}
-                <div className="hidden lg:flex lg:flex-col lg:gap-3 lg:pt-2 lg:min-w-[240px]">
-                  {/* Trust Button - Desktop */}
-                  <motion.button
-                    whileTap={{ scale: 0.96 }}
-                    transition={smoothSpring}
-                    onClick={handleTrustWithBounce}
-                    className="w-full py-3.5 rounded-2xl font-bold text-[14px] flex items-center justify-center gap-2 transition-all duration-300 text-white cursor-pointer"
-                    style={{
-                      background: hasTrusted
-                        ? "linear-gradient(135deg, #22c55e 0%, #10b981 100%)"
-                        : `linear-gradient(135deg, ${categoryColor.primary} 0%, ${categoryColor.secondary} 100%)`,
-                      boxShadow: hasTrusted
-                        ? "0 8px 24px -4px rgba(34, 197, 94, 0.4)"
-                        : `0 8px 24px -4px rgba(${categoryColor.rgb}, 0.4)`,
-                    }}
-                  >
+  
+                    {/* Action Buttons - Top Right */}
                     <motion.div
-                      animate={
-                        hasTrusted
-                          ? {
-                              rotate: [0, -15, 15, -10, 10, 0],
-                              scale: [1, 1.15, 1.1, 1.05, 1],
-                            }
-                          : {}
-                      }
-                      transition={{ duration: 0.5, ease: smoothEase }}
-                    >
-                      <ThumbsUp size={17} className={hasTrusted ? "fill-white" : ""} />
-                    </motion.div>
-                    <span>{hasTrusted ? "Trusted" : "Trust"}</span>
-                  </motion.button>
-                  <div className="flex gap-2">
-                    <motion.button
-                      whileTap={{ scale: 0.96 }}
-                      transition={smoothSpring}
-                      onClick={() => setShowBookingDrawer(true)}
-                      className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 rounded-2xl font-semibold text-[13px] text-gray-700 dark:text-gray-300 flex items-center justify-center gap-2 transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
-                    >
-                      <span>Book</span>
-                    </motion.button>
-                    <motion.button
-                      whileTap={{ scale: 0.96 }}
-                      transition={smoothSpring}
-                      onClick={() => setShowContactDrawer(true)}
-                      className="flex-1 py-3 bg-gray-100 dark:bg-gray-800 rounded-2xl font-semibold text-[13px] text-gray-700 dark:text-gray-300 flex items-center justify-center gap-2 transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
-                    >
-                      <span>Contact</span>
-                    </motion.button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Stats Row */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.5, ease: smoothEase }}
-                className="flex items-center justify-around lg:justify-center lg:gap-12 py-1.5 lg:py-3 border-y border-gray-100 dark:border-gray-800/80 mx-1 mt-2 lg:mt-4"
-              >
-                {stats.map((stat, idx) => (
-                  <React.Fragment key={idx}>
-                    {stat.showSkeleton ? (
-                      <StatSkeleton />
-                    ) : (
-                      <motion.button
-                        whileTap={{ scale: stat.loading ? 1 : 0.94 }}
-                        transition={smoothSpring}
-                        onClick={
-                          stat.label === "Trust"
-                            ? handleTrustWithBounce
-                            : stat.label === "Likes"
-                              ? handleLikeWithBounce
-                              : stat.action
-                        }
-                        disabled={stat.loading}
-                        className="flex flex-col items-center px-5 lg:px-8 py-2 rounded-2xl transition-all duration-300 cursor-pointer"
-                        style={{
-                          backgroundColor: stat.active ? `rgba(${categoryColor.rgb}, 0.1)` : "transparent",
-                        }}
-                      >
-                        <motion.span
-                          animate={stat.loading ? { opacity: [1, 0.4, 1] } : {}}
-                          transition={{
-                            duration: 1.2,
-                            repeat: Infinity,
-                            ease: "easeInOut",
-                          }}
-                          className="text-[18px] lg:text-[22px] font-black transition-colors duration-300"
-                          style={{
-                            color: stat.active ? categoryColor.primary : undefined,
-                          }}
-                        >
-                          {stat.value}
-                        </motion.span>
-                        <span className="text-[10px] lg:text-[12px] text-gray-500 dark:text-gray-400 font-semibold tracking-wide">
-                          {stat.label}
-                        </span>
-                      </motion.button>
-                    )}
-                    {idx < stats.length - 1 && <div className="w-px h-9 bg-gray-200 dark:bg-gray-700/80" />}
-                  </React.Fragment>
-                ))}
-              </motion.div>
-
-              {/* Bio Section */}
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-                className="mt-3 lg:mt-5"
-              >
-                {profileLoading ? (
-                  <BioSkeleton />
-                ) : (
-                  <>
-                    <motion.div
-                      initial={false}
-                      animate={{ height: isBioExpanded ? "auto" : "3.4rem" }}
-                      transition={{ duration: 0.5, ease: smoothEase }}
-                      className="relative overflow-hidden lg:max-h-none"
-                    >
-                      <div
-                        className="text-[13px] lg:text-[15px] text-gray-700 dark:text-gray-300 leading-[1.65] bio-content"
-                        dangerouslySetInnerHTML={{
-                          __html: sanitizeHtml(profile?.bio || defaultBio),
-                        }}
-                      />
-                      {!isBioExpanded && (
-                        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-gray-900 to-transparent pointer-events-none" />
-                      )}
-                    </motion.div>
-
-                    {getPlainTextLength(profile?.bio || defaultBio) > 120 && (
-                      <motion.button
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => setIsBioExpanded(!isBioExpanded)}
-                        className="text-[12px] lg:text-[13px] font-semibold mt-2 transition-colors duration-300 flex items-center gap-1 cursor-pointer"
-                        style={{ color: categoryColor.primary }}
-                      >
-                        {isBioExpanded ? "Show less" : "Show more"}
-                        <motion.div
-                          animate={{ rotate: isBioExpanded ? 180 : 0 }}
-                          transition={{ duration: 0.3, ease: smoothEase }}
-                        >
-                          <ChevronDown size={14} />
-                        </motion.div>
-                      </motion.button>
-                    )}
-                  </>
-                )}
-
-                {/* Website & Social Links */}
-                <AnimatePresence>
-                  {(profile?.website || profile?.socialLinks?.instagram) && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.55, duration: 0.4, ease: smoothEase }}
-                      className="flex items-center gap-2 mt-4 overflow-x-auto no-scrollbar pb-1"
+                      transition={{ delay: 0.3, duration: 0.4 }}
+                      className="flex items-center gap-2 mb-4"
                     >
-                      {profile.website && (
-                        <motion.a
-                          whileTap={{ scale: 0.96 }}
-                          href={profile.website}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 px-3.5 py-2 bg-gray-100 dark:bg-gray-800 rounded-full text-gray-700 dark:text-gray-300 text-[11px] lg:text-[13px] font-semibold flex-shrink-0 transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                        >
-                          <Globe size={12} />
-                          Website
-                          <ExternalLink size={9} />
-                        </motion.a>
-                      )}
-                      {profile.socialLinks?.instagram && (
-                        <motion.a
-                          whileTap={{ scale: 0.96 }}
-                          href={profile.socialLinks.instagram}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] lg:text-[13px] font-semibold flex-shrink-0 transition-all duration-300"
-                          style={{
-                            backgroundColor: `rgba(${categoryColor.rgb}, 0.12)`,
-                            color: categoryColor.primary,
-                          }}
-                        >
-                          <Instagram size={12} />
-                          Instagram
-                        </motion.a>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                {/* Highlights Section */}
-                <div className="mt-2 -mx-1 px-1">
-                  <AnimatePresence mode="wait">
-                    {!isHighlightsExpanded ? (
                       <motion.button
-                        key="highlights-collapsed"
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -10 }}
-                        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={() => setIsHighlightsExpanded(true)}
-                        className="w-full flex items-center justify-between py-3.5 px-4 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800/30 dark:to-slate-800/10 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group"
+                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.02 }}
+                        onClick={() => setShowContactDrawer(true)}
+                        className="px-5 py-2.5 rounded-full font-semibold text-[13px] text-white flex items-center gap-2 transition-all duration-300 cursor-pointer"
+                        style={{
+                          background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                          boxShadow: `0 4px 16px -4px rgba(${categoryColor.rgb}, 0.4)`,
+                        }}
                       >
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40 flex items-center justify-center shadow-sm">
-                            <Sparkles size={16} className="text-purple-600 dark:text-purple-400" />
-                          </div>
-                          <div className="text-left">
-                            <p className="text-[13px] font-bold text-slate-800 dark:text-slate-100">Highlights</p>
-                            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
-                              {MOCK_HIGHLIGHTS.length} stories available
-                            </p>
-                          </div>
-                        </div>
-                        <motion.div
-                          animate={{ rotate: 0 }}
-                          className="w-8 h-8 rounded-lg bg-white dark:bg-slate-700/50 flex items-center justify-center shadow-sm border border-slate-200 dark:border-slate-600 group-hover:border-purple-300 dark:group-hover:border-purple-700 transition-colors"
-                        >
-                          <ChevronDown size={18} className="text-slate-600 dark:text-slate-400" />
-                        </motion.div>
+                        <MessageCircle size={16} />
+                        Contact
                       </motion.button>
+                      <motion.button
+                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.02 }}
+                        onClick={() => setShowMoreOptions(true)}
+                        className="w-10 h-10 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                      >
+                        <MoreHorizontal size={18} className="text-slate-600 dark:text-slate-400" />
+                      </motion.button>
+                    </motion.div>
+                  </div>
+  
+                  {/* Profile Info */}
+                  <div className="mt-4">
+                    {vendorLoading ? (
+                      <div className="space-y-3">
+                        <div className="h-7 w-64 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse" />
+                        <div className="h-5 w-48 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse" />
+                        <div className="h-4 w-40 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse" />
+                      </div>
                     ) : (
                       <motion.div
-                        key="highlights-expanded"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                        className="relative"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.25, duration: 0.5 }}
                       >
-                        {/* Control Buttons */}
-                        <motion.div
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.2, duration: 0.3 }}
-                          className="absolute -top-8 right-2 flex items-center gap-2 z-10"
-                        >
-                          <motion.button
-                            whileTap={{ scale: 0.9 }}
-                            onClick={handleHighlightPrev}
-                            disabled={currentHighlightIndex === 0}
-                            className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-xl border shadow-lg transition-all duration-300 ${
-                              currentHighlightIndex === 0
-                                ? "bg-gray-100/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 opacity-40 cursor-not-allowed"
-                                : "bg-white/90 dark:bg-gray-800/90 border-white/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-700 cursor-pointer"
-                            }`}
-                          >
-                            <ChevronLeft
-                              size={16}
-                              className={
-                                currentHighlightIndex === 0 ? "text-gray-400" : "text-gray-700 dark:text-gray-200"
-                              }
-                            />
-                          </motion.button>
-                          <motion.button
-                            whileTap={{ scale: 0.9 }}
-                            onClick={handleHighlightNext}
-                            disabled={currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1}
-                            className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-xl border shadow-lg transition-all duration-300 ${
-                              currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1
-                                ? "bg-gray-100/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 opacity-40 cursor-not-allowed"
-                                : "bg-white/90 dark:bg-gray-800/90 border-white/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-700 cursor-pointer"
-                            }`}
-                          >
-                            <ChevronRight
-                              size={16}
-                              className={
-                                currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1
-                                  ? "text-gray-400"
-                                  : "text-gray-700 dark:text-gray-200"
-                              }
-                            />
-                          </motion.button>
-                          <motion.button
-                            whileTap={{ scale: 0.9 }}
-                            onClick={handleHighlightsClose}
-                            className="w-8 h-8 rounded-full bg-white/90 dark:bg-gray-800/90 flex items-center justify-center backdrop-blur-xl border border-white/50 dark:border-gray-700/50 shadow-lg hover:bg-white dark:hover:bg-gray-700 transition-all duration-300 cursor-pointer"
-                          >
-                            <X size={16} className="text-gray-700 dark:text-gray-200" />
-                          </motion.button>
-                        </motion.div>
-
-                        {/* Highlights Carousel */}
-                        <div ref={highlightsContainerRef} className="overflow-x-auto no-scrollbar pt-3">
-                          {profileLoading ? (
-                            <HighlightsSkeleton />
-                          ) : (
-                            <motion.div
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                              transition={{ delay: 0.1, duration: 0.3 }}
-                              className="flex gap-3.5 lg:gap-5 py-1 pb-3"
-                              style={{ minWidth: "max-content" }}
-                            >
-                              {MOCK_HIGHLIGHTS.map((highlight, index) => (
-                                <motion.button
-                                  key={highlight.id}
-                                  initial={{ opacity: 0, y: 15, scale: 0.9 }}
-                                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                                  transition={{
-                                    delay: 0.2 + index * 0.06,
-                                    duration: 0.4,
-                                    ease: [0.22, 1, 0.36, 1],
-                                  }}
-                                  whileTap={{ scale: 0.94 }}
-                                  onClick={() => setSelectedHighlight(highlight)}
-                                  className="flex flex-col items-center gap-2 shrink-0 group cursor-pointer"
-                                  style={{
-                                    width: "clamp(60px, calc((100vw - 72px) / 4.5), 90px)",
-                                  }}
-                                >
-                                  <div
-                                    className="w-[62px] h-[62px] lg:w-[76px] lg:h-[76px] rounded-[18px] overflow-hidden p-[2.5px] transition-transform duration-300 group-hover:scale-105"
-                                    style={{
-                                      background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-                                    }}
-                                  >
-                                    <div className="w-full h-full rounded-[15px] overflow-hidden bg-white dark:bg-gray-900">
-                                      <SmartMedia
-                                        src={highlight.image}
-                                        type="image"
-                                        className="w-full h-full object-cover"
-                                        loaderImage="/GlowLoadingGif.gif"
-                                      />
-                                    </div>
-                                  </div>
-                                  <span className="text-[10px] lg:text-[12px] font-medium text-gray-600 dark:text-gray-400 truncate max-w-full px-0.5">
-                                    {highlight.title}
-                                  </span>
-                                </motion.button>
-                              ))}
-                            </motion.div>
+                        {/* Name & Premium Badge */}
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <h1 className="text-[24px] lg:text-[28px] font-bold text-slate-900 dark:text-white leading-tight">
+                            {vendor?.name}
+                          </h1>
+                          {vendor?.isPremium && (
+                            <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold rounded-full flex items-center gap-1 shadow-md shadow-amber-500/30">
+                              <Crown size={12} />
+                              PREMIUM
+                            </span>
                           )}
                         </div>
+  
+                        {/* Title/Category */}
+                        <p className="text-[15px] lg:text-[17px] text-slate-700 dark:text-slate-300 mt-1.5 font-medium">
+                          {vendor?.category || "Photography"} Professional
+                        </p>
+  
+                        {/* Company Info Row */}
+                        <div className="flex items-center gap-2 mt-2 text-[13px] text-slate-500 dark:text-slate-400">
+                          <div
+                            className="w-5 h-5 rounded flex items-center justify-center"
+                            style={{ backgroundColor: `rgba(${categoryColor.rgb}, 0.1)` }}
+                          >
+                            <Building2 size={12} style={{ color: categoryColor.primary }} />
+                          </div>
+                          <span className="font-medium" style={{ color: categoryColor.primary }}>
+                            {vendor?.category || "Photography"} Services
+                          </span>
+                        </div>
+  
+                        {/* Location & Contact */}
+                        <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-2 text-[13px] text-slate-500 dark:text-slate-400">
+                          <span className="flex items-center gap-1.5">
+                            <MapPin size={14} />
+                            {vendor?.address?.city || "Mumbai"}, {vendor?.address?.state || "India"}
+                          </span>
+                          <span
+                            className="flex items-center gap-1.5 hover:text-blue-600 hover:underline cursor-pointer"
+                            onClick={() => setShowContactDrawer(true)}
+                          >
+                            Contact info
+                          </span>
+                        </div>
+  
+                        {/* Stats Row */}
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4, duration: 0.5, ease: smoothEase }}
+                          className="flex items-center justify-around lg:justify-center lg:gap-12 py-1.5 lg:py-3 border-y border-gray-100 dark:border-gray-800/80 mx-1 mt-2 lg:mt-4"
+                        >
+                          {stats.map((stat, idx) => (
+                            <React.Fragment key={idx}>
+                              {stat.showSkeleton ? (
+                                <StatSkeleton />
+                              ) : (
+                                <motion.button
+                                  whileTap={{ scale: stat.loading ? 1 : 0.94 }}
+                                  transition={smoothSpring}
+                                  onClick={
+                                    stat.label === "Trust"
+                                      ? handleTrustWithBounce
+                                      : stat.label === "Likes"
+                                        ? handleLikeWithBounce
+                                        : stat.action
+                                  }
+                                  disabled={stat.loading}
+                                  className="flex flex-col items-center px-5 lg:px-8 py-2 rounded-2xl transition-all duration-300 cursor-pointer"
+                                  style={{
+                                    backgroundColor: stat.active ? `rgba(${categoryColor.rgb}, 0.1)` : "transparent",
+                                  }}
+                                >
+                                  <motion.span
+                                    animate={stat.loading ? { opacity: [1, 0.4, 1] } : {}}
+                                    transition={{
+                                      duration: 1.2,
+                                      repeat: Infinity,
+                                      ease: "easeInOut",
+                                    }}
+                                    className="text-[18px] lg:text-[22px] font-black transition-colors duration-300"
+                                    style={{
+                                      color: stat.active ? categoryColor.primary : undefined,
+                                    }}
+                                  >
+                                    {stat.value}
+                                  </motion.span>
+                                  <span className="text-[10px] lg:text-[12px] text-gray-500 dark:text-gray-400 font-semibold tracking-wide">
+                                    {stat.label}
+                                  </span>
+                                </motion.button>
+                              )}
+                              {idx < stats.length - 1 && <div className="w-px h-9 bg-gray-200 dark:bg-gray-700/80" />}
+                            </React.Fragment>
+                          ))}
+                        </motion.div>
+  
+                        {/* Connection Count */}
+                        {/* <div className="flex items-center gap-3 mt-3">
+                          <span className="text-[13px] font-semibold" style={{ color: categoryColor.primary }}>
+                            {vendor?.trustedBy?.length || 0}+ connections
+                          </span>
+                          {reviews?.length > 0 && (
+                            <>
+                              <span className="text-slate-300 dark:text-slate-600">•</span>
+                              <span className="flex items-center gap-1 text-[13px] text-slate-600 dark:text-slate-400">
+                                <Star size={14} className="text-amber-500 fill-amber-500" />
+                                <span className="font-semibold">
+                                  {(reviews.reduce((acc, r) => acc + (r.rating || 0), 0) / reviews.length).toFixed(1)}
+                                </span>
+                                <span>({reviews.length} reviews)</span>
+                              </span>
+                            </>
+                          )}
+                        </div> */}
+  
+                        {/* Mutual Connections Preview */}
+                        {/* <div className="flex items-center gap-2 mt-3">
+                          <div className="flex -space-x-2">
+                            {[1, 2, 3].map((i) => (
+                              <div
+                                key={i}
+                                className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 ring-2 ring-white dark:ring-slate-900 overflow-hidden"
+                              >
+                                <img
+                                  src={`https://i.pravatar.cc/100?img=${i + 10}`}
+                                  alt=""
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                          <span className="text-[12px] text-slate-500 dark:text-slate-400">
+                            <span className="font-medium text-slate-700 dark:text-slate-300">12 mutual connections</span>
+                          </span>
+                        </div> */}
+                      </motion.div>
+                    )}
+                  </div>
+  
+                  {/* Action Buttons Row */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.35, duration: 0.4 }}
+                    className="flex items-center justify-end gap-2 mt-5 flex-wrap min-w-full"
+                  >
+                    <motion.button
+                      whileTap={{ scale: 0.96 }}
+                      whileHover={{ scale: 1.02 }}
+                      onClick={handleTrustWithBounce}
+                      className="px-16 py-3 rounded-full font-semibold text-[13px] flex items-center gap-2 transition-all duration-300 cursor-pointer"
+                      style={{
+                        background: hasTrusted
+                          ? "linear-gradient(135deg, #22c55e 0%, #10b981 100%)"
+                          : `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                        color: "white",
+                        boxShadow: hasTrusted
+                          ? "0 4px 16px -4px rgba(34, 197, 94, 0.4)"
+                          : `0 4px 16px -4px rgba(${categoryColor.rgb}, 0.4)`,
+                      }}
+                    >
+                      <motion.div
+                        animate={hasTrusted ? { rotate: [0, -15, 15, -10, 10, 0], scale: [1, 1.15, 1.1, 1.05, 1] } : {}}
+                        transition={{ duration: 0.5, ease: smoothEase }}
+                      >
+                        <ThumbsUp size={16} className={hasTrusted ? "fill-white" : ""} />
+                      </motion.div>
+                      {hasTrusted ? "Trusted" : "Trust"}
+                    </motion.button>
+  
+                    <motion.button
+                      whileTap={{ scale: 0.96 }}
+                      whileHover={{ scale: 1.02 }}
+                      onClick={() => setShowBookingDrawer(true)}
+                      className="px-6 py-2.5 rounded-full font-semibold text-[13px] border-2 flex items-center gap-2 transition-all duration-300 cursor-pointer"
+                      style={{
+                        borderColor: categoryColor.primary,
+                        color: categoryColor.primary,
+                      }}
+                    >
+                      <Calendar size={16} />
+                      Book Now
+                    </motion.button>
+  
+                    <motion.button
+                      whileTap={{ scale: 0.96 }}
+                      whileHover={{ scale: 1.02, backgroundColor: "rgba(0,0,0,0.05)" }}
+                      onClick={handleSaveProfile}
+                      className="px-5 py-2.5 rounded-full font-semibold text-[13px] border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 flex items-center gap-2 transition-all duration-300 cursor-pointer"
+                    >
+                      <Bookmark size={16} className={isSaved ? "fill-current" : ""} />
+                      {isSaved ? "Saved" : "Save"}
+                    </motion.button>
+                  </motion.div>
+                </div>
+              </motion.section>
+  
+              {/* ============ BIO & ABOUT SECTION ============ */}
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.6, ease: smoothEase }}
+                className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mt-4 overflow-hidden"
+              >
+                <div className="p-6">
+                  <h2 className="text-[18px] font-bold text-slate-900 dark:text-white mb-4">About</h2>
+  
+                  {profileLoading ? (
+                    <BioSkeleton />
+                  ) : (
+                    <>
+                      <motion.div
+                        initial={false}
+                        animate={{ height: isBioExpanded ? "auto" : "4.5rem" }}
+                        transition={{ duration: 0.5, ease: smoothEase }}
+                        className="relative overflow-hidden"
+                      >
+                        <div
+                          className="text-[14px] lg:text-[15px] text-slate-600 dark:text-slate-300 leading-[1.7]"
+                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(profile?.bio || defaultBio) }}
+                        />
+                        {!isBioExpanded && (
+                          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none" />
+                        )}
+                      </motion.div>
+  
+                      {getPlainTextLength(profile?.bio || defaultBio) > 120 && (
+                        <motion.button
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => setIsBioExpanded(!isBioExpanded)}
+                          className="text-[13px] font-semibold mt-3 transition-colors duration-300 flex items-center gap-1 cursor-pointer"
+                          style={{ color: categoryColor.primary }}
+                        >
+                          {isBioExpanded ? "Show less" : "...see more"}
+                        </motion.button>
+                      )}
+                    </>
+                  )}
+  
+                  {/* Links Section */}
+                  <AnimatePresence>
+                    {(profile?.website || profile?.socialLinks?.instagram) && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1, duration: 0.4 }}
+                        className="flex items-center gap-2 mt-5 pt-5 border-t border-slate-100 dark:border-slate-800 overflow-x-auto no-scrollbar"
+                      >
+                        {profile.website && (
+                          <motion.a
+                            whileTap={{ scale: 0.96 }}
+                            href={profile.website}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-300 text-[12px] font-semibold flex-shrink-0 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                          >
+                            <Globe size={14} />
+                            Website
+                            <ExternalLink size={10} />
+                          </motion.a>
+                        )}
+                        {profile.socialLinks?.instagram && (
+                          <motion.a
+                            whileTap={{ scale: 0.96 }}
+                            href={profile.socialLinks.instagram}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12px] font-semibold flex-shrink-0 transition-all"
+                            style={{ backgroundColor: `rgba(${categoryColor.rgb}, 0.1)`, color: categoryColor.primary }}
+                          >
+                            <Instagram size={14} />
+                            Instagram
+                          </motion.a>
+                        )}
                       </motion.div>
                     )}
                   </AnimatePresence>
                 </div>
-              </motion.div>
-
-              {/* Action Buttons - Mobile only (desktop actions are in right column above) */}
+              </motion.section>
+  
+              {/* ============ HIGHLIGHTS SECTION ============ */}
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.6, ease: smoothEase }}
+                className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mt-4 min-w-full flex items-center justify-center overflow-hidden"
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h2 className="text-[18px] font-bold text-slate-900 dark:text-white">Highlights</h2>
+                    <div className="flex items-center gap-2">
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={handleHighlightPrev}
+                        disabled={currentHighlightIndex === 0}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
+                          currentHighlightIndex === 0
+                            ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
+                            : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                        }`}
+                      >
+                        <ChevronLeft size={16} className="text-slate-600 dark:text-slate-400" />
+                      </motion.button>
+                      <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        onClick={handleHighlightNext}
+                        disabled={currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1}
+                        className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
+                          currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1
+                            ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
+                            : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                        }`}
+                      >
+                        <ChevronRight size={16} className="text-slate-600 dark:text-slate-400" />
+                      </motion.button>
+                    </div>
+                  </div>
+  
+                  <div ref={highlightsContainerRef} className="overflow-x-auto no-scrollbar">
+                    {profileLoading ? (
+                      <HighlightsSkeleton />
+                    ) : (
+                      <motion.div className="flex gap-4 pb-2" style={{ minWidth: "max-content" }}>
+                        {MOCK_HIGHLIGHTS.map((highlight, index) => (
+                          <motion.button
+                            key={highlight.id}
+                            initial={{ opacity: 0, y: 15, scale: 0.9 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            transition={{ delay: 0.1 + index * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                            whileTap={{ scale: 0.94 }}
+                            onClick={() => setSelectedHighlight(highlight)}
+                            className="flex flex-col items-center gap-2.5 shrink-0 group cursor-pointer"
+                          >
+                            <div
+                              className="w-[72px] h-[72px] lg:w-[80px] lg:h-[80px] rounded-full overflow-hidden p-[3px] transition-transform duration-300 group-hover:scale-105"
+                              style={{
+                                background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                              }}
+                            >
+                              <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-slate-900 p-[2px]">
+                                <SmartMedia
+                                  src={highlight.image}
+                                  type="image"
+                                  className="w-full h-full object-cover rounded-full"
+                                  loaderImage="/GlowLoadingGif.gif"
+                                />
+                              </div>
+                            </div>
+                            <span className="text-[11px] lg:text-[12px] font-medium text-slate-600 dark:text-slate-400 truncate max-w-[80px]">
+                              {highlight.title}
+                            </span>
+                          </motion.button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </div>
+                </div>
+              </motion.section>
+  
+              {/* ============ TAB NAVIGATION ============ */}
               <motion.div
+                ref={stickyTabsRef}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.65, duration: 0.4, ease: smoothEase }}
-                className="flex gap-2.5 mt-5 lg:hidden"
+                transition={{ delay: 0.35, duration: 0.4, ease: smoothEase }}
+                className="bg-white dark:bg-slate-900 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 mt-4 transition-all duration-300 sticky top-[56px] lg:top-[60px] z-[35] rounded-xl shadow-sm min-w-full flex items-center justify-center"
               >
-                <motion.button
-                  whileTap={{ scale: 0.96 }}
-                  transition={smoothSpring}
-                  onClick={handleTrustWithBounce}
-                  className="flex-[1.4] py-3.5 rounded-2xl font-bold text-[13px] flex items-center justify-center gap-2 transition-all duration-300 text-white cursor-pointer"
-                  style={{
-                    background: hasTrusted
-                      ? "linear-gradient(135deg, #22c55e 0%, #10b981 100%)"
-                      : `linear-gradient(135deg, ${categoryColor.primary} 0%, ${categoryColor.secondary} 100%)`,
-                    boxShadow: hasTrusted
-                      ? "0 8px 24px -4px rgba(34, 197, 94, 0.4)"
-                      : `0 8px 24px -4px rgba(${categoryColor.rgb}, 0.4)`,
-                  }}
-                >
-                  <motion.div
-                    animate={
-                      hasTrusted
-                        ? {
-                            rotate: [0, -15, 15, -10, 10, 0],
-                            scale: [1, 1.15, 1.1, 1.05, 1],
-                          }
-                        : {}
-                    }
-                    transition={{ duration: 0.5, ease: smoothEase }}
-                  >
-                    <ThumbsUp size={17} className={hasTrusted ? "fill-white" : ""} />
-                  </motion.div>
-                  <span>{hasTrusted ? "Trusted" : "Trust"}</span>
-                </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.96 }}
-                  transition={smoothSpring}
-                  onClick={() => setShowBookingDrawer(true)}
-                  className="flex-1 py-3.5 bg-gray-100 dark:bg-gray-800 rounded-2xl font-semibold text-[13px] text-gray-700 dark:text-gray-300 flex items-center justify-center gap-2 transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
-                >
-                  <span>Book</span>
-                </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.96 }}
-                  transition={smoothSpring}
-                  onClick={() => setShowContactDrawer(true)}
-                  className="flex-1 py-3.5 bg-gray-100 dark:bg-gray-800 rounded-2xl font-semibold text-[13px] text-gray-700 dark:text-gray-300 flex items-center justify-center gap-2 transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
-                >
-                  <span>Contact</span>
-                </motion.button>
+                <LayoutGroup id="sticky-tabs">
+                  <div className="flex overflow-x-auto no-scrollbar">
+                    {TABS.map((tab, index) => (
+                      <motion.button
+                        key={tab.id}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 + index * 0.05, duration: 0.3 }}
+                        whileTap={{ scale: 0.96 }}
+                        onClick={() => {
+                          setActiveTab(tab.id);
+                          const url = new URL(window.location.href);
+                          url.searchParams.set("tab", tab.id);
+                          if (tab.id !== "services") url.searchParams.delete("details");
+                          window.history.pushState({}, "", url.toString());
+                        }}
+                        className="flex-1 min-w-[82px] lg:min-w-[120px] lg:flex-none lg:px-8 py-4 flex items-center justify-center gap-2 text-[12px] lg:text-[14px] font-bold capitalize transition-all duration-300 relative cursor-pointer"
+                        style={{ color: activeTab === tab.id ? categoryColor.primary : "rgb(107, 114, 128)" }}
+                      >
+                        <tab.icon size={19} />
+                        <span className="hidden md:inline">{tab.id}</span>
+                        {activeTab === tab.id && (
+                          <motion.div
+                            layoutId="sticky-tab-indicator"
+                            className="absolute bottom-0 left-3 right-3 h-[3px] rounded-full"
+                            style={{
+                              background: `linear-gradient(90deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                            }}
+                            transition={{ type: "spring", stiffness: 500, damping: 40, mass: 0.8 }}
+                          />
+                        )}
+                      </motion.button>
+                    ))}
+                  </div>
+                </LayoutGroup>
               </motion.div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* Tab Navigation - Sticky */}
-        <motion.div
-          ref={stickyTabsRef}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7, duration: 0.4, ease: smoothEase }}
-          className="bg-white/95 dark:bg-gray-900/95 backdrop-blur-2xl border-b border-gray-200/50 dark:border-gray-800/50 mt-5 transition-all duration-300 sticky top-[56px] lg:top-[60px] z-[35] lg:mx-6 xl:mx-8 lg:rounded-xl lg:border lg:border-gray-200/50 dark:lg:border-gray-800/50"
-        >
-          <LayoutGroup id="sticky-tabs">
-            <div className="flex overflow-x-auto no-scrollbar lg:justify-center">
-              {TABS.map((tab, index) => (
-                <motion.button
-                  key={tab.id}
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.75 + index * 0.05, duration: 0.3 }}
-                  whileTap={{ scale: 0.96 }}
-                  onClick={() => {
-                    setActiveTab(tab.id);
-                    const url = new URL(window.location.href);
-                    url.searchParams.set("tab", tab.id);
-                    if (tab.id !== "services") url.searchParams.delete("details");
-                    window.history.pushState({}, "", url.toString());
-                  }}
-                  className="flex-1 min-w-[82px] lg:min-w-[120px] lg:flex-none lg:px-8 py-4 flex items-center justify-center gap-2 text-[12px] lg:text-[14px] font-bold capitalize transition-all duration-300 relative cursor-pointer"
-                  style={{
-                    color: activeTab === tab.id ? categoryColor.primary : "rgb(107, 114, 128)",
-                  }}
-                >
-                  <tab.icon size={19} />
-                  {/* Show label on md+ screens */}
-                  <span className="hidden md:inline">{tab.id}</span>
-                  {activeTab === tab.id && (
-                    <motion.div
-                      layoutId="sticky-tab-indicator"
-                      className="absolute bottom-0 left-3 right-3 h-[3px] rounded-full"
-                      style={{
-                        background: `linear-gradient(90deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-                      }}
-                      transition={{
-                        type: "spring",
-                        stiffness: 500,
-                        damping: 40,
-                        mass: 0.8,
-                      }}
-                    />
-                  )}
-                </motion.button>
-              ))}
-            </div>
-          </LayoutGroup>
-        </motion.div>
-
-        {/* Tab Content */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -15 }}
-            transition={{ duration: 0.4, ease: smoothEase }}
-            className="bg-white dark:bg-gray-900 min-h-[50vh] relative z-[1] lg:rounded-b-xl lg:border-x lg:border-b lg:border-gray-200/50 dark:lg:border-gray-800/50 mx-[145px] mt-2"
-          >
-            {renderContent()}
-          </motion.div>
-        </AnimatePresence>
-      </main>
-
-      {/* Floating Action Buttons */}
-      <motion.div
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.8, duration: 0.5, ease: smoothEase }}
-        className="fixed bottom-7 right-4 lg:right-8 xl:right-12 2xl:right-[calc((100vw-1280px)/2+2rem)] flex flex-col gap-3 z-[45]"
-      >
-        {/* Save Profile Button */}
-        <motion.button
-          whileTap={{ scale: 0.9 }}
-          whileHover={{ scale: 1.08 }}
-          transition={smoothSpring}
-          onClick={handleSaveProfile}
-          className="w-12 h-12 lg:w-14 lg:h-14 rounded-full shadow-xl flex items-center justify-center transition-all duration-300 backdrop-blur-sm cursor-pointer"
-          style={{
-            backgroundColor: isSaved ? categoryColor.primary : "rgba(255,255,255,0.95)",
-            boxShadow: isSaved ? `0 8px 24px -4px rgba(${categoryColor.rgb}, 0.5)` : "0 8px 24px -4px rgba(0,0,0,0.15)",
-          }}
-        >
-          <Bookmark size={20} className={isSaved ? "fill-white text-white" : "text-gray-700 dark:text-gray-300"} />
-        </motion.button>
-
-        {/* Create Profile Button */}
-        {!profileLoading && (!profile || Object.keys(profile).length === 0) && !openOnboardingDrawer && (
-          <motion.button
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            exit={{ scale: 0, rotate: 180 }}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{ type: "spring", stiffness: 400, damping: 20 }}
-            onClick={() => {
-              if (!isSignedIn) {
-                requireSignIn("Please sign in to proceed");
-                return;
-              }
-              setOpenOnboardingDrawer(true);
-              updateURLParams({ onboarding: "true" });
-            }}
-            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-gradient-to-br from-green-500 to-emerald-600 shadow-xl flex items-center justify-center cursor-pointer"
-            style={{
-              boxShadow: "0 8px 24px -4px rgba(34, 197, 94, 0.5)",
-            }}
-          >
-            <Store size={22} className="text-white" />
-          </motion.button>
-        )}
-
-        {/* Edit Profile Button */}
-        {isVerified && (
-          <motion.button
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 20,
-              delay: 0.05,
-            }}
-            onClick={() => {
-              if (!isSignedIn) {
-                requireSignIn("Please sign in to edit profile");
-                return;
-              }
-              setShowUpdateProfileDrawer(true);
-              updateURLParams({ update: "true" });
-            }}
-            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full shadow-xl flex items-center justify-center cursor-pointer"
-            style={{
-              background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-              boxShadow: `0 8px 24px -4px rgba(${categoryColor.rgb}, 0.5)`,
-            }}
-          >
-            <Edit2Icon size={21} className="text-white" />
-          </motion.button>
-        )}
-
-        {/* Upload Content Button */}
-        {isVerified && (
-          <motion.button
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.9 }}
-            transition={{
-              type: "spring",
-              stiffness: 400,
-              damping: 20,
-              delay: 0.1,
-            }}
-            onClick={() => {
-              if (!isSignedIn) {
-                requireSignIn("Please sign in to upload content");
-                return;
-              }
-              setShowUploadModal(true);
-              updateURLParams({ upload: "true" });
-            }}
-            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full text-white shadow-xl flex items-center justify-center cursor-pointer"
-            style={{
-              background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-              boxShadow: `0 8px 24px -4px rgba(${categoryColor.rgb}, 0.5)`,
-            }}
-          >
-            <Plus size={24} strokeWidth={2.5} />
-          </motion.button>
-        )}
-      </motion.div>
-
-      {/* ============ ALL MODALS & DRAWERS (unchanged - they're overlays) ============ */}
-      <AnimatePresence>
-        {showProfilePicture && (
-          <ProfilePictureModal
-            isOpen={showProfilePicture}
-            onClose={() => setShowProfilePicture(false)}
-            image={
-              profile?.vendorAvatar ||
-              (Array.isArray(vendor?.vendorProfile)
-                ? vendor.vendorProfile[0]?.profilePicture
-                : vendor?.vendorProfile?.profilePicture) ||
-              "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
-            }
-            name={vendor?.name}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {selectedHighlight && <StoryViewer highlight={selectedHighlight} onClose={() => setSelectedHighlight(null)} />}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {selectedPost && (
-          <PostDetailModal
-            post={selectedPost}
-            posts={posts}
-            initialIndex={posts.findIndex((p) => p._id === selectedPost._id)}
-            onClose={() => setSelectedPost(null)}
-            vendorName={vendor?.name}
-            vendorImage={
-              profile?.vendorAvatar ||
-              (Array.isArray(vendor?.vendorProfile)
-                ? vendor.vendorProfile[0]?.profilePicture
-                : vendor?.vendorProfile?.profilePicture) ||
-              "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
-            }
-            onDelete={() => handleDeletePost(selectedPost._id)}
-            onEdit={(newCaption) => handleEditPost(selectedPost._id, newCaption)}
-            onArchive={() => handleArchivePost(selectedPost._id)}
-            vendorId={id}
-            allInteractions={postsInteractionsData}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {selectedReelIndex !== null && (
-          <ReelsViewer
-            reels={reels}
-            initialIndex={selectedReelIndex}
-            onClose={() => setSelectedReelIndex(null)}
-            vendorName={vendor?.name}
-            vendorImage={
-              profile?.vendorAvatar ||
-              (Array.isArray(vendor?.vendorProfile)
-                ? vendor.vendorProfile[0]?.profilePicture
-                : vendor?.vendorProfile?.profilePicture) ||
-              "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
-            }
-            onDeleteReel={() => handleDeleteReel(reels[selectedReelIndex]._id)}
-            onEditReel={(newCaption) => handleEditReel(reels[selectedReelIndex]._id, newCaption)}
-            vendorId={id}
-            allInteractions={reelsInteractionsData}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {selectedPortfolio && (
-          <PortfolioViewer
-            portfolio={selectedPortfolio}
-            onClose={() => setSelectedPortfolio(null)}
-            onBookService={() => setShowBookingDrawer(true)}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showUploadModal && (
-          <UploadModal
-            isOpen={showUploadModal}
-            onClose={() => {
-              setShowUploadModal(false);
-              updateURLParams({ upload: null });
-            }}
-            onUploadPost={handleUploadPost}
-            onUploadReel={handleUploadReel}
-            postsCount={posts.length}
-            reelsCount={reels.length}
-            vendorId={id}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showBookingDrawer && (
-          <BookingDrawer
-            isOpen={showBookingDrawer}
-            onClose={() => setShowBookingDrawer(false)}
-            services={MOCK_SERVICES}
-            vendorName={vendor?.name}
-            onBookingConfirmed={handleBookingConfirmed}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showReviewsDrawer && (
-          <ReviewsDrawer
-            isOpen={showReviewsDrawer}
-            onClose={() => setShowReviewsDrawer(false)}
-            reviewsData={reviews}
-            vendorId={id}
-            vendorName={vendor?.name}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showContactDrawer && (
-          <ContactDrawer isOpen={showContactDrawer} onClose={() => setShowContactDrawer(false)} vendor={vendor} />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showMoreOptions && (
-          <MoreOptionsDrawer
-            isOpen={showMoreOptions}
-            onClose={() => setShowMoreOptions(false)}
-            onReport={handleReport}
-            onBlock={handleBlock}
-            isSaved={isSaved}
-            onSave={handleSaveProfile}
-            isNotifying={isNotifying}
-            onNotify={handleNotify}
-            onShare={handleShare}
-            onShowQR={() => setShowQRModal(true)}
-            onShowAbout={() => setShowAboutModal(true)}
-            onCopyLink={handleCopyLink}
-            setShowUpdateProfileDrawer={setShowUpdateProfileDrawer}
-            onVerifyIdentity={handleVerifyIdentity}
-            isVerified={isVerified}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showShareModal && (
-          <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} vendorName={vendor?.name} />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showQRModal && (
-          <QRCodeModal isOpen={showQRModal} onClose={() => setShowQRModal(false)} vendorName={vendor?.name} />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showAboutModal && (
-          <AboutAccountModal isOpen={showAboutModal} onClose={() => setShowAboutModal(false)} vendor={vendor} />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {previewPost && <PostPreviewModal post={previewPost} onClose={() => setPreviewPost(null)} />}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showSignInPrompt && <SignInPrompt message={signInPromptMessage} onClose={() => setShowSignInPrompt(false)} />}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showVerifyModal && (
-          <PasswordVerificationModal
-            isOpen={showVerifyModal}
-            onClose={() => {
-              setShowVerifyModal(false);
-              updateURLParams({ upload: null });
-            }}
-            onSuccess={() => setIsVerified(true)}
-            vendorId={id}
-            vendorName={vendor?.name}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        {showUpdateProfileDrawer && (
-          <UpdateProfileDrawer
-            vendor={vendor}
-            profile={profile}
-            id={id}
-            onProfileUpdated={handleProfileUpdated}
-            isOpen={showUpdateProfileDrawer}
-            onClose={() => {
-              setShowUpdateProfileDrawer(false);
-              updateURLParams({ update: null });
-            }}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Image Gallery Modal */}
-      <AnimatePresence>
-        {showImageModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.35, ease: smoothEase }}
-            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col"
-          >
-            {/* Header */}
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1, duration: 0.4 }}
-              className="flex justify-between items-center p-4 lg:px-8 relative z-20"
-            >
-              <span className="text-white/90 font-mono text-[11px] lg:text-sm bg-white/10 px-3.5 py-2 rounded-full backdrop-blur-xl border border-white/10">
-                {modalImageIndex + 1} / {images.length}
-              </span>
-              <div className="flex gap-2.5">
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setImageZoom((z) => Math.min(z + 0.5, 3))}
-                  className="p-2.5 text-white/80 bg-white/10 rounded-full backdrop-blur-xl border border-white/10 transition-all duration-300 hover:bg-white/20 cursor-pointer"
-                >
-                  <ZoomIn size={18} />
-                </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setImageZoom(1)}
-                  className="p-2.5 text-white/80 bg-white/10 rounded-full backdrop-blur-xl border border-white/10 transition-all duration-300 hover:bg-white/20 cursor-pointer"
-                >
-                  <RotateCcw size={18} />
-                </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={() => setShowImageModal(false)}
-                  className="p-2.5 text-white/80 bg-white/10 rounded-full backdrop-blur-xl border border-white/10 transition-all duration-300 hover:bg-white/20 cursor-pointer"
-                >
-                  <X size={18} />
-                </motion.button>
-              </div>
-            </motion.div>
-
-            {/* Main Image */}
-            <div className="flex-1 relative flex items-center justify-center overflow-hidden">
-              {/* Desktop: Prev/Next Buttons */}
-              <button
-                onClick={() => {
-                  setSlideDirection(-1);
-                  setModalImageIndex((i) => (i - 1 + images.length) % images.length);
-                }}
-                className="hidden lg:flex absolute left-4 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl items-center justify-center border border-white/10 transition-all cursor-pointer"
-              >
-                <ChevronLeft size={24} className="text-white" />
-              </button>
-              <button
-                onClick={() => {
-                  setSlideDirection(1);
-                  setModalImageIndex((i) => (i + 1) % images.length);
-                }}
-                className="hidden lg:flex absolute right-4 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl items-center justify-center border border-white/10 transition-all cursor-pointer"
-              >
-                <ChevronRight size={24} className="text-white" />
-              </button>
-
-              <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
+  
+              {/* ============ TAB CONTENT ============ */}
+              <AnimatePresence mode="wait">
                 <motion.div
-                  key={modalImageIndex}
-                  custom={slideDirection}
-                  initial={{ opacity: 0, x: slideDirection * 100, scale: 0.95 }}
-                  animate={{ opacity: 1, x: 0, scale: 1 }}
-                  exit={{ opacity: 0, x: slideDirection * -100, scale: 0.95 }}
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -15 }}
                   transition={{ duration: 0.4, ease: smoothEase }}
-                  className="absolute w-full h-full flex items-center justify-center p-4 lg:px-20"
-                  onTouchStart={handleTouchStart}
-                  onTouchEnd={(e) => {
-                    if (!isDragging.current) return;
-                    const diff = dragStartX.current - e.changedTouches[0].clientX;
-                    if (Math.abs(diff) > 50) {
-                      if (diff > 0) {
-                        setSlideDirection(1);
-                        setModalImageIndex((i) => (i + 1) % images.length);
-                      } else {
-                        setSlideDirection(-1);
-                        setModalImageIndex((i) => (i - 1 + images.length) % images.length);
-                      }
-                    }
-                    isDragging.current = false;
-                  }}
+                  className="bg-white dark:bg-slate-900 min-h-[50vh] relative z-[1] rounded-xl border border-slate-200 dark:border-slate-800 mt-4 shadow-sm overflow-hidden"
                 >
-                  <motion.img
-                    src={images[modalImageIndex]}
-                    alt="Gallery image"
-                    className="max-w-full max-h-full object-contain rounded-lg lg:rounded-2xl"
-                    animate={{ scale: imageZoom }}
-                    transition={smoothSpring}
-                    loading="eager"
-                    draggable={false}
-                  />
+                  {renderContent()}
                 </motion.div>
               </AnimatePresence>
             </div>
-
-            {/* Thumbnails */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.15, duration: 0.4 }}
-              className="h-24 flex items-center justify-center gap-2.5 lg:gap-3 overflow-x-auto px-4 pb-6 pt-2 no-scrollbar"
+            {/* End Left Column */}
+  
+            {/* Right Column - Sidebar */}
+            {/* Right Column - Sidebar */}
+            <div className="hidden lg:block">
+              <RightSidebar
+                categoryColor={categoryColor}
+                router={router}
+                vendorProfileId={profile?._id}
+                setShowBookingDrawer={setShowBookingDrawer}
+                setShowUpdateProfileDrawer={setShowUpdateProfileDrawer}
+                setShowUploadModal={setShowUploadModal}
+                setShowMoreOptions={setShowMoreOptions}
+                setShowQRModal={setShowQRModal}
+                isVerified={isVerified}
+              />
+            </div>
+          </div>
+        </main>
+  
+        {/* ============ FLOATING ACTION BUTTONS ============ */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.8, duration: 0.5, ease: smoothEase }}
+          className="fixed bottom-7 right-4 lg:right-6 xl:right-8 flex flex-col gap-3 z-[45]"
+        >
+          {/* Edit Profile Button */}
+          {isVerified && (
+            <motion.button
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.05 }}
+              onClick={() => {
+                if (!isSignedIn) {
+                  requireSignIn("Please sign in to edit profile");
+                  return;
+                }
+                setShowUpdateProfileDrawer(true);
+                updateURLParams({ update: "true" });
+              }}
+              className="w-12 h-12 lg:w-14 lg:h-14 rounded-full shadow-xl flex items-center justify-center cursor-pointer"
+              style={{
+                background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                boxShadow: `0 8px 24px -4px rgba(${categoryColor.rgb}, 0.5)`,
+              }}
             >
-              {images.map((img, i) => (
-                <motion.button
-                  key={i}
-                  whileTap={{ scale: 0.92 }}
+              <Edit2Icon size={21} className="text-white" />
+            </motion.button>
+          )}
+  
+          {/* Upload Content Button */}
+          {isVerified && (
+            <motion.button
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.9 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.1 }}
+              onClick={() => {
+                if (!isSignedIn) {
+                  requireSignIn("Please sign in to upload content");
+                  return;
+                }
+                setShowUploadModal(true);
+                updateURLParams({ upload: "true" });
+              }}
+              className="w-12 h-12 lg:w-14 lg:h-14 rounded-full text-white shadow-xl flex items-center justify-center cursor-pointer"
+              style={{
+                background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                boxShadow: `0 8px 24px -4px rgba(${categoryColor.rgb}, 0.5)`,
+              }}
+            >
+              <Plus size={24} strokeWidth={2.5} />
+            </motion.button>
+          )}
+        </motion.div>
+  
+        {/* ============ ALL MODALS & DRAWERS ============ */}
+        <AnimatePresence>
+          {showProfilePicture && (
+            <ProfilePictureModal
+              isOpen={showProfilePicture}
+              onClose={() => setShowProfilePicture(false)}
+              image={
+                profile?.vendorAvatar ||
+                (Array.isArray(vendor?.vendorProfile)
+                  ? vendor.vendorProfile[0]?.profilePicture
+                  : vendor?.vendorProfile?.profilePicture) ||
+                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
+              }
+              name={vendor?.name}
+            />
+          )}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {selectedHighlight && <StoryViewer highlight={selectedHighlight} onClose={() => setSelectedHighlight(null)} />}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {selectedPost && (
+            <PostDetailModal
+              post={selectedPost}
+              posts={posts}
+              initialIndex={posts.findIndex((p) => p._id === selectedPost._id)}
+              onClose={() => setSelectedPost(null)}
+              vendorName={vendor?.name}
+              vendorImage={
+                profile?.vendorAvatar ||
+                (Array.isArray(vendor?.vendorProfile)
+                  ? vendor.vendorProfile[0]?.profilePicture
+                  : vendor?.vendorProfile?.profilePicture) ||
+                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
+              }
+              onDelete={() => handleDeletePost(selectedPost._id)}
+              onEdit={(newCaption) => handleEditPost(selectedPost._id, newCaption)}
+              onArchive={() => handleArchivePost(selectedPost._id)}
+              vendorId={id}
+              allInteractions={postsInteractionsData}
+            />
+          )}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {selectedReelIndex !== null && (
+            <ReelsViewer
+              reels={reels}
+              initialIndex={selectedReelIndex}
+              onClose={() => setSelectedReelIndex(null)}
+              vendorName={vendor?.name}
+              vendorImage={
+                profile?.vendorAvatar ||
+                (Array.isArray(vendor?.vendorProfile)
+                  ? vendor.vendorProfile[0]?.profilePicture
+                  : vendor?.vendorProfile?.profilePicture) ||
+                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
+              }
+              onDeleteReel={() => handleDeleteReel(reels[selectedReelIndex]._id)}
+              onEditReel={(newCaption) => handleEditReel(reels[selectedReelIndex]._id, newCaption)}
+              vendorId={id}
+              allInteractions={reelsInteractionsData}
+            />
+          )}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {selectedPortfolio && (
+            <PortfolioViewer
+              portfolio={selectedPortfolio}
+              onClose={() => setSelectedPortfolio(null)}
+              onBookService={() => setShowBookingDrawer(true)}
+            />
+          )}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {showUploadModal && (
+            <UploadModal
+              isOpen={showUploadModal}
+              onClose={() => {
+                setShowUploadModal(false);
+                updateURLParams({ upload: null });
+              }}
+              onUploadPost={handleUploadPost}
+              onUploadReel={handleUploadReel}
+              postsCount={posts.length}
+              reelsCount={reels.length}
+              vendorId={id}
+            />
+          )}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {showBookingDrawer && (
+            <BookingDrawer
+              isOpen={showBookingDrawer}
+              onClose={() => setShowBookingDrawer(false)}
+              services={MOCK_SERVICES}
+              vendorName={vendor?.name}
+              onBookingConfirmed={handleBookingConfirmed}
+            />
+          )}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {showReviewsDrawer && (
+            <ReviewsDrawer
+              isOpen={showReviewsDrawer}
+              onClose={() => setShowReviewsDrawer(false)}
+              reviewsData={reviews}
+              vendorId={id}
+              vendorName={vendor?.name}
+            />
+          )}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {showContactDrawer && (
+            <ContactDrawer isOpen={showContactDrawer} onClose={() => setShowContactDrawer(false)} vendor={vendor} />
+          )}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {showMoreOptions && (
+            <MoreOptionsDrawer
+              isOpen={showMoreOptions}
+              onClose={() => setShowMoreOptions(false)}
+              onReport={handleReport}
+              onBlock={handleBlock}
+              isSaved={isSaved}
+              onSave={handleSaveProfile}
+              isNotifying={isNotifying}
+              onNotify={handleNotify}
+              onShare={handleShare}
+              onShowQR={() => setShowQRModal(true)}
+              onShowAbout={() => setShowAboutModal(true)}
+              onCopyLink={handleCopyLink}
+              setShowUpdateProfileDrawer={setShowUpdateProfileDrawer}
+              onVerifyIdentity={handleVerifyIdentity}
+              isVerified={isVerified}
+            />
+          )}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {showShareModal && (
+            <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} vendorName={vendor?.name} />
+          )}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {showQRModal && (
+            <QRCodeModal isOpen={showQRModal} onClose={() => setShowQRModal(false)} vendorName={vendor?.name} />
+          )}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {showAboutModal && (
+            <AboutAccountModal isOpen={showAboutModal} onClose={() => setShowAboutModal(false)} vendor={vendor} />
+          )}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {previewPost && <PostPreviewModal post={previewPost} onClose={() => setPreviewPost(null)} />}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {showSignInPrompt && <SignInPrompt message={signInPromptMessage} onClose={() => setShowSignInPrompt(false)} />}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {showVerifyModal && (
+            <PasswordVerificationModal
+              isOpen={showVerifyModal}
+              onClose={() => {
+                setShowVerifyModal(false);
+                updateURLParams({ upload: null });
+              }}
+              onSuccess={() => setIsVerified(true)}
+              vendorId={id}
+              vendorName={vendor?.name}
+            />
+          )}
+        </AnimatePresence>
+  
+        <AnimatePresence>
+          {showUpdateProfileDrawer && (
+            <UpdateProfileDrawer
+              vendor={vendor}
+              profile={profile}
+              id={id}
+              onProfileUpdated={handleProfileUpdated}
+              isOpen={showUpdateProfileDrawer}
+              onClose={() => {
+                setShowUpdateProfileDrawer(false);
+                updateURLParams({ update: null });
+              }}
+            />
+          )}
+        </AnimatePresence>
+  
+        {/* Image Gallery Modal */}
+        <AnimatePresence>
+          {showImageModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35, ease: smoothEase }}
+              className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col"
+            >
+              {/* Header */}
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1, duration: 0.4 }}
+                className="flex justify-between items-center p-4 lg:px-8 relative z-20"
+              >
+                <span className="text-white/90 font-mono text-[11px] lg:text-sm bg-white/10 px-3.5 py-2 rounded-full backdrop-blur-xl border border-white/10">
+                  {modalImageIndex + 1} / {images.length}
+                </span>
+                <div className="flex gap-2.5">
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setImageZoom((z) => Math.min(z + 0.5, 3))}
+                    className="p-2.5 text-white/80 bg-white/10 rounded-full backdrop-blur-xl border border-white/10 transition-all duration-300 hover:bg-white/20 cursor-pointer"
+                  >
+                    <ZoomIn size={18} />
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setImageZoom(1)}
+                    className="p-2.5 text-white/80 bg-white/10 rounded-full backdrop-blur-xl border border-white/10 transition-all duration-300 hover:bg-white/20 cursor-pointer"
+                  >
+                    <RotateCcw size={18} />
+                  </motion.button>
+                  <motion.button
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowImageModal(false)}
+                    className="p-2.5 text-white/80 bg-white/10 rounded-full backdrop-blur-xl border border-white/10 transition-all duration-300 hover:bg-white/20 cursor-pointer"
+                  >
+                    <X size={18} />
+                  </motion.button>
+                </div>
+              </motion.div>
+  
+              {/* Main Image */}
+              <div className="flex-1 relative flex items-center justify-center overflow-hidden">
+                <button
                   onClick={() => {
-                    setSlideDirection(i > modalImageIndex ? 1 : -1);
-                    setModalImageIndex(i);
+                    setSlideDirection(-1);
+                    setModalImageIndex((i) => (i - 1 + images.length) % images.length);
                   }}
-                  className="relative flex-shrink-0 w-14 h-14 lg:w-16 lg:h-16 rounded-xl overflow-hidden transition-all duration-300 cursor-pointer"
-                  style={{
-                    border: i === modalImageIndex ? `2px solid ${categoryColor.primary}` : "2px solid transparent",
-                    opacity: i === modalImageIndex ? 1 : 0.5,
-                    transform: i === modalImageIndex ? "scale(1.1)" : "scale(1)",
-                  }}
+                  className="hidden lg:flex absolute left-4 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl items-center justify-center border border-white/10 transition-all cursor-pointer"
                 >
-                  <img src={img} className="w-full h-full object-cover" alt={`Thumbnail ${i + 1}`} loading="lazy" />
-                </motion.button>
-              ))}
+                  <ChevronLeft size={24} className="text-white" />
+                </button>
+                <button
+                  onClick={() => {
+                    setSlideDirection(1);
+                    setModalImageIndex((i) => (i + 1) % images.length);
+                  }}
+                  className="hidden lg:flex absolute right-4 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl items-center justify-center border border-white/10 transition-all cursor-pointer"
+                >
+                  <ChevronRight size={24} className="text-white" />
+                </button>
+  
+                <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
+                  <motion.div
+                    key={modalImageIndex}
+                    custom={slideDirection}
+                    initial={{ opacity: 0, x: slideDirection * 100, scale: 0.95 }}
+                    animate={{ opacity: 1, x: 0, scale: 1 }}
+                    exit={{ opacity: 0, x: slideDirection * -100, scale: 0.95 }}
+                    transition={{ duration: 0.4, ease: smoothEase }}
+                    className="absolute w-full h-full flex items-center justify-center p-4 lg:px-20"
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={(e) => {
+                      if (!isDragging.current) return;
+                      const diff = dragStartX.current - e.changedTouches[0].clientX;
+                      if (Math.abs(diff) > 50) {
+                        if (diff > 0) {
+                          setSlideDirection(1);
+                          setModalImageIndex((i) => (i + 1) % images.length);
+                        } else {
+                          setSlideDirection(-1);
+                          setModalImageIndex((i) => (i - 1 + images.length) % images.length);
+                        }
+                      }
+                      isDragging.current = false;
+                    }}
+                  >
+                    <motion.img
+                      src={images[modalImageIndex]}
+                      alt="Gallery image"
+                      className="max-w-full max-h-full object-contain rounded-lg lg:rounded-2xl"
+                      animate={{ scale: imageZoom }}
+                      transition={smoothSpring}
+                      loading="eager"
+                      draggable={false}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+  
+              {/* Thumbnails */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15, duration: 0.4 }}
+                className="h-24 flex items-center justify-center gap-2.5 lg:gap-3 overflow-x-auto px-4 pb-6 pt-2 no-scrollbar"
+              >
+                {images.map((img, i) => (
+                  <motion.button
+                    key={i}
+                    whileTap={{ scale: 0.92 }}
+                    onClick={() => {
+                      setSlideDirection(i > modalImageIndex ? 1 : -1);
+                      setModalImageIndex(i);
+                    }}
+                    className="relative flex-shrink-0 w-14 h-14 lg:w-16 lg:h-16 rounded-xl overflow-hidden transition-all duration-300 cursor-pointer"
+                    style={{
+                      border: i === modalImageIndex ? `2px solid ${categoryColor.primary}` : "2px solid transparent",
+                      opacity: i === modalImageIndex ? 1 : 0.5,
+                      transform: i === modalImageIndex ? "scale(1.1)" : "scale(1)",
+                    }}
+                  >
+                    <img src={img} className="w-full h-full object-cover" alt={`Thumbnail ${i + 1}`} loading="lazy" />
+                  </motion.button>
+                ))}
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Global Styles */}
-      <style jsx global>{`
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        .bio-content p {
-          margin-bottom: 0.5rem;
-        }
-        .bio-content p:last-child {
-          margin-bottom: 0;
-        }
-        @media (min-width: 768px) {
-          .cover-responsive {
-            min-height: 18rem !important;
+          )}
+        </AnimatePresence>
+  
+        {/* Global Styles */}
+        <style jsx global>{`
+          .bio-content p {
+            margin-bottom: 0.5rem;
           }
-        }
-        @media (min-width: 1024px) {
-          .cover-responsive {
-            min-height: 22rem !important;
+          .bio-content p:last-child {
+            margin-bottom: 0;
           }
-        }
-        * {
-          -webkit-tap-highlight-color: transparent;
-        }
-      `}</style>
-    </div>
-  );
+          * {
+            -webkit-tap-highlight-color: transparent;
+          }
+        `}</style>
+      </div>
+    );
 };
 
 export default VendorProfileNewPageWrapper;

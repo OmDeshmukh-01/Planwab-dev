@@ -3,7 +3,15 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo, memo } from "react";
 import ReactDOM from "react-dom/client";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence, useScroll, useTransform, LayoutGroup } from "framer-motion";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useTransform,
+  LayoutGroup,
+  useMotionValue,
+  useSpring,
+} from "framer-motion";
 import {
   ArrowLeft,
   Share2,
@@ -12,6 +20,7 @@ import {
   Pencil,
   Lock,
   Trash2,
+  Tag,
   Loader2,
   EyeOff,
   KeyRound,
@@ -1386,6 +1395,622 @@ const CommentsDrawer = ({ isOpen, onClose, reviews, onAddComment, onDeleteCommen
   );
 };
 
+// Post type configurations
+const POST_CONFIGS = {
+  1: {
+    title: "Work Details",
+    icon: Briefcase,
+    color: "from-blue-500 to-cyan-500",
+    fields: [
+      { key: "caption", label: "Caption", type: "textarea", required: true },
+      { key: "googleRating", label: "Google Rating", type: "number", min: 0, max: 5, step: 0.1, required: true },
+      { key: "teamSize", label: "Team Size", type: "number", min: 1, required: true },
+      { key: "servicesDone", label: "Services Completed", type: "number", min: 0, required: true },
+      { key: "yearsOfExperience", label: "Years of Experience", type: "number", min: 0, required: true },
+      { key: "location", label: "Location", type: "text", required: true },
+    ],
+  },
+  2: {
+    title: "All Service Breakdown",
+    icon: Package,
+    color: "from-purple-500 to-pink-500",
+    fields: [
+      { key: "caption", label: "Caption", type: "textarea", required: true },
+      { key: "eventIncludes", label: "Event Includes (Categories)", type: "array", required: true },
+      { key: "subCategories", label: "Sub Categories", type: "array", required: false },
+    ],
+  },
+  3: {
+    title: "Pricing and Packages",
+    icon: DollarSign,
+    color: "from-green-500 to-emerald-500",
+    fields: [
+      { key: "basePriceMin", label: "Base Price (Min)", type: "number", min: 0, required: true },
+      { key: "basePriceMax", label: "Base Price (Max)", type: "number", min: 0, required: true },
+      { key: "packages", label: "Packages", type: "packages", required: false },
+    ],
+  },
+  4: {
+    title: "Trust & Real Events",
+    icon: Shield,
+    color: "from-amber-500 to-orange-500",
+    fields: [
+      { key: "usp", label: "Unique Selling Points", type: "array", required: true },
+      { key: "callToAction", label: "Call to Action (3 items)", type: "cta", maxItems: 3, required: true },
+    ],
+  },
+};
+
+// Validation function
+const validateField = (field, value) => {
+  if (field.required && (!value || (Array.isArray(value) && value.length === 0))) {
+    return `${field.label} is required`;
+  }
+  if (field.type === "number") {
+    const num = parseFloat(value);
+    if (isNaN(num)) return `${field.label} must be a number`;
+    if (field.min !== undefined && num < field.min) return `${field.label} must be at least ${field.min}`;
+    if (field.max !== undefined && num > field.max) return `${field.label} must be at most ${field.max}`;
+  }
+  if (field.key === "googleRating") {
+    const rating = parseFloat(value);
+    if (rating < 0 || rating > 5) return "Rating must be between 0 and 5";
+  }
+  if (field.type === "cta" && Array.isArray(value) && value.length !== 3) {
+    return "Exactly 3 call-to-action items required";
+  }
+  return null;
+};
+
+// Content Form Component
+const PostContentForm = ({ postNumber, initialData, onSubmit, onCancel, isSubmitting }) => {
+  const config = POST_CONFIGS[postNumber];
+  const [formData, setFormData] = useState(() => {
+    const initial = {};
+    config.fields.forEach((field) => {
+      if (field.type === "array" || field.type === "cta") {
+        initial[field.key] = initialData?.[field.key] || [];
+      } else if (field.type === "packages") {
+        initial[field.key] = initialData?.[field.key] || [];
+      } else {
+        initial[field.key] = initialData?.[field.key] || "";
+      }
+    });
+    return initial;
+  });
+  const [errors, setErrors] = useState({});
+  const [arrayInput, setArrayInput] = useState({});
+
+  const handleChange = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: null }));
+  };
+
+  const handleArrayAdd = (key, maxItems) => {
+    const inputValue = arrayInput[key]?.trim();
+    if (!inputValue) return;
+    if (maxItems && formData[key].length >= maxItems) {
+      setErrors((prev) => ({ ...prev, [key]: `Maximum ${maxItems} items allowed` }));
+      return;
+    }
+    setFormData((prev) => ({ ...prev, [key]: [...prev[key], inputValue] }));
+    setArrayInput((prev) => ({ ...prev, [key]: "" }));
+  };
+
+  const handleArrayRemove = (key, index) => {
+    setFormData((prev) => ({ ...prev, [key]: prev[key].filter((_, i) => i !== index) }));
+  };
+
+  const handlePackageAdd = () => {
+    setFormData((prev) => ({
+      ...prev,
+      packages: [...prev.packages, { title: "", priceMin: "", priceMax: "" }],
+    }));
+  };
+
+  const handlePackageChange = (index, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      packages: prev.packages.map((pkg, i) => (i === index ? { ...pkg, [field]: value } : pkg)),
+    }));
+  };
+
+  const handlePackageRemove = (index) => {
+    setFormData((prev) => ({ ...prev, packages: prev.packages.filter((_, i) => i !== index) }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = {};
+    config.fields.forEach((field) => {
+      const error = validateField(field, formData[field.key]);
+      if (error) newErrors[field.key] = error;
+    });
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    onSubmit(formData);
+  };
+
+  const IconComponent = config.icon;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="bg-white rounded-2xl overflow-hidden shadow-xl max-h-[80vh] flex flex-col"
+    >
+      <div className={`bg-gradient-to-r ${config.color} p-4 flex items-center justify-between`}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+            <IconComponent size={20} className="text-white" />
+          </div>
+          <div>
+            <h3 className="text-white font-bold text-lg">{config.title}</h3>
+            <p className="text-white/70 text-xs">Post {postNumber} of 4</p>
+          </div>
+        </div>
+        <button
+          onClick={onCancel}
+          className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+        >
+          <X size={18} className="text-white" />
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-4">
+        {config.fields.map((field) => (
+          <div key={field.key} className="space-y-1.5">
+            <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+              {field.label}
+              {field.required && <span className="text-red-500">*</span>}
+            </label>
+
+            {field.type === "textarea" && (
+              <textarea
+                value={formData[field.key]}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                className={`w-full px-3 py-2 border rounded-xl text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors[field.key] ? "border-red-500" : "border-gray-200"}`}
+                rows={3}
+                placeholder={`Enter ${field.label.toLowerCase()}...`}
+              />
+            )}
+
+            {field.type === "text" && (
+              <input
+                type="text"
+                value={formData[field.key]}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                className={`w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors[field.key] ? "border-red-500" : "border-gray-200"}`}
+                placeholder={`Enter ${field.label.toLowerCase()}...`}
+              />
+            )}
+
+            {field.type === "number" && (
+              <input
+                type="number"
+                value={formData[field.key]}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                min={field.min}
+                max={field.max}
+                step={field.step || 1}
+                className={`w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors[field.key] ? "border-red-500" : "border-gray-200"}`}
+                placeholder={`Enter ${field.label.toLowerCase()}...`}
+              />
+            )}
+
+            {(field.type === "array" || field.type === "cta") && (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={arrayInput[field.key] || ""}
+                    onChange={(e) => setArrayInput((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleArrayAdd(field.key, field.maxItems);
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder={`Add ${field.label.toLowerCase()}...`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleArrayAdd(field.key, field.maxItems)}
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                  >
+                    <Plus size={18} className="text-gray-600" />
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {formData[field.key].map((item, index) => (
+                    <motion.span
+                      key={index}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm"
+                    >
+                      {item}
+                      <button
+                        type="button"
+                        onClick={() => handleArrayRemove(field.key, index)}
+                        className="w-4 h-4 rounded-full bg-gray-300 hover:bg-red-400 flex items-center justify-center transition-colors"
+                      >
+                        <X size={10} className="text-white" />
+                      </button>
+                    </motion.span>
+                  ))}
+                </div>
+                {field.maxItems && (
+                  <p className="text-xs text-gray-500">
+                    {formData[field.key].length} / {field.maxItems} items
+                  </p>
+                )}
+              </div>
+            )}
+
+            {field.type === "packages" && (
+              <div className="space-y-3">
+                {formData.packages.map((pkg, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 bg-gray-50 rounded-xl space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-500">Package {index + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => handlePackageRemove(index)}
+                        className="w-6 h-6 rounded-full bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors"
+                      >
+                        <Trash2 size={12} className="text-red-500" />
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={pkg.title}
+                      onChange={(e) => handlePackageChange(index, "title", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                      placeholder="Package title..."
+                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={pkg.priceMin}
+                        onChange={(e) => handlePackageChange(index, "priceMin", e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                        placeholder="Min price"
+                        min={0}
+                      />
+                      <input
+                        type="number"
+                        value={pkg.priceMax}
+                        onChange={(e) => handlePackageChange(index, "priceMax", e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                        placeholder="Max price"
+                        min={0}
+                      />
+                    </div>
+                  </motion.div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handlePackageAdd}
+                  className="w-full py-2 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-500 hover:border-gray-300 hover:text-gray-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Plus size={16} />
+                  Add Package
+                </button>
+              </div>
+            )}
+
+            {errors[field.key] && (
+              <motion.p
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-red-500 flex items-center gap-1"
+              >
+                <AlertCircle size={12} />
+                {errors[field.key]}
+              </motion.p>
+            )}
+          </div>
+        ))}
+      </form>
+
+      <div className="p-4 border-t border-gray-100 flex gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className={`flex-1 py-2.5 bg-gradient-to-r ${config.color} rounded-xl text-sm font-medium text-white flex items-center justify-center gap-2 transition-all ${isSubmitting ? "opacity-70" : "hover:shadow-lg"}`}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Check size={16} />
+              Save Details
+            </>
+          )}
+        </button>
+      </div>
+    </motion.div>
+  );
+};
+
+// Content Display Components
+const WorkDetailsContent = ({ data }) => (
+  <div className="space-y-4">
+    {data.caption && <p className="text-gray-600 text-sm leading-relaxed">{data.caption}</p>}
+    <div className="grid grid-cols-2 gap-3">
+      {data.googleRating !== undefined && (
+        <div className="bg-amber-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Star size={16} className="text-amber-500 fill-amber-500" />
+            <span className="text-xs text-amber-600 font-medium">Google Rating</span>
+          </div>
+          <p className="text-2xl font-bold text-amber-700">{data.googleRating}</p>
+        </div>
+      )}
+      {data.teamSize && (
+        <div className="bg-blue-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Users size={16} className="text-blue-500" />
+            <span className="text-xs text-blue-600 font-medium">Team Size</span>
+          </div>
+          <p className="text-2xl font-bold text-blue-700">{data.teamSize}</p>
+        </div>
+      )}
+      {data.servicesDone !== undefined && (
+        <div className="bg-green-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Briefcase size={16} className="text-green-500" />
+            <span className="text-xs text-green-600 font-medium">Services Done</span>
+          </div>
+          <p className="text-2xl font-bold text-green-700">{data.servicesDone?.toLocaleString()}</p>
+        </div>
+      )}
+      {data.yearsOfExperience !== undefined && (
+        <div className="bg-purple-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Calendar size={16} className="text-purple-500" />
+            <span className="text-xs text-purple-600 font-medium">Experience</span>
+          </div>
+          <p className="text-2xl font-bold text-purple-700">{data.yearsOfExperience} yrs</p>
+        </div>
+      )}
+    </div>
+    {data.location && (
+      <div className="flex items-center gap-2 text-gray-500 bg-gray-50 rounded-xl p-3">
+        <MapPin size={18} className="text-gray-400" />
+        <span className="text-sm">{data.location}</span>
+      </div>
+    )}
+  </div>
+);
+
+const ServiceBreakdownContent = ({ data }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="space-y-4">
+      {data.caption && <p className="text-gray-600 text-sm leading-relaxed">{data.caption}</p>}
+      {data.eventIncludes?.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+            <Package size={16} className="text-purple-500" />
+            Event Includes
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {data.eventIncludes.map((item, index) => (
+              <span key={index} className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      {data.subCategories?.length > 0 && (
+        <div className="space-y-2">
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+          >
+            <span className="text-sm font-semibold text-gray-800">Sub Categories</span>
+            <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronDown size={18} className="text-gray-500" />
+            </motion.div>
+          </button>
+          <AnimatePresence>
+            {expanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {data.subCategories.map((item, index) => (
+                    <span key={index} className="px-3 py-1.5 bg-pink-100 text-pink-700 rounded-full text-sm">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PricingContent = ({ data }) => (
+  <div className="space-y-4">
+    {(data.basePriceMin || data.basePriceMax) && (
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <DollarSign size={18} className="text-green-500" />
+          <span className="text-sm font-medium text-green-700">Base Price Range</span>
+        </div>
+        <p className="text-2xl font-bold text-green-800">
+          ₹{data.basePriceMin?.toLocaleString()} - ₹{data.basePriceMax?.toLocaleString()}
+        </p>
+      </div>
+    )}
+    {data.packages?.length > 0 && (
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <Package size={16} className="text-green-500" />
+          Packages
+        </h4>
+        {data.packages.map((pkg, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm"
+          >
+            <h5 className="font-semibold text-gray-800 mb-1">{pkg.title}</h5>
+            <p className="text-green-600 font-bold">
+              ₹{pkg.priceMin?.toLocaleString()} - ₹{pkg.priceMax?.toLocaleString()}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+const TrustContent = ({ data }) => (
+  <div className="space-y-4">
+    {data.usp?.length > 0 && (
+      <div className="space-y-2">
+        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <Sparkles size={16} className="text-amber-500" />
+          Unique Selling Points
+        </h4>
+        <div className="space-y-2">
+          {data.usp.map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="flex items-start gap-3 p-3 bg-amber-50 rounded-xl"
+            >
+              <div className="w-6 h-6 bg-amber-200 rounded-full flex items-center justify-center flex-shrink-0">
+                <Check size={14} className="text-amber-700" />
+              </div>
+              <span className="text-sm text-amber-800">{item}</span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    )}
+    {data.callToAction?.length > 0 && (
+      <div className="space-y-2">
+        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <Phone size={16} className="text-orange-500" />
+          Call to Action
+        </h4>
+        <div className="grid gap-2">
+          {data.callToAction.map((item, index) => (
+            <motion.button
+              key={index}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-medium rounded-xl shadow-sm hover:shadow-md transition-shadow"
+            >
+              {item}
+            </motion.button>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+const NoDataFallback = ({ postNumber, onUpdateClick }) => {
+  const config = POST_CONFIGS[postNumber];
+  const IconComponent = config?.icon || Briefcase;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col items-center justify-center py-6 px-4"
+    >
+      <div
+        className={`w-14 h-14 bg-gradient-to-r ${config?.color || "from-gray-400 to-gray-500"} rounded-2xl flex items-center justify-center mb-3 opacity-50`}
+      >
+        <IconComponent size={24} className="text-white" />
+      </div>
+      <h4 className="text-gray-400 font-medium mb-1">No Data Available</h4>
+      <p className="text-gray-400 text-sm text-center mb-4">Add details to showcase your {config?.title || "work"}</p>
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={onUpdateClick}
+        className={`px-5 py-2 bg-gradient-to-r ${config?.color || "from-blue-500 to-cyan-500"} text-white font-medium rounded-xl flex items-center gap-2 text-sm`}
+      >
+        <Edit3 size={14} />
+        Update Details
+      </motion.button>
+    </motion.div>
+  );
+};
+
+const ActionsSkeleton = () => {
+  return (
+    <div className="flex flex-col items-center gap-3 animate-pulse">
+      {/* Like skeleton */}
+      <div className="flex flex-col items-center gap-0.5">
+        <div className="w-10 h-10 rounded-full bg-white/20" />
+        <div className="w-6 h-2 rounded bg-white/20 mt-1" />
+      </div>
+
+      {/* Comment skeleton */}
+      <div className="flex flex-col items-center gap-0.5">
+        <div className="w-10 h-10 rounded-full bg-white/20" />
+        <div className="w-4 h-2 rounded bg-white/20 mt-1" />
+      </div>
+
+      {/* Share skeleton */}
+      <div className="flex flex-col items-center gap-0.5">
+        <div className="w-10 h-10 rounded-full bg-white/20" />
+      </div>
+
+      {/* Save skeleton */}
+      <div className="flex flex-col items-center gap-0.5">
+        <div className="w-10 h-10 rounded-full bg-white/20" />
+      </div>
+
+      {/* Mute skeleton */}
+      <div className="flex flex-col items-center gap-0.5">
+        <div className="w-10 h-10 rounded-full bg-white/20" />
+      </div>
+    </div>
+  );
+};
+
 const PostDetailModal = ({
   post,
   posts = [],
@@ -1397,11 +2022,12 @@ const PostDetailModal = ({
   onEdit,
   onArchive,
   vendorId,
+  profileId,
   allInteractions = {},
 }) => {
   const { user, isSignedIn } = useUser();
 
-  // Navigation state
+  // ===== CURRENT POST INDEX =====
   const [currentIndex, setCurrentIndex] = useState(() => {
     if (posts.length > 0) {
       const idx = posts.findIndex((p) => p._id === post?._id);
@@ -1409,406 +2035,887 @@ const PostDetailModal = ({
     }
     return 0;
   });
-  const [direction, setDirection] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragOffset, setDragOffset] = useState(0);
 
-  // Current post
-  const currentPost = posts.length > 0 ? posts[currentIndex] : post;
+  // ===== DERIVED VALUES =====
+  const currentPost = useMemo(() => {
+    return posts.length > 0 ? posts[currentIndex] : post;
+  }, [posts, currentIndex, post]);
 
-  // Interaction states
-  const [isLiked, setIsLiked] = useState(false);
-  const [isSaved, setIsSaved] = useState(false);
-  const [likes, setLikes] = useState(0);
-  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
-  const [showOptionsDrawer, setShowOptionsDrawer] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const [isInteracting, setIsInteracting] = useState(false);
-  const [showCommentsDrawer, setShowCommentsDrawer] = useState(false);
+  const postNumber = (currentIndex % 4) + 1;
+  const isVideo = currentPost?.mediaType === "video";
 
-  // Review states
-  const [reviews, setReviews] = useState([]);
-  const [reviewSubmitting, setReviewSubmitting] = useState(false);
-  const [isLoadingInteractions, setIsLoadingInteractions] = useState(true);
-
-  // Media states
+  // ===== VIDEO STATES =====
   const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
-  const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
-  const [isMuted, setIsMuted] = useState(false); // Sound ON by default
-  const [isBuffering, setIsBuffering] = useState(true);
+  const [duration, setDuration] = useState(0);
+  const [isBuffering, setIsBuffering] = useState(false);
   const [hasError, setHasError] = useState(false);
-  const [showPlayPauseIndicator, setShowPlayPauseIndicator] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const [showPlayPause, setShowPlayPause] = useState(false);
   const [isSeeking, setIsSeeking] = useState(false);
   const [seekPreview, setSeekPreview] = useState(null);
 
+  // ===== INTERACTION STATES =====
+  const [isLiked, setIsLiked] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [likes, setLikes] = useState(0);
+  const [reviews, setReviews] = useState([]);
+  const [isInteracting, setIsInteracting] = useState(false);
+  const [isLoadingInteractions, setIsLoadingInteractions] = useState(true);
+  const [showLikeAnimation, setShowLikeAnimation] = useState(false);
+  const [reviewSubmitting, setReviewSubmitting] = useState(false);
+
+  // ===== DRAWER/MODAL STATES =====
+  const [showOptionsDrawer, setShowOptionsDrawer] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const [showCommentsDrawer, setShowCommentsDrawer] = useState(false);
+  const [showContentForm, setShowContentForm] = useState(false);
+
+  // ===== CONTENT STATES =====
+  const [contentData, setContentData] = useState(currentPost?.content || null);
+  const [isContentSubmitting, setIsContentSubmitting] = useState(false);
+  const [contentSubmitError, setContentSubmitError] = useState(null);
+
+  // ===== PARALLAX/SHEET STATES =====
+  const [sheetHeight, setSheetHeight] = useState(45);
+  const [isDraggingSheet, setIsDraggingSheet] = useState(false);
+  const [dragVelocity, setDragVelocity] = useState(0);
+
+  // ===== SWIPE NAVIGATION STATES =====
+  const [direction, setDirection] = useState(0);
+
+  // ===== REFS =====
   const videoRef = useRef(null);
   const containerRef = useRef(null);
   const progressBarRef = useRef(null);
   const playPauseTimeoutRef = useRef(null);
+  const doubleTapRef = useRef(null);
+  const lastTapRef = useRef(0);
   const isSeekingRef = useRef(false);
-  const pointerStartRef = useRef({ x: 0, y: 0, time: 0 });
-  const tapTimeoutRef = useRef(null);
-  const wasPlayingRef = useRef(true);
+  const wasPlayingBeforeSeekRef = useRef(true);
+  const currentProgressRef = useRef(0);
+  const sheetStartY = useRef(0);
+  const sheetStartHeight = useRef(45);
+  const lastDragY = useRef(0);
+  const lastDragTime = useRef(0);
+  const velocityRef = useRef(0);
+  const videoInitializedRef = useRef(false);
 
-  useBodyScrollLock(true);
-
+  // ===== KEEP PROGRESS REF SYNCED =====
   useEffect(() => {
-    isSeekingRef.current = isSeeking;
-  }, [isSeeking]);
+    currentProgressRef.current = progress;
+  }, [progress]);
 
-  useEffect(() => {
-    return () => {
-      if (playPauseTimeoutRef.current) {
-        clearTimeout(playPauseTimeoutRef.current);
-      }
-    };
+  // ===== COMPUTED VALUES =====
+  const hasContentData = useCallback(() => {
+    if (!contentData) return false;
+    const config = POST_CONFIGS?.[postNumber];
+    if (!config) return false;
+    return config.fields?.some((field) => {
+      const value = contentData[field.key];
+      if (Array.isArray(value)) return value.length > 0;
+      return value !== undefined && value !== null && value !== "";
+    });
+  }, [contentData, postNumber]);
+
+  const hasContent = hasContentData();
+  const currentPostConfig = POST_CONFIGS?.[postNumber];
+  const PostConfigIcon = currentPostConfig?.icon || Briefcase;
+
+  // ===== SLIDE ANIMATION VARIANTS =====
+  const slideVariants = useMemo(
+    () => ({
+      enter: (dir) => ({
+        y: dir > 0 ? "100%" : "-100%",
+        opacity: 0,
+      }),
+      center: {
+        y: 0,
+        opacity: 1,
+        transition: { type: "spring", stiffness: 300, damping: 30 },
+      },
+      exit: (dir) => ({
+        y: dir > 0 ? "-100%" : "100%",
+        opacity: 0,
+        transition: { type: "spring", stiffness: 300, damping: 30 },
+      }),
+    }),
+    [],
+  );
+
+  // ===== UTILITY FUNCTIONS =====
+  const formatTime = useCallback((seconds) => {
+    if (!seconds || isNaN(seconds) || !isFinite(seconds)) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   }, []);
 
-  const isVideo = currentPost?.mediaType === "video";
+  // ===== MASTER RESET ON POST CHANGE =====
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.muted = isMuted;
-    }
-  }, [isMuted]);
+    resetAllStates();
+  }, [currentIndex, isVideo, currentPost?.content]);
 
-  // Reset states when post changes - instant reset
-  useEffect(() => {
-    setIsBuffering(true);
-    setHasError(false);
+  const resetAllStates = () => {
+    // Clear all timeouts
+    if (doubleTapRef.current) {
+      clearTimeout(doubleTapRef.current);
+      doubleTapRef.current = null;
+    }
+    if (playPauseTimeoutRef.current) {
+      clearTimeout(playPauseTimeoutRef.current);
+      playPauseTimeoutRef.current = null;
+    }
+
+    // Reset all video states
     setProgress(0);
     setCurrentTime(0);
     setDuration(0);
     setIsPlaying(true);
-    setIsLoadingInteractions(true);
-    setShowPlayPauseIndicator(false);
-  }, [currentIndex]);
+    setIsBuffering(isVideo);
+    setIsSeeking(false);
+    setSeekPreview(null);
+    setShowPlayPause(false);
+    setHasError(false);
 
-  // Fetch interaction status
+    // Reset all refs
+    isSeekingRef.current = false;
+    lastTapRef.current = 0;
+    wasPlayingBeforeSeekRef.current = true;
+    currentProgressRef.current = 0;
+    videoInitializedRef.current = false;
+
+    // Reset content states
+    setContentData(currentPost?.content || null);
+    setShowContentForm(false);
+    setContentSubmitError(null);
+    setSheetHeight(45);
+  };
+
+  // ===== LOAD INTERACTIONS =====
   useEffect(() => {
-    const fetchInteractionStatus = async () => {
-      if (!currentPost?._id) return;
-
-      // CHECK PRELOADED DATA FIRST
-      const preloadedData = allInteractions[currentPost._id];
-
-      if (preloadedData) {
-        // Use preloaded data
-        setLikes(preloadedData.likesCount || 0);
-        setIsLiked(preloadedData.isLiked || false);
-        setIsSaved(preloadedData.isSaved || false);
-        setReviews(preloadedData.reviews || []);
+    const loadInteractions = async () => {
+      if (!currentPost?._id) {
         setIsLoadingInteractions(false);
-        return; // EXIT: Do not make API call
+        return;
       }
 
-      // Fallback: If no preloaded data, fetch from API
+      const cached = allInteractions[currentPost._id];
+      if (cached) {
+        setIsLiked(cached.isLiked || false);
+        setIsSaved(cached.isSaved || false);
+        setLikes(cached.likes || 0);
+        setReviews(cached.reviews || []);
+        setIsLoadingInteractions(false);
+        return;
+      }
+
+      const params = new URLSearchParams({
+        postId: currentPost._id,
+        ...(user?.id && { userId: user.id }),
+      });
+
       try {
-        if (!vendorId) {
-          setIsLoadingInteractions(false);
-          return;
-        }
-
-        const params = new URLSearchParams({
-          postId: currentPost._id,
-          ...(user?.id && { userId: user.id }),
-        });
-
-        const res = await fetch(`/api/vendor/${vendorId}/profile/posts/interactions?${params}`);
-        const data = await res.json();
-
-        if (data.success) {
-          setLikes(data.data.likesCount || 0);
-          setIsLiked(data.data.isLiked || false);
-          setIsSaved(data.data.isSaved || false);
-          setReviews(data.data.reviews || []);
+        const response = await fetch(`/api/vendor/${vendorId}/profile/posts/interactions?${params}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setIsLiked(data.data.isLiked || false);
+            setIsSaved(data.data.isSaved || false);
+            setLikes(data.data.likesCount || 0);
+            setReviews(data.data.reviews || []);
+          }
         }
       } catch (error) {
-        console.error("Failed to fetch interaction status:", error);
+        console.error("Failed to load interactions:", error);
       } finally {
         setIsLoadingInteractions(false);
       }
     };
 
-    fetchInteractionStatus();
-  }, [currentPost?._id, user?.id, vendorId, allInteractions]);
+    setIsLoadingInteractions(true);
+    loadInteractions();
+  }, [currentPost?._id, allInteractions]);
 
-  // Video event handlers with optimized updates
+  // ===== ROBUST VIDEO EVENT HANDLERS =====
   useEffect(() => {
-    if (!isVideo || !videoRef.current) return;
+    // Early exit for non-video
+    if (!isVideo) {
+      setIsBuffering(false);
+      return;
+    }
 
-    const video = videoRef.current;
-    let animationFrameId;
+    let isActive = true;
+    let animationFrameId = null;
+    let retryCount = 0;
+    const maxRetries = 20;
 
-    const updateProgress = () => {
-      if (video.duration && !isSeekingRef.current) {
-        const newProgress = (video.currentTime / video.duration) * 100;
-        setProgress(newProgress);
-        setCurrentTime(video.currentTime);
+    const initializeVideo = () => {
+      const video = videoRef.current;
+
+      // Retry if video not mounted yet
+      if (!video) {
+        if (retryCount < maxRetries && isActive) {
+          retryCount++;
+          setTimeout(initializeVideo, 50);
+        }
+        return;
       }
+
+      // Mark as initialized
+      videoInitializedRef.current = true;
+
+      // ===== Progress Animation Loop =====
+      const updateProgress = () => {
+        if (!isActive) return;
+
+        const vid = videoRef.current;
+        if (vid && !isSeekingRef.current) {
+          const dur = vid.duration;
+          if (dur && !isNaN(dur) && isFinite(dur) && dur > 0) {
+            const newProgress = (vid.currentTime / dur) * 100;
+            setProgress(newProgress);
+            setCurrentTime(vid.currentTime);
+            currentProgressRef.current = newProgress;
+          }
+        }
+
+        if (isActive) {
+          animationFrameId = requestAnimationFrame(updateProgress);
+        }
+      };
+
+      // ===== Event Handlers =====
+      const handleLoadStart = () => {
+        if (isActive) setIsBuffering(true);
+      };
+
+      const handleLoadedMetadata = () => {
+        if (!isActive) return;
+        const dur = video.duration;
+        if (dur && !isNaN(dur) && isFinite(dur)) {
+          setDuration(dur);
+        }
+        setIsBuffering(false);
+      };
+
+      const handleLoadedData = () => {
+        if (isActive) {
+          setIsBuffering(false);
+          setHasError(false);
+        }
+      };
+
+      const handleCanPlay = () => {
+        if (isActive) {
+          setIsBuffering(false);
+          setHasError(false);
+        }
+      };
+
+      const handleCanPlayThrough = () => {
+        if (!isActive) return;
+        setIsBuffering(false);
+
+        // Auto-play when ready
+        if (!video.paused) return;
+
+        video.play().catch((err) => {
+          if (isActive) {
+            console.warn("Auto-play failed:", err);
+            setIsPlaying(false);
+          }
+        });
+      };
+
+      const handleWaiting = () => {
+        if (isActive && !isSeekingRef.current) {
+          setIsBuffering(true);
+        }
+      };
+
+      const handlePlaying = () => {
+        if (isActive) {
+          setIsBuffering(false);
+          setIsPlaying(true);
+          setHasError(false);
+        }
+      };
+
+      const handlePause = () => {
+        // Only update if not seeking (we manually pause during seek)
+        if (isActive && !isSeekingRef.current) {
+          setIsPlaying(false);
+        }
+      };
+
+      const handleEnded = () => {
+        if (!isActive) return;
+        // Loop video
+        video.currentTime = 0;
+        video.play().catch(() => {});
+      };
+
+      const handleError = (e) => {
+        console.error("Video error:", e);
+        if (isActive) {
+          setHasError(true);
+          setIsBuffering(false);
+          setIsPlaying(false);
+        }
+      };
+
+      const handleTimeUpdate = () => {
+        if (!isActive || isSeekingRef.current) return;
+        const dur = video.duration;
+        if (dur && !isNaN(dur) && isFinite(dur) && dur > 0) {
+          const newProgress = (video.currentTime / dur) * 100;
+          setProgress(newProgress);
+          setCurrentTime(video.currentTime);
+          currentProgressRef.current = newProgress;
+        }
+      };
+
+      const handleDurationChange = () => {
+        if (!isActive) return;
+        const dur = video.duration;
+        if (dur && !isNaN(dur) && isFinite(dur)) {
+          setDuration(dur);
+        }
+      };
+
+      const handleSeeked = () => {
+        if (isActive) {
+          setIsBuffering(false);
+        }
+      };
+
+      const handleStalled = () => {
+        if (isActive && !isSeekingRef.current) {
+          setIsBuffering(true);
+        }
+      };
+
+      // ===== Check if already loaded (cached video) =====
+      const readyState = video.readyState;
+      // readyState: 0=HAVE_NOTHING, 1=HAVE_METADATA, 2=HAVE_CURRENT_DATA, 3=HAVE_FUTURE_DATA, 4=HAVE_ENOUGH_DATA
+
+      if (readyState >= 1) {
+        // Has metadata
+        const dur = video.duration;
+        if (dur && !isNaN(dur) && isFinite(dur)) {
+          setDuration(dur);
+        }
+      }
+
+      if (readyState >= 3) {
+        // Ready to play
+        setIsBuffering(false);
+        setHasError(false);
+      }
+
+      // ===== Attach Event Listeners =====
+      video.addEventListener("loadstart", handleLoadStart);
+      video.addEventListener("loadedmetadata", handleLoadedMetadata);
+      video.addEventListener("loadeddata", handleLoadedData);
+      video.addEventListener("canplay", handleCanPlay);
+      video.addEventListener("canplaythrough", handleCanPlayThrough);
+      video.addEventListener("waiting", handleWaiting);
+      video.addEventListener("playing", handlePlaying);
+      video.addEventListener("pause", handlePause);
+      video.addEventListener("ended", handleEnded);
+      video.addEventListener("error", handleError);
+      video.addEventListener("timeupdate", handleTimeUpdate);
+      video.addEventListener("durationchange", handleDurationChange);
+      video.addEventListener("seeked", handleSeeked);
+      video.addEventListener("stalled", handleStalled);
+
+      // ===== Start Progress Animation =====
       animationFrameId = requestAnimationFrame(updateProgress);
+
+      // ===== Initial Play Attempt =====
+      // Small delay to ensure video is ready
+      setTimeout(() => {
+        if (!isActive || !videoRef.current) return;
+
+        const vid = videoRef.current;
+
+        // Check buffering state one more time
+        if (vid.readyState >= 3) {
+          setIsBuffering(false);
+        }
+
+        // Attempt to play
+        const playPromise = vid.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              if (isActive) {
+                setIsPlaying(true);
+                setIsBuffering(false);
+              }
+            })
+            .catch((err) => {
+              if (isActive) {
+                console.warn("Initial play failed:", err);
+                setIsPlaying(false);
+                // Don't set buffering false here - might still be loading
+              }
+            });
+        }
+      }, 100);
+
+      // ===== Cleanup Function =====
+      return () => {
+        video.removeEventListener("loadstart", handleLoadStart);
+        video.removeEventListener("loadedmetadata", handleLoadedMetadata);
+        video.removeEventListener("loadeddata", handleLoadedData);
+        video.removeEventListener("canplay", handleCanPlay);
+        video.removeEventListener("canplaythrough", handleCanPlayThrough);
+        video.removeEventListener("waiting", handleWaiting);
+        video.removeEventListener("playing", handlePlaying);
+        video.removeEventListener("pause", handlePause);
+        video.removeEventListener("ended", handleEnded);
+        video.removeEventListener("error", handleError);
+        video.removeEventListener("timeupdate", handleTimeUpdate);
+        video.removeEventListener("durationchange", handleDurationChange);
+        video.removeEventListener("seeked", handleSeeked);
+        video.removeEventListener("stalled", handleStalled);
+      };
     };
 
-    const handleLoadedMetadata = () => {
-      setDuration(video.duration);
-      setIsBuffering(false);
-    };
+    const videoCleanup = initializeVideo();
 
-    const handleCanPlay = () => {
-      setIsBuffering(false);
-      if (isPlaying) {
-        video.play().catch(() => setIsPlaying(false));
-      }
-    };
-
-    const handleWaiting = () => setIsBuffering(true);
-
-    const handlePlaying = () => {
-      setIsBuffering(false);
-      setIsPlaying(true);
-    };
-
-    const handlePause = () => {
-      setIsPlaying(false);
-    };
-
-    const handlePlay = () => {
-      setIsPlaying(true);
-    };
-
-    const handleEnded = () => {
-      video.currentTime = 0;
-      video.play().catch(() => {});
-    };
-
-    const handleError = () => {
-      setHasError(true);
-      setIsBuffering(false);
-    };
-
-    video.addEventListener("loadedmetadata", handleLoadedMetadata);
-    video.addEventListener("canplay", handleCanPlay);
-    video.addEventListener("waiting", handleWaiting);
-    video.addEventListener("playing", handlePlaying);
-    video.addEventListener("pause", handlePause);
-    video.addEventListener("play", handlePlay);
-    video.addEventListener("ended", handleEnded);
-    video.addEventListener("error", handleError);
-
-    animationFrameId = requestAnimationFrame(updateProgress);
-
-    // Auto-play on mount
-    video.play().catch(() => setIsPlaying(false));
-
+    // Master cleanup
     return () => {
-      video.removeEventListener("loadedmetadata", handleLoadedMetadata);
-      video.removeEventListener("canplay", handleCanPlay);
-      video.removeEventListener("waiting", handleWaiting);
-      video.removeEventListener("playing", handlePlaying);
-      video.removeEventListener("pause", handlePause);
-      video.removeEventListener("play", handlePlay);
-      video.removeEventListener("ended", handleEnded);
-      video.removeEventListener("error", handleError);
-      cancelAnimationFrame(animationFrameId);
+      isActive = false;
+
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+
+      if (typeof videoCleanup === "function") {
+        videoCleanup();
+      }
     };
-  }, [currentIndex]);
+  }, [currentIndex, isVideo]);
 
-  // Navigation handlers - instant response
-  const goToPost = useCallback(
-    (newDirection) => {
-      if (posts.length === 0) return;
-
-      const canGoNext = newDirection > 0 && currentIndex < posts.length - 1;
-      const canGoPrev = newDirection < 0 && currentIndex > 0;
-
-      if (canGoNext || canGoPrev) {
-        setDirection(newDirection);
-        setCurrentIndex((prev) => prev + newDirection);
-      }
-    },
-    [currentIndex, posts.length],
-  );
-
-  const handleDragStart = () => {
-    setIsDragging(true);
-    if (videoRef.current && isVideo) {
-      videoRef.current.pause();
+  // ===== SYNC MUTED STATE =====
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video) {
+      video.muted = isMuted;
     }
-  };
+  }, [isMuted]);
 
-  const handleDrag = (_, info) => {
-    setDragOffset(info.offset.y);
-  };
+  // ===== CLEANUP ON UNMOUNT =====
+  useEffect(() => {
+    return () => {
+      if (playPauseTimeoutRef.current) clearTimeout(playPauseTimeoutRef.current);
+      if (doubleTapRef.current) clearTimeout(doubleTapRef.current);
+    };
+  }, []);
 
-  const handleDragEnd = (_, info) => {
-    setIsDragging(false);
-    setDragOffset(0);
+  // ===== TOGGLE PLAY/PAUSE =====
+  const togglePlayPause = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) {
+      console.warn("Video ref not available");
+      return;
+    }
 
-    const shouldGoNext = info.offset.y < -SWIPE_THRESHOLD || info.velocity.y < -VELOCITY_THRESHOLD;
-    const shouldGoPrev = info.offset.y > SWIPE_THRESHOLD || info.velocity.y > VELOCITY_THRESHOLD;
+    // Clear existing timeout
+    if (playPauseTimeoutRef.current) {
+      clearTimeout(playPauseTimeoutRef.current);
+    }
 
-    if (shouldGoNext && currentIndex < posts.length - 1) {
-      goToPost(1);
-    } else if (shouldGoPrev && currentIndex > 0) {
-      goToPost(-1);
+    setShowPlayPause(true);
+
+    // Use video's actual paused state (not React state)
+    if (video.paused) {
+      video
+        .play()
+        .then(() => {
+          setIsPlaying(true);
+          setIsBuffering(false);
+        })
+        .catch((err) => {
+          console.warn("Play failed:", err);
+          setIsPlaying(false);
+        });
     } else {
-      // Resume video if not navigating
-      if (videoRef.current && isVideo && isPlaying) {
-        videoRef.current.play().catch(() => {});
-      }
+      video.pause();
+      setIsPlaying(false);
     }
 
-    // Horizontal swipe to close
-    if (info.velocity.x > 400 || info.offset.x > 120) {
-      onClose();
-    }
-  };
+    playPauseTimeoutRef.current = setTimeout(() => {
+      setShowPlayPause(false);
+    }, 800);
+  }, []);
 
-  // Progress bar seeking - works on touch and click
-  const handleProgressSeekStart = useCallback(
+  // ===== TOGGLE MUTE =====
+  const toggleMute = useCallback(() => {
+    setIsMuted((prev) => !prev);
+  }, []);
+
+  // ===== CALCULATE SEEK POSITION =====
+  const calculateSeekPosition = useCallback(
     (e) => {
-      e.stopPropagation(); // Stop event bubbling
-      setIsSeeking(true);
-      isSeekingRef.current = true;
+      const progressBar = progressBarRef.current;
+      const video = videoRef.current;
 
-      // Track if video was playing so we can resume later
-      wasPlayingRef.current = isPlaying;
+      if (!progressBar) return null;
 
-      if (videoRef.current) {
-        videoRef.current.pause(); // Pause immediately for smooth scrubbing
+      const videoDuration = video?.duration || duration;
+      if (!videoDuration || isNaN(videoDuration) || !isFinite(videoDuration) || videoDuration <= 0) {
+        return null;
       }
 
-      // Calculate immediate position
-      const rect = progressBarRef.current?.getBoundingClientRect();
-      if (!rect || !duration) return;
+      const rect = progressBar.getBoundingClientRect();
+      const clientX = e.touches?.[0]?.clientX ?? e.clientX;
+      const relativeX = clientX - rect.left;
+      const percent = Math.max(0, Math.min(100, (relativeX / rect.width) * 100));
+      const time = (percent / 100) * videoDuration;
 
-      // Support both mouse and touch
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const percentage = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-      const newTime = percentage * duration;
-
-      setProgress(percentage * 100);
-      setCurrentTime(newTime);
-      setSeekPreview(formatTime(newTime));
-
-      if (videoRef.current) {
-        videoRef.current.currentTime = newTime;
-      }
-    },
-    [duration, isPlaying],
-  );
-
-  const handleProgressSeek = useCallback(
-    (e) => {
-      if (!isSeekingRef.current) return;
-
-      // Prevent default interactions (like scroll) while scrubbing
-      if (e.cancelable) e.preventDefault();
-      e.stopPropagation();
-
-      const rect = progressBarRef.current?.getBoundingClientRect();
-      if (!rect || !duration) return;
-
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const percentage = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-      const newTime = percentage * duration;
-
-      setProgress(percentage * 100);
-      setCurrentTime(newTime);
-      setSeekPreview(formatTime(newTime));
-
-      if (videoRef.current) {
-        videoRef.current.currentTime = newTime;
-      }
+      return { percent, time, videoDuration };
     },
     [duration],
   );
 
-  const handleProgressSeekEnd = useCallback((e) => {
-    if (e) e.stopPropagation();
-    setIsSeeking(false);
-    isSeekingRef.current = false;
-    setSeekPreview(null);
+  // ===== SEEK START =====
+  const handleProgressSeekStart = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    // Resume only if it was playing before drag started
-    if (wasPlayingRef.current && videoRef.current) {
-      videoRef.current.play().catch(() => setIsPlaying(false));
-      setIsPlaying(true);
-    }
-  }, []);
+      const video = videoRef.current;
+      if (!video) return;
 
-  // Play/Pause with visual indicator
-  const togglePlayPause = useCallback(async () => {
-    const video = videoRef.current;
-    if (!video) return;
+      const dur = video.duration;
+      if (!dur || isNaN(dur) || !isFinite(dur) || dur <= 0) return;
 
-    try {
-      if (video.paused) {
-        // Always clear timeout first
-        if (playPauseTimeoutRef.current) clearTimeout(playPauseTimeoutRef.current);
-        setShowPlayPauseIndicator(true);
+      // Store playing state before seek
+      wasPlayingBeforeSeekRef.current = !video.paused;
 
-        // The robust way to handle the play promise
-        const playPromise = video.play();
-        if (playPromise !== undefined) {
-          await playPromise;
-          setIsPlaying(true);
-        }
-      } else {
-        video.pause();
-        setIsPlaying(false);
-        setShowPlayPauseIndicator(true);
+      // Set seeking flags
+      isSeekingRef.current = true;
+      setIsSeeking(true);
+
+      // Calculate and set initial position
+      const position = calculateSeekPosition(e);
+      if (position) {
+        setProgress(position.percent);
+        setCurrentTime(position.time);
+        setSeekPreview(formatTime(position.time));
+        currentProgressRef.current = position.percent;
       }
-    } catch (error) {
-      console.warn("Playback interaction interrupted");
-    } finally {
-      playPauseTimeoutRef.current = setTimeout(() => setShowPlayPauseIndicator(false), 800);
+
+      // Pause video during seek
+      if (!video.paused) {
+        video.pause();
+      }
+    },
+    [calculateSeekPosition, formatTime],
+  );
+
+  // ===== SEEK MOVE =====
+  const handleProgressSeekMove = useCallback(
+    (e) => {
+      if (!isSeekingRef.current) return;
+
+      e.preventDefault?.();
+
+      const position = calculateSeekPosition(e);
+      if (position) {
+        setProgress(position.percent);
+        setCurrentTime(position.time);
+        setSeekPreview(formatTime(position.time));
+        currentProgressRef.current = position.percent;
+      }
+    },
+    [calculateSeekPosition, formatTime],
+  );
+
+  // ===== SEEK END =====
+  const handleProgressSeekEnd = useCallback((e) => {
+    if (!isSeekingRef.current) return;
+
+    e?.preventDefault?.();
+    e?.stopPropagation?.();
+
+    const video = videoRef.current;
+    const finalProgress = currentProgressRef.current;
+
+    if (video) {
+      const dur = video.duration;
+      if (dur && !isNaN(dur) && isFinite(dur) && dur > 0) {
+        const seekTime = (finalProgress / 100) * dur;
+
+        // Set video time
+        video.currentTime = seekTime;
+        setCurrentTime(seekTime);
+
+        // Resume playback if was playing before
+        if (wasPlayingBeforeSeekRef.current) {
+          // Small delay to ensure seek completes
+          setTimeout(() => {
+            const vid = videoRef.current;
+            if (vid && isSeekingRef.current === false) {
+              vid
+                .play()
+                .then(() => setIsPlaying(true))
+                .catch((err) => {
+                  console.warn("Resume play failed:", err);
+                  setIsPlaying(false);
+                });
+            }
+          }, 50);
+        }
+      }
     }
-  }, [isPlaying]);
 
-  // Double tap to like
-  const handlePointerDown = useCallback((e) => {
-    // Don't track if on a button
-    if (e.target.closest("button")) return;
-
-    pointerStartRef.current = {
-      x: e.clientX,
-      y: e.clientY,
-      time: Date.now(),
-    };
+    // Reset seeking state
+    isSeekingRef.current = false;
+    setIsSeeking(false);
+    setSeekPreview(null);
+    wasPlayingBeforeSeekRef.current = true;
   }, []);
 
-  const toggleMute = (e) => {
-    e.stopPropagation();
-    setIsMuted((prev) => !prev);
-  };
+  // ===== GLOBAL SEEK EVENT LISTENERS =====
+  useEffect(() => {
+    if (!isSeeking) return;
 
-  // Interaction handlers
-  const handleLike = async () => {
-    if (!isSignedIn || !user?.id) {
-      alert("Please sign in to like posts");
-      return;
+    const handleMove = (e) => {
+      e.preventDefault();
+      handleProgressSeekMove(e);
+    };
+
+    const handleEnd = (e) => {
+      handleProgressSeekEnd(e);
+    };
+
+    // Capture phase for reliability
+    window.addEventListener("mousemove", handleMove, { capture: true });
+    window.addEventListener("mouseup", handleEnd, { capture: true });
+    window.addEventListener("touchmove", handleMove, { passive: false, capture: true });
+    window.addEventListener("touchend", handleEnd, { capture: true });
+    window.addEventListener("touchcancel", handleEnd, { capture: true });
+
+    return () => {
+      window.removeEventListener("mousemove", handleMove, { capture: true });
+      window.removeEventListener("mouseup", handleEnd, { capture: true });
+      window.removeEventListener("touchmove", handleMove, { capture: true });
+      window.removeEventListener("touchend", handleEnd, { capture: true });
+      window.removeEventListener("touchcancel", handleEnd, { capture: true });
+    };
+  }, [isSeeking, handleProgressSeekMove, handleProgressSeekEnd]);
+
+  // ===== SHEET DRAG START =====
+  const handleSheetDragStart = useCallback(
+    (e) => {
+      e.stopPropagation();
+      setIsDraggingSheet(true);
+
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      sheetStartY.current = clientY;
+      sheetStartHeight.current = sheetHeight;
+      lastDragY.current = clientY;
+      lastDragTime.current = Date.now();
+      velocityRef.current = 0;
+    },
+    [sheetHeight],
+  );
+
+  // ===== SHEET DRAG MOVE =====
+  const handleSheetDrag = useCallback(
+    (e) => {
+      if (!isDraggingSheet) return;
+      e.preventDefault?.();
+
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const now = Date.now();
+
+      // Calculate velocity
+      const deltaTime = now - lastDragTime.current;
+      if (deltaTime > 0) {
+        const deltaY = lastDragY.current - clientY;
+        velocityRef.current = (deltaY / deltaTime) * 1000;
+      }
+
+      lastDragY.current = clientY;
+      lastDragTime.current = now;
+
+      // Calculate new height
+      const deltaY = sheetStartY.current - clientY;
+      const deltaPercent = (deltaY / window.innerHeight) * 100;
+      const newHeight = Math.max(25, Math.min(90, sheetStartHeight.current + deltaPercent));
+
+      setSheetHeight(newHeight);
+      setDragVelocity(velocityRef.current);
+    },
+    [isDraggingSheet],
+  );
+
+  // ===== SHEET DRAG END =====
+  const handleSheetDragEnd = useCallback(() => {
+    if (!isDraggingSheet) return;
+    setIsDraggingSheet(false);
+
+    const velocity = velocityRef.current;
+    const currentHeight = sheetHeight;
+
+    let targetHeight;
+
+    if (Math.abs(velocity) > 800) {
+      targetHeight = velocity > 0 ? 90 : 25;
+    } else if (Math.abs(velocity) > 400) {
+      if (velocity > 0) {
+        targetHeight = currentHeight < 50 ? 50 : 90;
+      } else {
+        targetHeight = currentHeight > 50 ? 50 : 25;
+      }
+    } else {
+      if (currentHeight > 70) {
+        targetHeight = 90;
+      } else if (currentHeight < 35) {
+        targetHeight = 25;
+      } else {
+        targetHeight = 50;
+      }
     }
 
-    if (isInteracting) return;
+    setSheetHeight(targetHeight);
+    setDragVelocity(0);
+  }, [isDraggingSheet, sheetHeight]);
 
-    const newLikedState = !isLiked;
-    const previousLikes = likes;
-    const previousLiked = isLiked;
+  // ===== SHEET DRAG EVENT LISTENERS (SINGLE EFFECT) =====
+  useEffect(() => {
+    if (!isDraggingSheet) return;
 
-    setIsLiked(newLikedState);
-    setLikes((prev) => (newLikedState ? prev + 1 : Math.max(0, prev - 1)));
+    const handleMove = (e) => handleSheetDrag(e);
+    const handleEnd = () => handleSheetDragEnd();
 
-    if (newLikedState && !showLikeAnimation) {
-      setShowLikeAnimation(true);
-      setTimeout(() => setShowLikeAnimation(false), 800);
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", handleEnd);
+    window.addEventListener("touchmove", handleMove, { passive: false });
+    window.addEventListener("touchend", handleEnd);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", handleEnd);
+      window.removeEventListener("touchmove", handleMove);
+      window.removeEventListener("touchend", handleEnd);
+    };
+  }, [isDraggingSheet, handleSheetDrag, handleSheetDragEnd]);
+
+  // ===== DOUBLE TAP LIKE (MEMOIZED) =====
+  const handleDoubleTapLike = useCallback(async () => {
+    setShowLikeAnimation(true);
+    setTimeout(() => setShowLikeAnimation(false), 1000);
+
+    if (!isLiked && currentPost?._id && user?.id) {
+      // Optimistic update
+      setIsLiked(true);
+      setLikes((prev) => prev + 1);
+
+      try {
+        const response = await fetch(`/api/vendor/${vendorId}/profile/posts/interactions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            postId: currentPost._id,
+            action: "like",
+            userId: user.id,
+            value: true,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!data.success) throw new Error("Failed to like");
+
+        if (typeof data.data.likesCount === "number") {
+          setLikes(data.data.likesCount);
+        }
+      } catch (error) {
+        // Revert on error
+        setIsLiked(false);
+        setLikes((prev) => Math.max(0, prev - 1));
+      }
     }
+  }, [isLiked, currentPost?._id, user?.id, vendorId]);
 
+  // ===== MEDIA TAP HANDLER =====
+  const handleMediaTap = useCallback(
+    (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (isDraggingSheet) return;
+
+      const now = Date.now();
+      const DOUBLE_TAP_DELAY = 250;
+
+      if (now - lastTapRef.current < DOUBLE_TAP_DELAY) {
+        // Double tap detected
+        if (doubleTapRef.current) {
+          clearTimeout(doubleTapRef.current);
+          doubleTapRef.current = null;
+        }
+        handleDoubleTapLike();
+        lastTapRef.current = 0;
+      } else {
+        // Single tap - wait to see if double tap follows
+        lastTapRef.current = now;
+
+        if (doubleTapRef.current) {
+          clearTimeout(doubleTapRef.current);
+        }
+
+        doubleTapRef.current = setTimeout(() => {
+          doubleTapRef.current = null;
+          // Only toggle play/pause for videos
+          if (isVideo && videoRef.current) {
+            togglePlayPause();
+          }
+        }, DOUBLE_TAP_DELAY);
+      }
+    },
+    [isDraggingSheet, isVideo, togglePlayPause, handleDoubleTapLike],
+  );
+
+  // ===== NAVIGATION =====
+  const goToNext = useCallback(() => {
+    resetAllStates(); // Reset all states before navigating
+    if (currentIndex < posts.length - 1) {
+      setDirection(1);
+      setCurrentIndex((prev) => prev + 1);
+    }
+  }, [currentIndex, posts.length]);
+
+  const goToPrev = useCallback(() => {
+    resetAllStates(); // Reset all states before navigating
+    if (currentIndex > 0) {
+      setDirection(-1);
+      setCurrentIndex((prev) => prev - 1);
+    }
+  }, [currentIndex]);
+
+  // ===== LIKE HANDLER =====
+  const handleLike = useCallback(async () => {
+    if (isInteracting || !currentPost?._id || !user?.id) return;
     setIsInteracting(true);
 
+    const wasLiked = isLiked;
+    const prevLikes = likes;
+    const newLikedState = !wasLiked;
+
+    setIsLiked(newLikedState);
+    setLikes(wasLiked ? Math.max(0, prevLikes - 1) : prevLikes + 1);
+
     try {
-      const res = await fetch(`/api/vendor/${vendorId}/profile/posts/interactions`, {
+      const response = await fetch(`/api/vendor/${vendorId}/profile/posts/interactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1819,82 +2926,31 @@ const PostDetailModal = ({
         }),
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (!data.success) {
-        setIsLiked(previousLiked);
-        setLikes(previousLikes);
-      } else {
+      if (!data.success) throw new Error("Failed to like");
+
+      if (typeof data.data.likesCount === "number") {
         setLikes(data.data.likesCount);
       }
     } catch (error) {
-      setIsLiked(previousLiked);
-      setLikes(previousLikes);
+      setIsLiked(wasLiked);
+      setLikes(prevLikes);
     } finally {
       setIsInteracting(false);
     }
-  };
+  }, [isInteracting, currentPost?._id, isLiked, likes, user?.id, vendorId]);
 
-  // Handle double tap - like (like ReelsViewer)
-  const handlePointerUp = useCallback(
-    (e) => {
-      // 1. Ignore clicks on buttons/controls
-      if (e.target.closest("button") || e.target.closest(".control-layer")) return;
-
-      const start = pointerStartRef.current;
-      const dx = Math.abs(e.clientX - start.x);
-      const dy = Math.abs(e.clientY - start.y);
-      const dt = Date.now() - start.time;
-
-      // 2. Ignore swipes (movements > 10px) or long presses (> 500ms)
-      if (dx > 10 || dy > 10 || dt > 500) return;
-
-      // 3. Double Tap Logic
-      if (tapTimeoutRef.current) {
-        // Double tap detected!
-        clearTimeout(tapTimeoutRef.current);
-        tapTimeoutRef.current = null;
-
-        if (!isLiked) handleLike();
-        setShowLikeAnimation(true);
-        setTimeout(() => setShowLikeAnimation(false), 800);
-      } else {
-        // 4. Single Tap Logic (Wait 250ms to see if a second tap comes)
-        tapTimeoutRef.current = setTimeout(() => {
-          tapTimeoutRef.current = null;
-          if (isVideo) {
-            togglePlayPause();
-          }
-        }, 250);
-      }
-    },
-    [isVideo, isLiked, handleLike, togglePlayPause],
-  );
-
-  useEffect(() => {
-    return () => {
-      if (tapTimeoutRef.current) {
-        clearTimeout(tapTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const handleSave = async () => {
-    if (!isSignedIn || !user?.id) {
-      alert("Please sign in to save posts");
-      return;
-    }
-
-    if (isInteracting) return;
-
-    const newSavedState = !isSaved;
-    const previousSaved = isSaved;
-
-    setIsSaved(newSavedState);
+  const handleSave = useCallback(async () => {
+    if (isInteracting || !currentPost?._id || !user?.id) return;
     setIsInteracting(true);
 
+    const wasSaved = isSaved;
+    const newSavedState = !wasSaved;
+    setIsSaved(newSavedState);
+
     try {
-      const res = await fetch(`/api/vendor/${vendorId}/profile/posts/interactions`, {
+      const response = await fetch(`/api/vendor/${vendorId}/profile/posts/interactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -1905,209 +2961,274 @@ const PostDetailModal = ({
         }),
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
-      if (!data.success) {
-        setIsSaved(previousSaved);
-      }
+      if (!data.success) throw new Error("Failed to save");
     } catch (error) {
-      setIsSaved(previousSaved);
+      setIsSaved(wasSaved);
     } finally {
       setIsInteracting(false);
     }
-  };
+  }, [isInteracting, currentPost?._id, isSaved, user?.id, vendorId]);
 
-  const handleAddComment = async (text, clearInputFn) => {
-    if (!isSignedIn || !user?.id) {
-      alert("Please sign in to comment");
-      return;
-    }
+  const handleAddComment = useCallback(
+    async (commentText, clearInputFn) => {
+      if (!commentText?.trim() || !currentPost?._id || !user?.id) return;
 
-    const tempId = Date.now();
-    const tempComment = {
-      _id: tempId,
-      userId: user.id,
-      comment: text,
-      createdAt: new Date().toISOString(),
-      rating: 5,
-    };
+      const tempId = Date.now();
+      const tempComment = {
+        _id: tempId,
+        userId: user.id,
+        comment: commentText,
+        createdAt: new Date().toISOString(),
+        rating: 5,
+      };
 
-    setReviews((prev) => [...prev, tempComment]);
-    clearInputFn("");
-    setReviewSubmitting(true);
+      setReviews((prev) => [...prev, tempComment]);
+      clearInputFn?.("");
+      setReviewSubmitting(true);
 
-    try {
-      const res = await fetch(`/api/vendor/${vendorId}/profile/posts/interactions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          postId: currentPost._id,
-          action: "addReview",
-          userId: user.id,
-          reviewData: { rating: 5, comment: text },
-        }),
-      });
+      try {
+        const response = await fetch(`/api/vendor/${vendorId}/profile/posts/interactions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            postId: currentPost._id,
+            action: "addReview",
+            userId: user.id,
+            reviewData: { rating: 5, comment: commentText },
+          }),
+        });
 
-      const data = await res.json();
-      if (data.success) {
-        setReviews((prev) => prev.map((r) => (r._id === tempId ? data.data.review : r)));
-      } else {
+        const data = await response.json();
+
+        if (data.success) {
+          setReviews((prev) => prev.map((r) => (r._id === tempId ? data.data.review : r)));
+        } else {
+          setReviews((prev) => prev.filter((r) => r._id !== tempId));
+        }
+      } catch (error) {
+        console.error("Add comment failed:", error);
         setReviews((prev) => prev.filter((r) => r._id !== tempId));
+      } finally {
+        setReviewSubmitting(false);
       }
-    } catch (error) {
-      setReviews((prev) => prev.filter((r) => r._id !== tempId));
-    } finally {
-      setReviewSubmitting(false);
-    }
-  };
-
-  const handleDeleteComment = async (reviewId) => {
-    if (!confirm("Delete this comment?")) return;
-
-    setReviews((prev) => prev.filter((r) => (r._id || r.id) !== reviewId));
-
-    try {
-      await fetch(`/api/vendor/${vendorId}/profile/posts/interactions`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          postId: currentPost._id,
-          action: "deleteReview",
-          userId: user.id,
-          reviewId,
-        }),
-      });
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const formatTime = (seconds) => {
-    if (!seconds || isNaN(seconds)) return "0:00";
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  // Loading skeleton
-  const ActionsSkeleton = () => (
-    <div className="flex flex-col items-center gap-5 animate-pulse">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <div key={i} className="flex flex-col items-center gap-1">
-          <div className="w-11 h-11 rounded-full bg-white/20" />
-          <div className="w-6 h-2.5 bg-white/20 rounded" />
-        </div>
-      ))}
-    </div>
+    },
+    [currentPost?._id, user?.id, vendorId],
   );
 
+  const handleDeleteComment = useCallback(
+    async (reviewId) => {
+      if (!currentPost?._id || !reviewId || !user?.id) return;
+      if (!confirm("Delete this comment?")) return;
+
+      const prevReviews = [...reviews];
+      setReviews((prev) => prev.filter((r) => (r._id || r.id) !== reviewId));
+
+      try {
+        await fetch(`/api/vendor/${vendorId}/profile/posts/interactions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            postId: currentPost._id,
+            action: "deleteReview",
+            userId: user.id,
+            reviewId,
+          }),
+        });
+      } catch (error) {
+        console.error("Delete comment failed:", error);
+        setReviews(prevReviews);
+      }
+    },
+    [currentPost?._id, reviews, user?.id, vendorId],
+  );
+
+  // ===== CONTENT FORM SUBMIT =====
+  const handleContentFormSubmit = useCallback(
+    async (formData) => {
+      setIsContentSubmitting(true);
+      setContentSubmitError(null);
+
+      const previousData = contentData;
+      setContentData(formData);
+      setShowContentForm(false);
+
+      try {
+        const response = await fetch(`/api/vendor/profile/post-content`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            postId: currentPost?._id,
+            postNumber,
+            content: formData,
+            profileId: profileId,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.message || "Failed to update");
+        }
+
+        if (result.data?.content) {
+          setContentData(result.data.content);
+        }
+      } catch (error) {
+        setContentData(previousData);
+        setContentSubmitError(error.message);
+        setShowContentForm(true);
+      } finally {
+        setIsContentSubmitting(false);
+      }
+    },
+    [contentData, profileId, currentPost?._id, postNumber],
+  );
+
+  // ===== RENDER POST CONTENT =====
+  const renderPostContent = useCallback(() => {
+    if (!hasContent) {
+      return <NoDataFallback postNumber={postNumber} onUpdateClick={() => setShowContentForm(true)} />;
+    }
+
+    switch (postNumber) {
+      case 1:
+        return <WorkDetailsContent data={contentData} />;
+      case 2:
+        return <ServiceBreakdownContent data={contentData} />;
+      case 3:
+        return <PricingContent data={contentData} />;
+      case 4:
+        return <TrustContent data={contentData} />;
+      default:
+        return null;
+    }
+  }, [hasContent, postNumber, contentData]);
+
+  // ===== ACTIONS SKELETON =====
+  const ActionsSkeleton = useCallback(
+    () => (
+      <div className="flex flex-col items-center gap-3">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="flex flex-col items-center gap-1">
+            <div className="w-10 h-10 rounded-full bg-white/10 animate-pulse" />
+            <div className="w-6 h-2 bg-white/10 rounded animate-pulse" />
+          </div>
+        ))}
+      </div>
+    ),
+    [],
+  );
+
+  // ===== EARLY RETURN IF NO POST =====
   if (!currentPost) return null;
 
+  const videoHeight = 100 - sheetHeight;
+
+  // ===== RENDER =====
   return (
     <>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
         className="fixed inset-0 z-[100] bg-black overflow-hidden"
       >
-        {/* Seekable Progress Bar at Top */}
-        <div
-          ref={progressBarRef}
-          className="absolute top-0 left-0 right-0 z-40 h-1 bg-white/20 cursor-pointer group"
-          onMouseDown={handleProgressSeekStart}
-          onMouseMove={isSeeking ? handleProgressSeek : undefined}
-          onMouseUp={handleProgressSeekEnd}
-          onMouseLeave={handleProgressSeekEnd}
-          onTouchStart={handleProgressSeekStart}
-          onTouchMove={handleProgressSeek}
-          onTouchEnd={handleProgressSeekEnd}
-        >
-          {/* Progress fill */}
-          <motion.div
-            className="h-full bg-white"
-            style={{ width: `${progress}%` }}
-            transition={{ duration: isSeeking ? 0 : 0.1 }}
-          />
-
-          {/* Seek handle */}
-          <motion.div
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
-            style={{ left: `calc(${progress}% - 6px)` }}
-            animate={{ scale: isSeeking ? 1.5 : 1 }}
-          />
-
-          {/* Expanded touch area */}
-          <div className="absolute -top-2 -bottom-2 left-0 right-0" />
-
-          {/* Seek preview tooltip */}
-          <AnimatePresence>
-            {seekPreview && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="absolute top-4 bg-black/80 backdrop-blur-sm px-2 py-1 rounded text-white text-xs font-mono"
-                style={{ left: `${progress}%`, transform: "translateX(-50%)" }}
-              >
-                {seekPreview}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {/* Time Display */}
-        {isVideo && duration > 0 && (
-          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30">
-            <div className="bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full">
-              <span className="text-white text-xs font-mono">
-                {formatTime(currentTime)} / {formatTime(duration)}
-              </span>
-            </div>
-          </div>
-        )}
-
-        {/* Header */}
-        <div className="absolute top-6 left-0 right-0 z-30 px-4 py-3 flex items-center justify-between">
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={onClose}
-            className="w-10 h-10 bg-black/40 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/10"
-          >
-            <ArrowLeft size={22} className="text-white" />
-          </motion.button>
-
-          <div className="flex items-center gap-2 bg-black/40 backdrop-blur-xl px-3 py-1.5 rounded-full border border-white/10">
-            <span className="text-white font-semibold text-sm">{vendorName}</span>
-            <span className="text-white/50 text-xs">•</span>
-            <span className="text-white/70 text-xs">Works</span>
-          </div>
-
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => setShowOptionsDrawer(true)}
-            className="w-10 h-10 bg-black/40 backdrop-blur-xl rounded-full flex items-center justify-center border border-white/10"
-          >
-            <MoreVertical size={22} className="text-white" />
-          </motion.button>
-        </div>
-
-        {/* Main Content Area with Swipe */}
+        {/* ===== VIDEO SECTION ===== */}
         <motion.div
-          ref={containerRef}
-          drag={posts.length > 1 ? "y" : false}
-          dragConstraints={{ top: 0, bottom: 0 }}
-          dragElastic={0.15}
-          onDragStart={handleDragStart}
-          onDrag={handleDrag}
-          onDragEnd={handleDragEnd}
-          className="absolute inset-0 touch-pan-y"
-          style={{ cursor: isDragging ? "grabbing" : posts.length > 1 ? "grab" : "default" }}
+          className="absolute top-0 left-0 right-0 overflow-hidden"
+          animate={{
+            height: `${videoHeight}%`,
+            scale: isDraggingSheet ? 0.98 : 1,
+            filter: sheetHeight > 70 ? `brightness(${1 - (sheetHeight - 70) / 60})` : "brightness(1)",
+          }}
+          transition={
+            isDraggingSheet
+              ? { duration: 0 }
+              : {
+                  type: "spring",
+                  stiffness: 350,
+                  damping: 35,
+                  mass: 0.8,
+                }
+          }
         >
+          {/* Progress Bar */}
+          {isVideo && (
+            <div
+              ref={progressBarRef}
+              className="absolute top-0 left-0 right-0 z-40 h-2 bg-white/20 cursor-pointer group"
+              onMouseDown={handleProgressSeekStart}
+              onTouchStart={handleProgressSeekStart}
+            >
+              {/* Progress Fill */}
+              <motion.div
+                className="h-full bg-white origin-left"
+                style={{ width: `${progress}%` }}
+                transition={{ duration: isSeeking ? 0 : 0.1 }}
+              />
+
+              {/* Seek Handle */}
+              <motion.div
+                className="absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                style={{ left: `calc(${progress}% - 8px)` }}
+                animate={{
+                  scale: isSeeking ? 1.3 : 1,
+                  opacity: isSeeking ? 1 : undefined,
+                }}
+              />
+
+              {/* Seek Preview Tooltip */}
+              <AnimatePresence>
+                {seekPreview && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    className="absolute top-8 bg-black/90 px-3 py-1.5 rounded-lg text-white text-xs font-mono pointer-events-none"
+                    style={{ left: `${progress}%`, transform: "translateX(-50%)" }}
+                  >
+                    {seekPreview}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
+          {/* Time Display */}
+          {isVideo && duration > 0 && (
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30">
+              <div className="bg-black/50 px-3 py-1 rounded-full">
+                <span className="text-white text-xs font-mono">
+                  {formatTime(currentTime)} / {formatTime(duration)}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Header */}
+          <div className="absolute top-8 left-0 right-0 z-30 px-4 flex items-center justify-between">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={onClose}
+              className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center"
+            >
+              <ArrowLeft size={20} className="text-white" />
+            </motion.button>
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowOptionsDrawer(true)}
+              className="w-10 h-10 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center"
+            >
+              <MoreVertical size={20} className="text-white" />
+            </motion.button>
+          </div>
+
+          {/* Media Content with Animation */}
           <AnimatePresence initial={false} custom={direction} mode="popLayout">
             <motion.div
-              key={currentPost._id}
+              key={`media-${currentPost._id}-${currentIndex}`}
               custom={direction}
               variants={slideVariants}
               initial="enter"
@@ -2115,32 +3236,28 @@ const PostDetailModal = ({
               exit="exit"
               className="absolute inset-0"
             >
-              {/* Blurred Background */}
-              <div className="absolute inset-0 z-0 overflow-hidden">
-                <motion.img
+              {/* Background Blur */}
+              <div className="absolute inset-0 overflow-hidden">
+                <img
                   src={currentPost.thumbnailUrl || currentPost.mediaUrl}
                   alt=""
-                  className="w-full h-full object-cover blur-3xl scale-150"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 0.4 }}
-                  transition={{ duration: 0.3 }}
+                  className="w-full h-full object-cover blur-2xl scale-125 opacity-40"
                 />
-                <div className="absolute inset-0 bg-black/30" />
+                <div className="absolute inset-0 bg-black/40" />
               </div>
 
-              {/* Media Content */}
-              <div className="absolute inset-0 z-10 flex items-center justify-center">
+              {/* Actual Media */}
+              <div className="absolute inset-0 flex items-center justify-center">
                 {isVideo ? (
                   <video
                     ref={videoRef}
-                    key={currentPost._id}
-                    src={currentPost.mediaUrl}
-                    poster={currentPost.thumbnailUrl}
-                    className="w-full h-full object-contain pointer-events-none"
+                    key={`video-element-${currentPost._id}-${currentIndex}`}
+                    src={currentPost.mediaUrl || currentPost.video}
+                    className="w-full h-full object-contain"
                     loop
                     muted={isMuted}
                     playsInline
-                    autoPlay
+                    webkit-playsinline="true"
                     preload="auto"
                   />
                 ) : (
@@ -2154,27 +3271,32 @@ const PostDetailModal = ({
               </div>
 
               {/* Gradient Overlays */}
-              <div className="absolute inset-0 pointer-events-none z-20">
-                <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/70 via-black/30 to-transparent" />
-                <div className="absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-              </div>
+              <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-black/60 to-transparent pointer-events-none" />
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
             </motion.div>
           </AnimatePresence>
 
-          {/* ADD THIS - Tap Detection Layer */}
-          <div className="absolute inset-0 z-[21]" onPointerDown={handlePointerDown} onPointerUp={handlePointerUp} />
+          {/* Tap Detection Overlay */}
+          <div
+            className="absolute inset-0 z-25"
+            onClick={handleMediaTap}
+            onTouchEnd={(e) => {
+              e.preventDefault();
+              handleMediaTap(e);
+            }}
+            style={{ WebkitTapHighlightColor: "transparent" }}
+          />
 
           {/* Buffering Indicator */}
           <AnimatePresence>
-            {isBuffering && !hasError && (
+            {isBuffering && !hasError && isVideo && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.15 }}
                 className="absolute inset-0 flex items-center justify-center pointer-events-none z-30"
               >
-                <div className="w-14 h-14 border-3 border-white/30 border-t-white rounded-full animate-spin" />
+                <div className="w-12 h-12 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               </motion.div>
             )}
           </AnimatePresence>
@@ -2183,17 +3305,14 @@ const PostDetailModal = ({
           <AnimatePresence>
             {hasError && (
               <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-30"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 flex items-center justify-center pointer-events-none z-30"
               >
-                <div className="bg-black/60 backdrop-blur-xl rounded-2xl p-6 text-center">
-                  <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-red-500/20 flex items-center justify-center">
-                    <X size={32} className="text-red-400" />
-                  </div>
-                  <p className="text-white text-lg font-semibold">Content unavailable</p>
-                  <p className="text-white/60 text-sm mt-1">Swipe for more</p>
+                <div className="text-center">
+                  <X size={40} className="text-white/60 mx-auto mb-2" />
+                  <p className="text-white/60 text-sm">Content unavailable</p>
                 </div>
               </motion.div>
             )}
@@ -2201,36 +3320,19 @@ const PostDetailModal = ({
 
           {/* Play/Pause Indicator */}
           <AnimatePresence>
-            {showPlayPauseIndicator && isVideo && !isBuffering && !hasError && (
+            {showPlayPause && isVideo && !isBuffering && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.5 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.5 }}
-                transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 className="absolute inset-0 flex items-center justify-center pointer-events-none z-30"
               >
-                <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center border border-white/20">
+                <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center">
                   {isPlaying ? (
-                    <Pause size={32} className="text-white fill-white" />
+                    <Pause size={28} className="text-white fill-white" />
                   ) : (
-                    <Play size={32} className="text-white fill-white ml-1" />
+                    <Play size={28} className="text-white fill-white ml-1" />
                   )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Persistent Paused State Indicator (Shows when paused) */}
-          <AnimatePresence>
-            {!isPlaying && isVideo && !isBuffering && !hasError && !showPlayPauseIndicator && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="absolute inset-0 flex items-center justify-center pointer-events-none z-30"
-              >
-                <div className="w-16 h-16 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center border border-white/10">
-                  <Play size={32} className="text-white fill-white ml-1" />
                 </div>
               </motion.div>
             )}
@@ -2243,226 +3345,305 @@ const PostDetailModal = ({
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 1.5, opacity: 0 }}
-                transition={{
-                  type: "spring",
-                  stiffness: 500,
-                  damping: 20,
-                  exit: { duration: 0.3 },
-                }}
+                transition={{ duration: 0.4 }}
                 className="absolute inset-0 flex items-center justify-center pointer-events-none z-40"
               >
-                <Heart size={100} className="text-white fill-white drop-shadow-2xl" />
+                <Heart size={80} className="text-white fill-white drop-shadow-lg" />
               </motion.div>
             )}
           </AnimatePresence>
 
-          {/* Drag Indicator Overlays */}
-          {isDragging && posts.length > 1 && (
-            <>
-              {dragOffset < -20 && currentIndex < posts.length - 1 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: Math.min(1, Math.abs(dragOffset) / 100) }}
-                  className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30"
-                >
-                  <ChevronDown size={32} className="text-white animate-bounce" />
-                </motion.div>
-              )}
-              {dragOffset > 20 && currentIndex > 0 && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: Math.min(1, Math.abs(dragOffset) / 100) }}
-                  className="absolute top-24 left-1/2 -translate-x-1/2 z-30"
-                >
-                  <ChevronUp size={32} className="text-white animate-bounce" />
-                </motion.div>
-              )}
-            </>
-          )}
-        </motion.div>
-
-        {/* Right Side Actions */}
-        <div className="absolute right-3 bottom-36 flex flex-col items-center gap-4 z-30">
-          {isLoadingInteractions ? (
-            <ActionsSkeleton />
-          ) : (
-            <>
-              {/* Like */}
-              <motion.button
-                whileTap={{ scale: 0.85 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleLike();
-                }}
-                className="flex flex-col items-center gap-0.5"
-                disabled={isInteracting}
-              >
-                <motion.div
-                  animate={isLiked ? { scale: [1, 1.2, 1] } : {}}
-                  transition={{ duration: 0.3 }}
-                  className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-xl flex items-center justify-center border border-white/10"
-                >
-                  <Heart size={24} className={isLiked ? "text-red-500 fill-red-500" : "text-white"} />
-                </motion.div>
-                <span className="text-white text-[10px] font-semibold">{likes.toLocaleString()}</span>
-              </motion.button>
-
-              {/* Comments */}
-              <motion.button
-                whileTap={{ scale: 0.85 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowCommentsDrawer(true);
-                }}
-                className="flex flex-col items-center gap-0.5"
-              >
-                <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-xl flex items-center justify-center border border-white/10">
-                  <MessageCircle size={24} className="text-white" />
-                </div>
-                <span className="text-white text-[10px] font-semibold">{reviews.length}</span>
-              </motion.button>
-
-              {/* Share */}
-              <motion.button
-                whileTap={{ scale: 0.85 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowShareModal(true);
-                }}
-                className="flex flex-col items-center gap-0.5"
-              >
-                <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-xl flex items-center justify-center border border-white/10">
-                  <Send size={22} className="text-white" />
-                </div>
-                <span className="text-white text-[10px] font-semibold">Share</span>
-              </motion.button>
-
-              {/* Save */}
-              <motion.button
-                whileTap={{ scale: 0.85 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleSave();
-                }}
-                className="flex flex-col items-center gap-0.5"
-                disabled={isInteracting}
-              >
-                <motion.div
-                  animate={isSaved ? { scale: [1, 1.2, 1] } : {}}
-                  transition={{ duration: 0.3 }}
-                  className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-xl flex items-center justify-center border border-white/10"
-                >
-                  {isSaved ? (
-                    <BookmarkCheck size={22} className="text-white fill-white" />
-                  ) : (
-                    <Bookmark size={22} className="text-white" />
-                  )}
-                </motion.div>
-                <span className="text-white text-[10px] font-semibold">Save</span>
-              </motion.button>
-
-              {/* Mute/Unmute */}
-              {isVideo && (
+          {/* Right Side Actions */}
+          <div className="absolute right-3 bottom-6 flex flex-col items-center gap-4 z-30">
+            {isLoadingInteractions ? (
+              <ActionsSkeleton />
+            ) : (
+              <>
                 <motion.button
-                  whileTap={{ scale: 0.85 }}
-                  onClick={toggleMute}
-                  className="flex flex-col items-center gap-0.5"
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleLike}
+                  disabled={isInteracting}
+                  className="flex flex-col items-center"
                 >
-                  <div className="w-11 h-11 rounded-full bg-black/40 backdrop-blur-xl flex items-center justify-center border border-white/10">
-                    {isMuted ? (
-                      <VolumeX size={22} className="text-white" />
+                  <div className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                    <Heart size={22} className={isLiked ? "text-red-500 fill-red-500" : "text-white"} />
+                  </div>
+                  <span className="text-white text-xs mt-1">{likes}</span>
+                </motion.button>
+
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowCommentsDrawer(true)}
+                  className="flex flex-col items-center"
+                >
+                  <div className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                    <MessageCircle size={22} className="text-white" />
+                  </div>
+                  <span className="text-white text-xs mt-1">{reviews.length}</span>
+                </motion.button>
+
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowShareModal(true)}
+                  className="flex flex-col items-center"
+                >
+                  <div className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                    <Send size={20} className="text-white" />
+                  </div>
+                </motion.button>
+
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={handleSave}
+                  disabled={isInteracting}
+                  className="flex flex-col items-center"
+                >
+                  <div className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                    {isSaved ? (
+                      <BookmarkCheck size={20} className="text-white fill-white" />
                     ) : (
-                      <Volume2 size={22} className="text-white" />
+                      <Bookmark size={20} className="text-white" />
                     )}
                   </div>
                 </motion.button>
-              )}
-            </>
-          )}
-        </div>
 
-        {/* Bottom Content Info */}
-        <div className="absolute left-4 right-16 bottom-8 z-30 space-y-2.5">
-          {/* Vendor Info */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-white/30">
-              <SmartMedia
-                src={vendorImage}
-                type="image"
-                className="w-full h-full object-cover"
-                loaderImage="/GlowLoadingGif.gif"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <span className="text-white font-bold text-sm">{vendorName}</span>
-              {currentPost.date && <p className="text-white/50 text-xs">{currentPost.date}</p>}
-            </div>
-            {/* <motion.button
-              whileTap={{ scale: 0.95 }}
-              className="px-3 py-1.5 bg-white/20 backdrop-blur-xl rounded-lg border border-white/20"
-            >
-              <span className="text-white text-xs font-semibold">Follow</span>
-            </motion.button> */}
-          </div>
-
-          {/* Caption */}
-          {(currentPost.caption || currentPost.description) && (
-            <p className="text-white text-sm line-clamp-2 leading-relaxed">
-              {currentPost.caption || currentPost.description}
-            </p>
-          )}
-
-          {/* Location & Tags */}
-          <div className="flex items-center gap-2 flex-wrap">
-            {currentPost.location && (
-              <span className="text-blue-400 text-xs flex items-center gap-1 bg-blue-500/10 px-2 py-0.5 rounded-full">
-                <MapPin size={10} />
-                {currentPost.location}
-              </span>
+                {isVideo && (
+                  <motion.button whileTap={{ scale: 0.9 }} onClick={toggleMute} className="flex flex-col items-center">
+                    <div className="w-11 h-11 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center">
+                      {isMuted ? (
+                        <VolumeX size={20} className="text-white" />
+                      ) : (
+                        <Volume2 size={20} className="text-white" />
+                      )}
+                    </div>
+                  </motion.button>
+                )}
+              </>
             )}
-            {currentPost.tags?.slice(0, 2).map((tag, idx) => (
-              <span key={idx} className="px-2 py-0.5 bg-white/10 rounded-full text-white/80 text-xs">
-                #{tag}
-              </span>
-            ))}
           </div>
 
-          {/* Audio info for videos */}
-          {isVideo && (
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded bg-white/20 flex items-center justify-center">
-                <span className="text-[8px]">🎵</span>
-              </div>
-              <p className="text-white/70 text-xs">Original Audio</p>
-            </div>
-          )}
-        </div>
-
-        {/* Post Counter */}
-        {posts.length > 1 && (
-          <div className="absolute left-3 top-1/2 -translate-y-1/2 z-30">
-            <div className="bg-black/40 backdrop-blur-sm px-2 py-3 rounded-full">
-              <p
-                className="text-white/70 text-[10px] font-mono"
-                style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
+          {/* Navigation Arrows */}
+          {/* {posts.length > 1 && (
+            <div className="absolute left-3 bottom-6 flex flex-col gap-2 z-30">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={goToPrev}
+                disabled={currentIndex === 0}
+                className={`w-8 h-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center ${
+                  currentIndex === 0 ? "opacity-30" : ""
+                }`}
               >
-                {currentIndex + 1} / {posts.length}
-              </p>
+                <ChevronUp size={18} className="text-white" />
+              </motion.button>
+              <div className="text-white text-xs text-center py-1">
+                {currentIndex + 1}/{posts.length}
+              </div>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={goToNext}
+                disabled={currentIndex === posts.length - 1}
+                className={`w-8 h-8 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center ${
+                  currentIndex === posts.length - 1 ? "opacity-30" : ""
+                }`}
+              >
+                <ChevronDown size={18} className="text-white" />
+              </motion.button>
             </div>
-          </div>
-        )}
+          )} */}
+        </motion.div>
 
-        {/* Navigation Hint */}
-        {posts.length > 1 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="absolute bottom-2 left-1/2 -translate-x-1/2 z-30"
+        {/* ===== CONTENT SECTION (PARALLAX SHEET) ===== */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl"
+          style={{
+            boxShadow: `0 -4px ${20 + (sheetHeight - 45) * 0.5}px rgba(0,0,0,${0.1 + (sheetHeight - 45) * 0.002})`,
+          }}
+          animate={{
+            height: `${sheetHeight}%`,
+            borderTopLeftRadius: sheetHeight > 80 ? 12 : 24,
+            borderTopRightRadius: sheetHeight > 80 ? 12 : 24,
+          }}
+          transition={
+            isDraggingSheet
+              ? { duration: 0 }
+              : {
+                  type: "spring",
+                  stiffness: 350,
+                  damping: 35,
+                  mass: 0.8,
+                }
+          }
+        >
+          {/* Drag Handle */}
+          <div
+            className="flex flex-col items-center py-3 cursor-grab active:cursor-grabbing touch-none select-none"
+            onMouseDown={handleSheetDragStart}
+            onTouchStart={handleSheetDragStart}
           >
-            <p className="text-white/30 text-[10px]">Swipe up/down • Double tap to like</p>
-          </motion.div>
-        )}
+            <motion.div
+              className="w-12 h-1.5 bg-gray-300 rounded-full"
+              animate={{
+                width: isDraggingSheet ? 48 : 48,
+                backgroundColor: isDraggingSheet ? "#9CA3AF" : "#D1D5DB",
+              }}
+              whileHover={{ width: 56, backgroundColor: "#9CA3AF" }}
+              transition={{ duration: 0.15 }}
+            />
+            <motion.div
+              className="mt-1 flex items-center gap-1 text-gray-400"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{
+                opacity: isDraggingSheet ? 1 : 0,
+                height: isDraggingSheet ? "auto" : 0,
+              }}
+            >
+              <ChevronUp size={12} className={dragVelocity > 100 ? "text-gray-600" : ""} />
+              <span className="text-[10px] font-medium">
+                {sheetHeight > 70 ? "Release to expand" : sheetHeight < 35 ? "Release to minimize" : "Drag to adjust"}
+              </span>
+              <ChevronDown size={12} className={dragVelocity < -100 ? "text-gray-600" : ""} />
+            </motion.div>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="h-[calc(100%-24px)] overflow-y-auto overscroll-contain px-4 pb-8">
+            {/* Header */}
+            <div className="pb-4 mb-4 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-gray-100 flex-shrink-0">
+                  <SmartMedia
+                    src={vendorImage}
+                    type="image"
+                    className="w-full h-full object-cover"
+                    loaderImage="/GlowLoadingGif.gif"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-gray-900 truncate">{vendorName}</h3>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span
+                      className={`font-medium bg-gradient-to-r ${
+                        currentPostConfig?.color || "from-gray-400 to-gray-500"
+                      } bg-clip-text text-transparent`}
+                    >
+                      {currentPostConfig?.title || "Post Details"}
+                    </span>
+                    <span className="text-gray-300">•</span>
+                    <span className="text-gray-500">Post {postNumber}/4</span>
+                  </div>
+                </div>
+                {hasContent && (
+                  <motion.button
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setShowContentForm(true)}
+                    className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center"
+                  >
+                    <Edit3 size={16} className="text-gray-600" />
+                  </motion.button>
+                )}
+              </div>
+
+              {/* Post Type Badge */}
+              <div
+                className={`inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${
+                  currentPostConfig?.color || "from-gray-400 to-gray-500"
+                } rounded-full mt-3`}
+              >
+                <PostConfigIcon size={14} className="text-white" />
+                <span className="text-white text-xs font-medium">{currentPostConfig?.title}</span>
+              </div>
+            </div>
+
+            {/* Dynamic Content */}
+            {renderPostContent()}
+
+            {/* Error Message */}
+            <AnimatePresence>
+              {contentSubmitError && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mt-4 p-3 bg-red-50 border border-red-100 rounded-xl flex items-center gap-2"
+                >
+                  <AlertCircle size={18} className="text-red-500 flex-shrink-0" />
+                  <span className="text-sm text-red-700">{contentSubmitError}</span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Caption & Tags */}
+            {(currentPost.caption ||
+              currentPost.description ||
+              currentPost.location ||
+              currentPost.tags?.length > 0) && (
+              <div className="mt-6 pt-4 border-t border-gray-100 space-y-3">
+                {(currentPost.caption || currentPost.description) && (
+                  <p className="text-gray-700 text-sm leading-relaxed">
+                    {currentPost.caption || currentPost.description}
+                  </p>
+                )}
+
+                {(currentPost.location || currentPost.tags?.length > 0) && (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    {currentPost.location && (
+                      <span className="text-blue-600 text-xs flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-full">
+                        <MapPin size={10} />
+                        {currentPost.location}
+                      </span>
+                    )}
+                    {currentPost.tags?.slice(0, 3).map((tag, idx) => (
+                      <span key={idx} className="px-2 py-1 bg-gray-100 rounded-full text-gray-600 text-xs">
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {currentPost.date && <p className="text-gray-400 text-xs">{currentPost.date}</p>}
+              </div>
+            )}
+
+            {/* fixed buttons */}
+            <div className="border-t border-gray-100 bg-white px-4 py-3">
+              <div className="flex gap-3 max-w-4xl mx-auto">
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+                >
+                  Call Now
+                </motion.button>
+
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  className="flex-1 bg-gradient-to-r from-emerald-600 to-green-500 text-white py-3 rounded-xl text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+                >
+                  Request Price Quote
+                </motion.button>
+              </div>
+            </div>
+
+            {/* Navigation Dots */}
+            {/* {posts.length > 1 && (
+              <div className="flex justify-center gap-2 mt-6 pt-4 border-t border-gray-100">
+                {posts.slice(0, Math.min(posts.length, 8)).map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setDirection(idx > currentIndex ? 1 : -1);
+                      setCurrentIndex(idx);
+                    }}
+                    className={`h-2 rounded-full transition-all ${
+                      idx === currentIndex ? "w-6 bg-gray-800" : "w-2 bg-gray-300"
+                    }`}
+                  />
+                ))}
+              </div>
+            )} */}
+          </div>
+        </motion.div>
       </motion.div>
 
       {/* Options Drawer */}
@@ -2508,6 +3689,36 @@ const PostDetailModal = ({
         submitting={reviewSubmitting}
         currentUserId={user?.id}
       />
+
+      {/* Content Form Modal */}
+      <AnimatePresence>
+        {showContentForm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-4"
+            onClick={() => setShowContentForm(false)}
+          >
+            <motion.div
+              initial={{ y: 100, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 100, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-lg"
+            >
+              <PostContentForm
+                postNumber={postNumber}
+                initialData={contentData}
+                onSubmit={handleContentFormSubmit}
+                onCancel={() => setShowContentForm(false)}
+                isSubmitting={isContentSubmitting}
+              />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   );
 };
@@ -8220,7 +9431,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
     const newTrustState = !hasTrusted;
     const previousTrustState = hasTrusted;
     const previousTrustCount = trustCount;
-    const trustChange = newTrustState ? 5 : -5;
+    const trustChange = newTrustState ? 10 : -10;
     const newTrustCount = Math.max(0, previousTrustCount + trustChange);
 
     setHasTrusted(newTrustState);
@@ -8252,7 +9463,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
       setTrustCount(serverTrustCount);
 
       if (newTrustState) {
-        showUIConfirmation("Vendor trusted! +5", "success", Shield);
+        showUIConfirmation("Vendor trusted! +10", "success", Shield);
       } else {
         showUIConfirmation("Trust removed", "info", Shield);
       }
@@ -8894,190 +10105,223 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
     switch (activeTab) {
       case "posts":
         return (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 pt-2">
             {profileLoading ? (
               <PostsLoadingSkeleton />
             ) : posts.length === 0 ? (
               <EmptyPostsState />
             ) : (
-              <>
-                <div className="grid grid-cols-2 gap-[8px] mx-[15px]">
-                  {posts.map((post, index) => {
-                    const posterUrl = post.thumbnailUrl || videoThumbnails[post._id] || null;
-                    const thumb = videoThumbnails[post._id];
-                    return (
+             <>
+  <div className="grid grid-cols-2 gap-[12px] mx-[15px]">
+    {posts.slice(0, 4).map((post, index) => {
+      const posterUrl = post.thumbnailUrl || videoThumbnails[post._id] || null;
+      const thumb = videoThumbnails[post._id];
+      
+      // Title mapping for each post position
+      const postTitles = [
+        "Work Details",
+        "Services Breakdown",
+        "Pricing & Packages",
+        "Trust & Real Events"
+      ];
+
+      // Icon mapping for each post (optional - adds visual appeal)
+      const postIcons = [
+        <Briefcase size={14} />,
+        <Layers size={14} />,
+        <Tag size={14} />,
+        <Shield size={14} />
+      ];
+      
+      return (
+        // Outer Card with Title
+        <div
+          key={post?._id || `post-${index}`}
+          className="flex flex-col bg-white dark:bg-gray-900 rounded-[14px] p-[10px] shadow-[0_2px_12px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-800"
+        >
+          {/* Title Section */}
+          <div className="flex items-center justify-center gap-[6px] mb-[10px] py-[6px] px-[8px] bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/80 rounded-[8px]">
+            <span className="text-gray-500 dark:text-gray-400">
+              {postIcons[index]}
+            </span>
+            <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-200 tracking-wide truncate">
+              {postTitles[index]}
+            </span>
+          </div>
+          
+          {/* Inner Card - Original Post Design (Unchanged) */}
+          <motion.div
+            whileTap={{ scale: 0.97 }}
+            onClick={() => {
+              if (playingVideoId) {
+                const video = videoRefs.current[playingVideoId];
+                if (video) {
+                  video.pause();
+                  video.currentTime = 0;
+                }
+                setPlayingVideoId(null);
+              }
+              setSelectedPost(post);
+            }}
+            onTouchStart={() => {
+              longPressTimerRef.current = setTimeout(() => {
+                if (post.mediaType === "video") {
+                  const video = videoRefs.current[post._id];
+                  if (video) {
+                    video.play();
+                    setPlayingVideoId(post._id);
+                  }
+                } else {
+                  setPreviewPost(post);
+                }
+                setIsLongPressing(true);
+              }, 500);
+            }}
+            onTouchEnd={() => {
+              if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+              if (isLongPressing) {
+                if (post.mediaType === "video" && playingVideoId === post._id) {
+                  const video = videoRefs.current[post._id];
+                  if (video) {
+                    video.pause();
+                    video.currentTime = 0;
+                  }
+                  setPlayingVideoId(null);
+                }
+                setPreviewPost(null);
+                setIsLongPressing(false);
+              }
+            }}
+            onTouchMove={() => {
+              if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+            }}
+            onMouseDown={() => {
+              longPressTimerRef.current = setTimeout(() => {
+                if (post.mediaType === "video") {
+                  const video = videoRefs.current[post._id];
+                  if (video) {
+                    video.play();
+                    setPlayingVideoId(post._id);
+                  }
+                } else {
+                  setPreviewPost(post);
+                }
+                setIsLongPressing(true);
+              }, 500);
+            }}
+            onMouseUp={() => {
+              if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+              if (isLongPressing) {
+                if (post.mediaType === "video" && playingVideoId === post._id) {
+                  const video = videoRefs.current[post._id];
+                  if (video) {
+                    video.pause();
+                    video.currentTime = 0;
+                  }
+                  setPlayingVideoId(null);
+                }
+                setPreviewPost(null);
+                setIsLongPressing(false);
+              }
+            }}
+            onMouseLeave={() => {
+              if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+              if (isLongPressing) {
+                if (post.mediaType === "video" && playingVideoId === post._id) {
+                  const video = videoRefs.current[post._id];
+                  if (video) {
+                    video.pause();
+                    video.currentTime = 0;
+                  }
+                  setPlayingVideoId(null);
+                }
+                setPreviewPost(null);
+                setIsLongPressing(false);
+              }
+            }}
+            className="aspect-[1/1.3] bg-gray-100 dark:bg-gray-800 overflow-hidden relative cursor-pointer select-none rounded-[10px] group"
+          >
+            {post.mediaType === "video" ? (
+              <div className="relative w-full h-full">
+                {thumb && thumb !== "FALLBACK" ? (
+                  <img src={thumb} className="w-full h-full object-cover" />
+                ) : (
+                  <video
+                    ref={(el) => {
+                      if (el) videoRefs.current[post._id] = el;
+                    }}
+                    src={post.mediaUrl}
+                    poster={posterUrl || undefined}
+                    className="w-full h-full object-cover"
+                    muted
+                    playsInline
+                    loop
+                    preload="metadata"
+                  />
+                )}
+                <AnimatePresence>
+                  {playingVideoId !== post._id && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
+                    >
+                      <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-full p-1.5 shadow-lg">
+                        <Play size={12} className="text-white fill-white" />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                <AnimatePresence>
+                  {playingVideoId === post._id && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                    >
+                      <div className="absolute inset-0 bg-black/10" />
                       <motion.div
-                        key={post?._id || `post-${index}`}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => {
-                          if (playingVideoId) {
-                            const video = videoRefs.current[playingVideoId];
-                            if (video) {
-                              video.pause();
-                              video.currentTime = 0;
-                            }
-                            setPlayingVideoId(null);
-                          }
-                          setSelectedPost(post);
-                        }}
-                        onTouchStart={() => {
-                          longPressTimerRef.current = setTimeout(() => {
-                            if (post.mediaType === "video") {
-                              const video = videoRefs.current[post._id];
-                              if (video) {
-                                video.play();
-                                setPlayingVideoId(post._id);
-                              }
-                            } else {
-                              setPreviewPost(post);
-                            }
-                            setIsLongPressing(true);
-                          }, 500);
-                        }}
-                        onTouchEnd={() => {
-                          if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-                          if (isLongPressing) {
-                            if (post.mediaType === "video" && playingVideoId === post._id) {
-                              const video = videoRefs.current[post._id];
-                              if (video) {
-                                video.pause();
-                                video.currentTime = 0;
-                              }
-                              setPlayingVideoId(null);
-                            }
-                            setPreviewPost(null);
-                            setIsLongPressing(false);
-                          }
-                        }}
-                        onTouchMove={() => {
-                          if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-                        }}
-                        onMouseDown={() => {
-                          longPressTimerRef.current = setTimeout(() => {
-                            if (post.mediaType === "video") {
-                              const video = videoRefs.current[post._id];
-                              if (video) {
-                                video.play();
-                                setPlayingVideoId(post._id);
-                              }
-                            } else {
-                              setPreviewPost(post);
-                            }
-                            setIsLongPressing(true);
-                          }, 500);
-                        }}
-                        onMouseUp={() => {
-                          if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-                          if (isLongPressing) {
-                            if (post.mediaType === "video" && playingVideoId === post._id) {
-                              const video = videoRefs.current[post._id];
-                              if (video) {
-                                video.pause();
-                                video.currentTime = 0;
-                              }
-                              setPlayingVideoId(null);
-                            }
-                            setPreviewPost(null);
-                            setIsLongPressing(false);
-                          }
-                        }}
-                        onMouseLeave={() => {
-                          if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-                          if (isLongPressing) {
-                            if (post.mediaType === "video" && playingVideoId === post._id) {
-                              const video = videoRefs.current[post._id];
-                              if (video) {
-                                video.pause();
-                                video.currentTime = 0;
-                              }
-                              setPlayingVideoId(null);
-                            }
-                            setPreviewPost(null);
-                            setIsLongPressing(false);
-                          }
-                        }}
-                        className="aspect-[1/1.3] bg-gray-100 dark:bg-gray-800 overflow-hidden relative cursor-pointer select-none rounded-[10px] group"
+                        animate={{ scale: [1, 1.2, 1] }}
+                        transition={{ duration: 1.5, repeat: Infinity }}
+                        className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
                       >
-                        {post.mediaType === "video" ? (
-                          <div className="relative w-full h-full">
-                            {thumb && thumb !== "FALLBACK" ? (
-                              <img src={thumb} className="w-full h-full object-cover" />
-                            ) : (
-                              <video
-                                ref={(el) => {
-                                  if (el) videoRefs.current[post._id] = el;
-                                }}
-                                src={post.mediaUrl}
-                                poster={posterUrl || undefined}
-                                className="w-full h-full object-cover"
-                                muted
-                                playsInline
-                                loop
-                                preload="metadata"
-                              />
-                            )}
-                            <AnimatePresence>
-                              {playingVideoId !== post._id && (
-                                <motion.div
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  exit={{ opacity: 0 }}
-                                  className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
-                                >
-                                  <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-full p-1.5 shadow-lg">
-                                    <Play size={12} className="text-white fill-white" />
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                            <AnimatePresence>
-                              {playingVideoId === post._id && (
-                                <motion.div
-                                  initial={{ opacity: 0, scale: 0.8 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  exit={{ opacity: 0, scale: 0.8 }}
-                                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                                >
-                                  <div className="absolute inset-0 bg-black/10" />
-                                  <motion.div
-                                    animate={{ scale: [1, 1.2, 1] }}
-                                    transition={{ duration: 1.5, repeat: Infinity }}
-                                    className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
-                                  >
-                                    <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
-                                      <Pause size={16} className="text-gray-900" />
-                                    </div>
-                                  </motion.div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        ) : (
-                          <SmartMedia
-                            key={`media-${post._id}`}
-                            src={post?.mediaUrl}
-                            type="image"
-                            className="w-full h-full object-cover"
-                            loaderImage="/GlowLoadingGif.gif"
-                          />
-                        )}
-                        {(post?.mediaType !== "video" || playingVideoId !== post._id) && (
-                          <div className="absolute inset-0 bg-black/0 group-active:bg-black/40 transition-colors flex items-center justify-center gap-3 text-white text-xs font-bold opacity-0 group-active:opacity-100">
-                            <span className="flex items-center gap-1">
-                              <Heart size={14} className="fill-white" />
-                              {post?.likes?.length}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MessageCircle size={14} className="fill-white" />
-                              {post?.reviews?.length}
-                            </span>
-                          </div>
-                        )}
+                        <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                          <Pause size={16} className="text-gray-900" />
+                        </div>
                       </motion.div>
-                    );
-                  })}
-                </div>
-              </>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            ) : (
+              <SmartMedia
+                key={`media-${post._id}`}
+                src={post?.mediaUrl}
+                type="image"
+                className="w-full h-full object-cover"
+                loaderImage="/GlowLoadingGif.gif"
+              />
+            )}
+            {(post?.mediaType !== "video" || playingVideoId !== post._id) && (
+              <div className="absolute inset-0 bg-black/0 group-active:bg-black/40 transition-colors flex items-center justify-center gap-3 text-white text-xs font-bold opacity-0 group-active:opacity-100">
+                <span className="flex items-center gap-1">
+                  <Heart size={14} className="fill-white" />
+                  {post?.likes?.length}
+                </span>
+                <span className="flex items-center gap-1">
+                  <MessageCircle size={14} className="fill-white" />
+                  {post?.reviews?.length}
+                </span>
+              </div>
+            )}
+          </motion.div>
+        </div>
+      );
+    })}
+  </div>
+</>
             )}
             <div className="space-y-5 mx-4 relative isolate">
               {vendor?.images?.length > 0 ? (
@@ -10806,7 +12050,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                   <>
                     <motion.div
                       initial={false}
-                      animate={{ height: isBioExpanded ? "auto" : "3.4rem" }}
+                      animate={{ height: isBioExpanded ? "auto" : "4rem" }}
                       transition={{
                         duration: 0.5,
                         ease: smoothEase,
@@ -11335,6 +12579,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
             onArchive={() => handleArchivePost(selectedPost._id)}
             vendorId={id}
             allInteractions={postsInteractionsData}
+            profileId={profile?._id}
           />
         )}
       </AnimatePresence>

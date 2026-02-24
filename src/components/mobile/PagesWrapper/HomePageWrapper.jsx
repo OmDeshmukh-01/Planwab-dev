@@ -10,6 +10,7 @@ import { useNavbarVisibilityStore } from "../../../GlobalState/navbarVisibilityS
 
 // INSTANT — above the fold
 import CategoryGrid from "../homepage/CategoriesGrid";
+import HowItWorksSection from "../../desktop/HomePage/HowItWorks";
 
 // LAZY — below the fold, not needed at first paint
 const ServicesSteps = lazy(() => import("../homepage/ServicesSteps"));
@@ -147,13 +148,13 @@ const MainContent = ({ plannersSlot, trendingSlot, mostBookedSlot }) => {
   const HeroNAPImageUrl = () => {
     switch (currentCategory.toLowerCase()) {
       case "wedding":
-        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425473/HeroNAPWedding_xtvli7.gif";
+        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425473/HeroNAPWedding_xtvli7.webm";
       case "birthday":
-        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425476/HeroNAPBirthday_e3taul.gif";
+        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425476/HeroNAPBirthday_e3taul.webm";
       case "anniversary":
-        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425475/HeroNAPAnniversary_gll7b8.gif";
+        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425475/HeroNAPAnniversary_gll7b8.webm";
       default:
-        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425427/HeroNAPDefault_zewedb.gif";
+        return "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425427/HeroNAPDefault_zewedb.webm";
     }
   }
 
@@ -181,7 +182,7 @@ const MainContent = ({ plannersSlot, trendingSlot, mostBookedSlot }) => {
           >
             <SmartMedia
               src={HeroNAPImageUrl()}
-              type="image"
+              type="video"
               className="w-full h-full object-cover object-center"
               priority={true}
             />
@@ -201,10 +202,10 @@ const MainContent = ({ plannersSlot, trendingSlot, mostBookedSlot }) => {
             className="w-full aspect-[1/1.1] relative rounded-xl overflow-hidden"
           >
             <SmartMedia
-              src="https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425624/banner8_kzqbfm.gif"
-              type="image"
+              src="https://res.cloudinary.com/dhkkvo36x/image/upload/v1771425624/banner8_kzqbfm.webm"
+              type="video"
               className="w-full h-full object-cover object-center"
-              priority={false}
+              priority={true}
             />
           </motion.div>
         </Link>
@@ -275,6 +276,8 @@ const MainContent = ({ plannersSlot, trendingSlot, mostBookedSlot }) => {
           setIsDrawerOpen={setIsDrawerOpen}
         />
       </Suspense>
+
+      <HowItWorksSection />
 
       {isDrawerOpen && (
         <Suspense fallback={null}>

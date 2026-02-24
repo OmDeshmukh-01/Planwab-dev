@@ -3,23 +3,35 @@ export default function sitemap() {
   const lastModified = new Date();
 
   return [
-    { url: `${baseUrl}`, lastModified },
+    // 1. Core Pages (Highest Priority)
+    { url: `${baseUrl}`, lastModified, changeFrequency: 'daily', priority: 1.0 },
+    { url: `${baseUrl}/plan-my-event`, lastModified, changeFrequency: 'weekly', priority: 0.9 },
+    
+    // 2. Main Event Categories
+    { url: `${baseUrl}/events`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/events/wedding`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/events/anniversary`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/events/birthday`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/events/events`, lastModified, changeFrequency: 'weekly', priority: 0.8 },
 
-    { url: `${baseUrl}/about`, lastModified },
-    { url: `${baseUrl}/about/blogs`, lastModified },
-    { url: `${baseUrl}/about/contact`, lastModified },
+    // 3. Marketplace & Vendor Categories
+    { url: `${baseUrl}/vendors/marketplace`, lastModified, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${baseUrl}/vendors/marketplace/planners`, lastModified, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${baseUrl}/vendors/marketplace/photographers`, lastModified, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${baseUrl}/vendors/marketplace/venues`, lastModified, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${baseUrl}/vendors/marketplace/makeup`, lastModified, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${baseUrl}/vendors/marketplace/catering`, lastModified, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${baseUrl}/vendors/marketplace/djs`, lastModified, changeFrequency: 'daily', priority: 0.8 },
+    { url: `${baseUrl}/vendors/marketplace/mehendi`, lastModified, changeFrequency: 'daily', priority: 0.8 },
 
-    { url: `${baseUrl}/events`, lastModified },
-    { url: `${baseUrl}/events/birthday-planner`, lastModified },
-    { url: `${baseUrl}/events/planning-tools`, lastModified },
+    // 4. Vendor Onboarding
+    { url: `${baseUrl}/vendor/onboarding`, lastModified, changeFrequency: 'monthly', priority: 0.7 },
+    { url: `${baseUrl}/vendor/register`, lastModified, changeFrequency: 'monthly', priority: 0.7 },
 
-    { url: `${baseUrl}/pricing`, lastModified },
-
-    { url: `${baseUrl}/plan-my-event`, lastModified },
-
-    { url: `${baseUrl}/vendor/onboarding`, lastModified },
-    { url: `${baseUrl}/vendor/register`, lastModified },
-
-    { url: `${baseUrl}/vendors/marketplace`, lastModified },
+    // 5. Informational Pages
+    { url: `${baseUrl}/about`, lastModified, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${baseUrl}/about/blogs`, lastModified, changeFrequency: 'weekly', priority: 0.7 },
+    { url: `${baseUrl}/about/contact`, lastModified, changeFrequency: 'yearly', priority: 0.5 },
+    { url: `${baseUrl}/pricing`, lastModified, changeFrequency: 'monthly', priority: 0.6 },
   ];
 }

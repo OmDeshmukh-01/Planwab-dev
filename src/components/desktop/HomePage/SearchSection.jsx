@@ -583,7 +583,7 @@ export default function SearchSection({ activeCategory, theme }) {
       {/* ══════════════════════════════════════════════════════════════════════ */}
       {/* SEARCH BAR */}
       {/* ══════════════════════════════════════════════════════════════════════ */}
-      <div className="flex items-center bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-300">
+      <div className={`flex items-center bg-white dark:bg-gray-800 rounded-xl border-2 border-[${theme?.gradientLight}] dark:border-gray-700 shadow-sm hover:shadow-md transition-shadow duration-300`}>
         {/* Search icon */}
         <div className="pl-4 pr-1 shrink-0">
           <Search size={18} className="text-gray-400" />

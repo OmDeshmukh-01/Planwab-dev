@@ -8,8 +8,8 @@ import CategoriesGridSection from "./CategoriesGrid";
 import SmartMedia from "../SmartMediaLoader";
 
 export default function HeroSection({ activeCategory, theme, categoryData }) {
-  const slides = carouselImages[activeCategory] || carouselImages.Wedding;
-  const sideImage = heroSideImages[activeCategory] || heroSideImages.Wedding;
+  const slides = carouselImages[activeCategory] || carouselImages.Events;
+  const sideImage = heroSideImages[activeCategory] || heroSideImages.Events;
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [direction, setDirection] = useState(1);

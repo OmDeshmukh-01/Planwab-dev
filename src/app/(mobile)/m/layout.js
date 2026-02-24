@@ -13,6 +13,9 @@ export const metadata = {
     title: "PlanWAB",
     statusBarStyle: "default",
   },
+  alternates: {
+    canonical: "https://www.planwab.com",
+  },
 };
 
 export default function MobileLayout({ children }) {
