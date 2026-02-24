@@ -8220,7 +8220,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
     const newTrustState = !hasTrusted;
     const previousTrustState = hasTrusted;
     const previousTrustCount = trustCount;
-    const trustChange = newTrustState ? 5 : -5;
+    const trustChange = newTrustState ? 10 : -10;
     const newTrustCount = Math.max(0, previousTrustCount + trustChange);
 
     setHasTrusted(newTrustState);
@@ -8252,7 +8252,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
       setTrustCount(serverTrustCount);
 
       if (newTrustState) {
-        showUIConfirmation("Vendor trusted! +5", "success", Shield);
+        showUIConfirmation("Vendor trusted! +10", "success", Shield);
       } else {
         showUIConfirmation("Trust removed", "info", Shield);
       }

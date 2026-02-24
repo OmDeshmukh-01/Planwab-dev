@@ -543,7 +543,7 @@ export default function CategoryGrid() {
   const scrollRef = useRef(null);
   const router = useRouter();
   const haptic = useHapticFeedback();
-  const { activeCategory } = useCategoryStore();
+  const { activeCategoryDesktop } = useCategoryStore();
 
   const [isPending, startTransition] = useTransition();
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -552,7 +552,7 @@ export default function CategoryGrid() {
   const [activeModalConfig, setActiveModalConfig] = useState(null);
   const [activeCategoryName, setActiveCategoryName] = useState("");
 
-  const currentCategory = activeCategory || "Wedding";
+  const currentCategory = activeCategoryDesktop || "Wedding";
   // Tailwind classes with responsive breakpoints
   const baseWidth = 137; // in px
   const baseHeight = 72;
@@ -957,6 +957,7 @@ export default function CategoryGrid() {
   );
 
   const activeCategories = useMemo(() => {
+    console.log("Determining active categories for:", currentCategory?.toLowerCase());
     switch (currentCategory?.toLowerCase()) {
       case "wedding":
         return CategoriesWedding;

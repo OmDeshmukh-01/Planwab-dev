@@ -403,7 +403,7 @@ export default function DesktopHomePageWrapper() {
               >
                 <div className="flex min-w-full min-h-full gap-2 items-center bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50 rounded-2xl p-1.5 shadow-inner border border-gray-200/50 dark:border-gray-700/50">
                   {categoryCards.map((cat) => {
-                    const isActive = activeCategory === cat.name.toLowerCase();
+                    const isActive = activeCategory.toLowerCase() === cat.name.toLowerCase();
                     return (
                       <div key={cat.name} onClick={() => handleCategoryChange(cat.name)} className="w-full">
                         <CategoryButton category={cat.name} imageSrc={cat.image} active={isActive} />

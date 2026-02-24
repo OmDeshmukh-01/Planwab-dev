@@ -66,11 +66,11 @@ export async function POST(request, context) {
 
         if (value && !alreadyTrusted) {
           // Adding trust
-          newTrust = Math.max(0, newTrust + 5);
+          newTrust = Math.max(0, newTrust + 10);
           profile.trustedBy.push(userId);
         } else if (!value && alreadyTrusted) {
           // Removing trust
-          newTrust = Math.max(0, newTrust - 5);
+          newTrust = Math.max(0, newTrust - 10);
           const index = profile.trustedBy.indexOf(userId);
           if (index > -1) profile.trustedBy.splice(index, 1);
         } else if (value && alreadyTrusted) {
