@@ -107,6 +107,7 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [viewMode, setViewMode] = useState("table");
+  const [activeFilter, setActiveFilter] = useState(null); // null | 'active' | 'verified' | 'featured'
 
   const [selectedVendor, setSelectedVendor] = useState(null);
   const [isDeleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -200,6 +201,9 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
       if (searchQuery) params.append("search", searchQuery);
       if (categoryFilter !== "all") params.append("category", categoryFilter);
       if (availabilityFilter !== "all") params.append("availability", availabilityFilter);
+      if (activeFilter === "featured") params.append("featured", "true");
+      if (activeFilter === "verified") params.append("verifiedOnly", "true");
+      if (activeFilter === "active") params.append("activeOnly", "true");
 
       const response = await fetch(`/api/vendor?${params.toString()}`);
       if (!response.ok) throw new Error("Failed to fetch vendors");
@@ -208,7 +212,7 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
       setVendors(result.data || []);
       setPaginationData(result.pagination);
 
-      if (currentPage === 1 && !searchQuery && categoryFilter === "all" && availabilityFilter === "all") {
+      if (currentPage === 1 && !searchQuery && categoryFilter === "all" && availabilityFilter === "all" && !activeFilter) {
         const allResponse = await fetch(`/api/vendor?limit=1000`);
         if (allResponse.ok) {
           const allResult = await allResponse.json();
@@ -221,7 +225,7 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchQuery, categoryFilter, availabilityFilter, sortBy, sortOrder]);
+  }, [currentPage, searchQuery, categoryFilter, availabilityFilter, sortBy, sortOrder, activeFilter]);
 
   useEffect(() => {
     const debounceTimer = setTimeout(() => fetchVendors(), searchQuery ? 300 : 0);
@@ -263,6 +267,7 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
     setSortBy("createdAt");
     setSortOrder("desc");
     setCurrentPage(1);
+    setActiveFilter(null);
   };
 
   const toggleSelectAll = () => {
@@ -315,6 +320,12 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
     { value: "invitations", label: "Invitations" },
     { value: "djs", label: "DJs" },
     { value: "hairstyling", label: "Hairstyling" },
+    { value: "decor", label: "Decorators" },
+    { value: "dhol", label: "Dhol" },
+    { value: "anchor", label: "Anchor" },
+    { value: "stageEntry", label: "Stage Entry" },
+    { value: "fireworks", label: "Fireworks" },
+    { value: "barat", label: "Barat" },
     { value: "other", label: "Other" },
   ];
 
@@ -327,14 +338,13 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
   ];
 
   const sortOptions = [
-    { value: "createdAt", label: "Date Created" },
     { value: "name", label: "Name" },
     { value: "rating", label: "Rating" },
     { value: "basePrice", label: "Price" },
     { value: "bookings", label: "Bookings" },
   ];
 
-  const hasActiveFilters = searchQuery || categoryFilter !== "all" || availabilityFilter !== "all";
+  const hasActiveFilters = !!(searchQuery || categoryFilter !== "all" || availabilityFilter !== "all" || activeFilter);
 
   return (
     <div className="space-y-4 md:space-y-6">
@@ -361,6 +371,11 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
           trend={stats.growthRate}
           color="bg-green-500"
           lightBg="bg-green-50 dark:bg-green-900/20"
+          onClick={() => {
+            setActiveFilter(activeFilter === "active" ? null : "active");
+            setCurrentPage(1);
+          }}
+          isActive={activeFilter === "active"}
         />
         <StatsCard
           icon={Shield}
@@ -369,6 +384,11 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
           suffix={`/ ${stats.total}`}
           color="bg-indigo-500"
           lightBg="bg-indigo-50 dark:bg-indigo-900/20"
+          onClick={() => {
+            setActiveFilter(activeFilter === "verified" ? null : "verified");
+            setCurrentPage(1);
+          }}
+          isActive={activeFilter === "verified"}
         />
         <StatsCard
           icon={Sparkles}
@@ -376,6 +396,11 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
           value={stats.featured}
           color="bg-yellow-500"
           lightBg="bg-yellow-50 dark:bg-yellow-900/20"
+          onClick={() => {
+            setActiveFilter(activeFilter === "featured" ? null : "featured");
+            setCurrentPage(1);
+          }}
+          isActive={activeFilter === "featured"}
         />
         <StatsCard
           icon={Calendar}
@@ -417,11 +442,10 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${
-                  showFilters || hasActiveFilters
-                    ? "bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300"
-                    : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${showFilters || hasActiveFilters
+                  ? "bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300"
+                  : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  }`}
               >
                 <SlidersHorizontal size={16} />
                 <span className="hidden sm:inline">Filters</span>
@@ -429,7 +453,8 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
                   <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center">
                     {(searchQuery ? 1 : 0) +
                       (categoryFilter !== "all" ? 1 : 0) +
-                      (availabilityFilter !== "all" ? 1 : 0)}
+                      (availabilityFilter !== "all" ? 1 : 0) +
+                      (activeFilter ? 1 : 0)}
                   </span>
                 )}
               </button>
@@ -437,22 +462,20 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
               <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden">
                 <button
                   onClick={() => setViewMode("table")}
-                  className={`p-2.5 transition-colors ${
-                    viewMode === "table"
-                      ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600"
-                      : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
+                  className={`p-2.5 transition-colors ${viewMode === "table"
+                    ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600"
+                    : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
                   title="Table View"
                 >
                   <List size={16} />
                 </button>
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-2.5 transition-colors ${
-                    viewMode === "grid"
-                      ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600"
-                      : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
-                  }`}
+                  className={`p-2.5 transition-colors ${viewMode === "grid"
+                    ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600"
+                    : "text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
                   title="Grid View"
                 >
                   <LayoutGrid size={16} />
@@ -483,11 +506,10 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
           <AnimatePresence>
             {showFilters && (
               <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.15 }}
               >
                 <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                   <FilterDropdown
@@ -500,30 +522,13 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
                     }}
                     icon={Building2}
                   />
-                  <FilterDropdown
-                    label="Status"
-                    options={availabilityOptions}
-                    value={availabilityFilter}
-                    onChange={(val) => {
-                      setAvailabilityFilter(val);
-                      setCurrentPage(1);
-                    }}
-                    icon={Clock}
-                  />
-                  <FilterDropdown
-                    label="Sort By"
-                    options={sortOptions}
-                    value={sortBy}
-                    onChange={setSortBy}
-                    icon={ArrowUpDown}
-                  />
+
                   <button
                     onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${
-                      sortOrder === "desc"
-                        ? "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
-                        : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
-                    }`}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${sortOrder === "desc"
+                      ? "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
+                      : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
+                      }`}
                     title={sortOrder === "asc" ? "Ascending" : "Descending"}
                   >
                     {sortOrder === "asc" ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
@@ -722,8 +727,14 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
   );
 }
 
-const StatsCard = ({ icon: Icon, label, value, trend, suffix, color, lightBg }) => (
-  <div className={`${lightBg} rounded-xl p-4 border border-gray-200 dark:border-gray-700`}>
+const StatsCard = ({ icon: Icon, label, value, trend, suffix, color, lightBg, onClick, isActive }) => (
+  <div
+    onClick={onClick}
+    className={`${lightBg} rounded-xl p-4 border ${isActive
+      ? "border-indigo-500 dark:border-indigo-400 ring-2 ring-indigo-500/20"
+      : "border-gray-200 dark:border-gray-700"
+      } ${onClick ? "cursor-pointer hover:shadow-md transition-all" : ""}`}
+  >
     <div className="flex items-center justify-between mb-2">
       <div className={`p-2 rounded-lg ${color} text-white`}>
         <Icon size={16} />
@@ -777,11 +788,10 @@ const FilterDropdown = ({ label, options, value, onChange, icon: Icon }) => {
                     onChange(option.value);
                     setIsOpen(false);
                   }}
-                  className={`w-full px-3 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between ${
-                    value === option.value
-                      ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600"
-                      : "text-gray-700 dark:text-gray-300"
-                  }`}
+                  className={`w-full px-3 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between ${value === option.value
+                    ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600"
+                    : "text-gray-700 dark:text-gray-300"
+                    }`}
                 >
                   {option.label}
                   {value === option.value && <CheckCircle size={14} />}
@@ -839,9 +849,8 @@ const VendorTableRow = ({ vendor, isSelected, onToggleSelect, onView, onEdit, on
       </td>
       <td className="px-4 py-3">
         <span
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-            categoryColors[vendor.category] || categoryColors.other
-          }`}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${categoryColors[vendor.category] || categoryColors.other
+            }`}
         >
           <CategoryIcon size={12} />
           <span className="capitalize">{vendor.category}</span>
@@ -996,9 +1005,8 @@ const VendorCard = ({ vendor, onView, onEdit, onDelete }) => {
       <div className="p-3">
         <div className="flex items-center justify-between mb-3">
           <span
-            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-              categoryColors[vendor.category] || categoryColors.other
-            }`}
+            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${categoryColors[vendor.category] || categoryColors.other
+              }`}
           >
             <CategoryIcon size={10} />
             <span className="capitalize">{vendor.category}</span>
@@ -1113,11 +1121,10 @@ const Pagination = ({ currentPage, totalPages, total, limit, onPageChange }) => 
               <button
                 key={page}
                 onClick={() => onPageChange(page)}
-                className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${
-                  currentPage === page
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
+                className={`min-w-[36px] h-9 px-3 rounded-lg text-sm font-medium transition-colors ${currentPage === page
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/25"
+                  : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  }`}
               >
                 {page}
               </button>

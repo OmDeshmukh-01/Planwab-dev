@@ -45,8 +45,15 @@ const statusConfig = {
     "CANCELLED": { color: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300", icon: XCircle },
 };
 
-const StatsCard = ({ icon: Icon, label, value, trend, color, lightBg }) => (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-100 dark:border-gray-700 shadow-sm flex flex-col justify-between transition-all hover:shadow-md">
+const StatsCard = ({ icon: Icon, label, value, trend, color, lightBg, onClick, isActive }) => (
+    <div
+        onClick={onClick}
+        className={`bg-white dark:bg-gray-800 rounded-xl p-4 border ${isActive
+            ? "border-indigo-500 dark:border-indigo-400 ring-2 ring-indigo-500/20"
+            : "border-gray-100 dark:border-gray-700"
+            } shadow-sm flex flex-col justify-between transition-all hover:shadow-md ${onClick ? "cursor-pointer" : ""
+            }`}
+    >
         <div className="flex justify-between items-start mb-2">
             <div className={`p-2 rounded-lg ${lightBg} ${color.replace("bg-", "text-")}`}>
                 <Icon size={20} />
@@ -171,25 +178,51 @@ const Pagination = ({ currentPage, totalPages, total, limit, onPageChange }) => 
     );
 };
 
-const FilterDropdown = ({ label, options, value, onChange, icon: Icon }) => (
-    <div className="relative group">
-        <div className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shrink-0">
-            <Icon size={14} className="text-gray-400" />
-            <span className="text-sm text-gray-500 dark:text-gray-400">{label}:</span>
-            <select
-                value={value}
-                onChange={(e) => onChange(e.target.value)}
-                className="bg-transparent text-sm font-medium text-gray-900 dark:text-white outline-none cursor-pointer pr-4 appearance-none"
+const FilterDropdown = ({ label, options, value, onChange, icon: Icon }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const selectedOption = options.find((o) => o.value === value);
+
+    return (
+        <div className="relative">
+            <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-sm"
             >
-                {options.map((opt) => (
-                    <option key={opt.value} value={opt.value} className="text-gray-900 dark:bg-gray-800 dark:text-white">
-                        {opt.label}
-                    </option>
-                ))}
-            </select>
+                {Icon && <Icon size={14} className="text-gray-500" />}
+                <span className="text-gray-700 dark:text-gray-300">{selectedOption?.label || label}</span>
+                <ChevronDown size={14} className={`text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <>
+                        <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-20 overflow-hidden max-h-60 overflow-y-auto"
+                        >
+                            {options.map((option) => (
+                                <button
+                                    key={option.value}
+                                    onClick={() => { onChange(option.value); setIsOpen(false); }}
+                                    className={`w-full px-3 py-2.5 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center justify-between ${value === option.value
+                                        ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600"
+                                        : "text-gray-700 dark:text-gray-300"
+                                        }`}
+                                >
+                                    {option.label}
+                                    {value === option.value && <CheckCircle size={14} />}
+                                </button>
+                            ))}
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
-    </div>
-);
+    );
+};
 
 const OrderTableRow = ({ order, onView, onEdit, onDelete }) => {
     const statusInfo = statusConfig[order.orderStatus] || {
@@ -370,6 +403,7 @@ export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, r
     const [viewMode, setViewMode] = useState("table");
     const [showFilters, setShowFilters] = useState(false);
     const [apiStats, setApiStats] = useState(null);
+    const [statusCardFilter, setStatusCardFilter] = useState(null); // null | 'PLACED' | 'CONFIRMED' | 'COMPLETED'
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [deletePassword, setDeletePassword] = useState("");
     const [deleteError, setDeleteError] = useState("");
@@ -430,6 +464,11 @@ export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, r
             filtered = filtered.filter((order) => order.orderStatus === statusFilter);
         }
 
+        // Apply stats card quick-filter on top
+        if (statusCardFilter) {
+            filtered = filtered.filter((order) => order.orderStatus === statusCardFilter);
+        }
+
         if (typeFilter !== "all") {
             filtered = filtered.filter((order) => order.event?.type === typeFilter);
         }
@@ -462,7 +501,7 @@ export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, r
         });
 
         return filtered;
-    }, [allOrdersData, searchQuery, statusFilter, typeFilter, sortBy, sortOrder]);
+    }, [allOrdersData, searchQuery, statusFilter, typeFilter, sortBy, sortOrder, statusCardFilter]);
 
     const stats = useMemo(() => {
         if (!allOrdersData || allOrdersData.length === 0) {
@@ -598,6 +637,7 @@ export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, r
         setSortBy("createdAt");
         setSortOrder("desc");
         setCurrentPage(1);
+        setStatusCardFilter(null);
     };
 
     const exportToCSV = () => {
@@ -627,7 +667,7 @@ export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, r
         await fetchOrders();
     };
 
-    const hasActiveFilters = searchQuery || statusFilter !== "all" || typeFilter !== "all";
+    const hasActiveFilters = !!(searchQuery || statusFilter !== "all" || typeFilter !== "all" || statusCardFilter);
 
     const statusOptions = [
         { value: "all", label: "All Status" },
@@ -637,16 +677,21 @@ export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, r
         { value: "CANCELLED", label: "Cancelled" },
     ];
 
-    const typeOptions = useMemo(() => {
-        const uniqueTypes = new Set(allOrdersData.map((e) => e.event?.type).filter(Boolean));
-        return [
-            { value: "all", label: "All Event Types" },
-            ...Array.from(uniqueTypes).map((cat) => ({
-                value: cat,
-                label: cat.charAt(0).toUpperCase() + cat.slice(1),
-            })),
-        ];
-    }, [allOrdersData]);
+    const typeOptions = [
+        { value: "all", label: "All Event Types" },
+        { value: "wedding", label: "Wedding" },
+        { value: "birthday", label: "Birthday" },
+        { value: "anniversary", label: "Anniversary" },
+        { value: "engagement", label: "Engagement" },
+        { value: "reception", label: "Reception" },
+        { value: "corporate", label: "Corporate" },
+        { value: "conference", label: "Conference" },
+        { value: "private-party", label: "Private Party" },
+        { value: "babyshower", label: "Baby Shower" },
+        { value: "farewell", label: "Farewell" },
+        { value: "reunion", label: "Reunion" },
+        { value: "other", label: "Other" },
+    ];
 
     const sortOptions = [
         { value: "createdAt", label: "Date Placed" },
@@ -671,6 +716,8 @@ export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, r
                     value={stats.placed}
                     color="bg-purple-500"
                     lightBg="bg-purple-50 dark:bg-purple-900/20"
+                    onClick={() => { setStatusCardFilter(statusCardFilter === "PLACED" ? null : "PLACED"); setCurrentPage(1); }}
+                    isActive={statusCardFilter === "PLACED"}
                 />
                 <StatsCard
                     icon={Calendar}
@@ -678,6 +725,8 @@ export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, r
                     value={stats.confirmed}
                     color="bg-yellow-500"
                     lightBg="bg-yellow-50 dark:bg-yellow-900/20"
+                    onClick={() => { setStatusCardFilter(statusCardFilter === "CONFIRMED" ? null : "CONFIRMED"); setCurrentPage(1); }}
+                    isActive={statusCardFilter === "CONFIRMED"}
                 />
                 <StatsCard
                     icon={CheckCircle}
@@ -685,6 +734,8 @@ export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, r
                     value={stats.completed}
                     color="bg-green-500"
                     lightBg="bg-green-50 dark:bg-green-900/20"
+                    onClick={() => { setStatusCardFilter(statusCardFilter === "COMPLETED" ? null : "COMPLETED"); setCurrentPage(1); }}
+                    isActive={statusCardFilter === "COMPLETED"}
                 />
                 <StatsCard
                     icon={DollarSign}
@@ -742,7 +793,7 @@ export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, r
                                 <span className="hidden sm:inline">Filters</span>
                                 {hasActiveFilters && (
                                     <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center">
-                                        {(searchQuery ? 1 : 0) + (statusFilter !== "all" ? 1 : 0) + (typeFilter !== "all" ? 1 : 0)}
+                                        {(searchQuery ? 1 : 0) + (statusFilter !== "all" ? 1 : 0) + (typeFilter !== "all" ? 1 : 0) + (statusCardFilter ? 1 : 0)}
                                     </span>
                                 )}
                             </button>
@@ -794,42 +845,25 @@ export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, r
                     <AnimatePresence>
                         {showFilters && (
                             <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.2 }}
-                                className="overflow-hidden"
+                                initial={{ opacity: 0, y: -4 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -4 }}
+                                transition={{ duration: 0.15 }}
                             >
                                 <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
                                     <FilterDropdown
                                         label="Status"
                                         options={statusOptions}
                                         value={statusFilter}
-                                        onChange={(val) => {
-                                            setStatusFilter(val);
-                                            setCurrentPage(1);
-                                        }}
+                                        onChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}
                                         icon={CheckCircle}
                                     />
                                     <FilterDropdown
                                         label="Event Type"
                                         options={typeOptions}
                                         value={typeFilter}
-                                        onChange={(val) => {
-                                            setTypeFilter(val);
-                                            setCurrentPage(1);
-                                        }}
+                                        onChange={(val) => { setTypeFilter(val); setCurrentPage(1); }}
                                         icon={LayoutGrid}
-                                    />
-                                    <FilterDropdown
-                                        label="Sort By"
-                                        options={sortOptions}
-                                        value={sortBy}
-                                        onChange={(val) => {
-                                            setSortBy(val);
-                                            setCurrentPage(1);
-                                        }}
-                                        icon={TrendingUp}
                                     />
                                     <button
                                         onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
@@ -837,10 +871,10 @@ export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, r
                                             ? "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
                                             : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
                                             }`}
-                                        title={sortOrder === "asc" ? "Ascending" : "Descending"}
+                                        title={sortOrder === "asc" ? "Oldest First" : "Newest First"}
                                     >
                                         {sortOrder === "asc" ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                                        <span className="hidden sm:inline">{sortOrder === "asc" ? "Asc" : "Desc"}</span>
+                                        <span className="hidden sm:inline">{sortOrder === "asc" ? "Oldest First" : "Newest First"}</span>
                                     </button>
 
                                     {hasActiveFilters && (

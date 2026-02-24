@@ -431,6 +431,8 @@ export async function GET(request) {
     const minPrice = searchParams.get("minPrice");
     const maxPrice = searchParams.get("maxPrice");
     const search = searchParams.get("search");
+    const verifiedOnly = searchParams.get("verifiedOnly");
+    const activeOnly = searchParams.get("activeOnly");
 
     // Sort parameters
     const sortBy = searchParams.get("sortBy") || "rating";
@@ -492,6 +494,23 @@ export async function GET(request) {
     // ---------------------------------------------------------------------------
     if (featured === "true") {
       query.isFeatured = true;
+    }
+
+    // ---------------------------------------------------------------------------
+    // 4b. VERIFIED VENDORS
+    // ---------------------------------------------------------------------------
+    if (verifiedOnly === "true") {
+      query.isVerified = true;
+    }
+
+    // ---------------------------------------------------------------------------
+    // 4c. ACTIVE VENDORS
+    // ---------------------------------------------------------------------------
+    if (activeOnly === "true") {
+      query.$or = [
+        { availabilityStatus: "Available" },
+        { isActive: true },
+      ];
     }
 
     // ---------------------------------------------------------------------------
@@ -613,9 +632,9 @@ export async function GET(request) {
     // Build query for cities (exclude city filter to get all available)
     const citiesQuery = shouldFetchCities
       ? {
-          ...query,
-          "address.city": undefined,
-        }
+        ...query,
+        "address.city": undefined,
+      }
       : null;
 
     // Execute all queries in parallel for maximum performance
@@ -653,37 +672,6 @@ export async function GET(request) {
     const totalPages = Math.ceil(total / limit);
     const hasNext = page < totalPages;
     const hasPrev = page > 1;
-
-    // =============================================================================
-    // OPTIMIZED: CONDITIONAL LOGGING (Only in development)
-    // =============================================================================
-    if (process.env.NODE_ENV === "development") {
-      console.log("=== VENDOR API DEBUG ===");
-      console.log("Request URL:", request.url);
-      console.log("Query Parameters:", {
-        page,
-        limit,
-        category,
-        categories,
-        subcategory,
-        featured,
-        cities,
-        minPrice,
-        maxPrice,
-        minRating,
-        search,
-        sortBy,
-        sortOrder,
-        availability,
-      });
-      console.log("MongoDB Query:", JSON.stringify(query, null, 2));
-      console.log("MongoDB Sort:", JSON.stringify(sort, null, 2));
-      console.log("Sort Mapping Used:", sortBy, "->", SORT_MAPPINGS[sortBy] ? "Custom" : "Dynamic");
-      console.log("Pagination:", { skip, limit });
-      console.log(`Query returned ${processedVendors.length} vendors out of ${total} total`);
-      console.log("Execution Time:", Date.now() - startTime, "ms");
-      console.log("=======================");
-    }
 
     // =============================================================================
     // PREPARE OPTIMIZED RESPONSE
@@ -727,16 +715,6 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    // =============================================================================
-    // OPTIMIZED: ERROR HANDLING (Conditional logging)
-    // =============================================================================
-    if (process.env.NODE_ENV === "development") {
-      console.error("=== VENDOR API ERROR ===");
-      console.error("Error details:", error);
-      console.error("Stack trace:", error.stack);
-      console.error("=======================");
-    }
-
     // Handle specific error types
     if (error.name === "CastError") {
       return NextResponse.json(
@@ -846,8 +824,6 @@ export async function PUT(request) {
       vendor: updatedVendor,
     });
   } catch (error) {
-    console.error("Error updating vendor:", error);
-
     // Validation Error
     if (error.name === "ValidationError") {
       const errors = {};
@@ -922,8 +898,6 @@ export async function DELETE(request) {
       },
     });
   } catch (error) {
-    console.error("Error deleting vendor:", error);
-
     if (error.name === "CastError") {
       return NextResponse.json({ success: false, message: "Invalid vendor ID format" }, { status: 400 });
     }
