@@ -389,7 +389,7 @@ const OrderCard = ({ order, onView, onEdit, onDelete }) => {
 };
 
 
-export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, refreshTrigger }) {
+export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, refreshTrigger, onStatsUpdate }) {
     const [orders, setOrders] = useState([]);
     const [allOrdersData, setAllOrdersData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -445,6 +445,13 @@ export default function AllOrders({ onViewOrder, onEditOrder, onDeleteSuccess, r
     useEffect(() => {
         fetchOrders();
     }, [fetchOrders, refreshTrigger]);
+
+    // Notify parent of total count for tab badge
+    useEffect(() => {
+        if (onStatsUpdate) {
+            onStatsUpdate({ total: allOrdersData.length });
+        }
+    }, [allOrdersData.length, onStatsUpdate]);
 
     const filteredOrders = useMemo(() => {
         let filtered = [...allOrdersData];

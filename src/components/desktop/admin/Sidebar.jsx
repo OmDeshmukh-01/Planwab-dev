@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, Calendar, IdCard, ShoppingCart, Users, Briefcase, Settings, Star, FileClock, ChevronDown, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Calendar, IdCard, ShoppingCart, Users, Briefcase, Settings, Star, FileClock, ChevronDown, ChevronRight, MessageSquare } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const navItems = [
@@ -21,6 +21,7 @@ const navItems = [
       { name: "Booking Requests", href: "/admin/vendor-requests?type=booking" },
       { name: "Leads Requests", href: "/admin/vendor-requests?type=leads" },
       { name: "Planning Tools", href: "/admin/vendor-requests?type=planning-tools" },
+      { name: "Contact Requests", href: "/admin/vendor-requests?type=contact" },
     ],
   },
   { name: "Users", href: "/admin/users", icon: Users },

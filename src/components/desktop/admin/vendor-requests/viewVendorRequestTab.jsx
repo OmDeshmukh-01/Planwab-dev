@@ -84,26 +84,24 @@ const ToastProvider = ({ children }) => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, x: 100, scale: 0.9 }}
               transition={{ type: "spring", stiffness: 500, damping: 40 }}
-              className={`pointer-events-auto p-4 rounded-xl shadow-2xl border backdrop-blur-sm flex items-start gap-3 ${
-                toast.type === "success"
+              className={`pointer-events-auto p-4 rounded-xl shadow-2xl border backdrop-blur-sm flex items-start gap-3 ${toast.type === "success"
                   ? "bg-green-50/95 dark:bg-green-900/95 border-green-300 dark:border-green-600 text-green-800 dark:text-green-100"
                   : toast.type === "error"
                     ? "bg-red-50/95 dark:bg-red-900/95 border-red-300 dark:border-red-600 text-red-800 dark:text-red-100"
                     : toast.type === "warning"
                       ? "bg-yellow-50/95 dark:bg-yellow-900/95 border-yellow-300 dark:border-yellow-600 text-yellow-800 dark:text-yellow-100"
                       : "bg-blue-50/95 dark:bg-blue-900/95 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-100"
-              }`}
+                }`}
             >
               <div
-                className={`p-1 rounded-full ${
-                  toast.type === "success"
+                className={`p-1 rounded-full ${toast.type === "success"
                     ? "bg-green-200 dark:bg-green-700"
                     : toast.type === "error"
                       ? "bg-red-200 dark:bg-red-700"
                       : toast.type === "warning"
                         ? "bg-yellow-200 dark:bg-yellow-700"
                         : "bg-blue-200 dark:bg-blue-700"
-                }`}
+                  }`}
               >
                 {toast.type === "success" && <CheckCircle size={18} />}
                 {toast.type === "error" && <AlertCircle size={18} />}
@@ -196,6 +194,8 @@ const DeleteConfirmModal = ({ request, requestType = "vendor", onClose, onConfir
         endpoint = `/api/vendor/requests/detail-booking?id=${request._id}&password=${encodeURIComponent(password)}`;
       } else if (requestType === "leads") {
         endpoint = `/api/leads?id=${request._id}&password=${encodeURIComponent(password)}`;
+      } else if (requestType === "contact") {
+        endpoint = `/api/contact/${request._id}?password=${encodeURIComponent(password)}`;
       }
 
       const res = await fetch(endpoint, {
@@ -317,11 +317,10 @@ const DeleteConfirmModal = ({ request, requestType = "vendor", onClose, onConfir
                     setError("");
                   }}
                   placeholder="Enter admin password"
-                  className={`w-full pl-10 pr-12 py-3 rounded-xl border-2 outline-none transition-all bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                    error
+                  className={`w-full pl-10 pr-12 py-3 rounded-xl border-2 outline-none transition-all bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${error
                       ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
                       : "border-gray-200 dark:border-gray-600 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
-                  }`}
+                    }`}
                   disabled={loading}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && password) {
@@ -469,6 +468,14 @@ function ViewVendorRequestContent({
         subtitle: request.venue || "No Venue Selected",
         category: request.category || "Event",
         icon: CalendarDays,
+      };
+    }
+    if (requestType === "contact") {
+      return {
+        title: request.name || "Contact Request",
+        subtitle: request.email || "",
+        category: request.subject || "Contact Form",
+        icon: MessageCircle,
       };
     }
     return {
@@ -767,6 +774,25 @@ function ViewVendorRequestContent({
                         value={request.description}
                         className="lg:col-span-full"
                       />
+                    )}
+                  </>
+                )}
+
+                {requestType === "contact" && (
+                  <>
+                    <InfoCard icon={User} label="Name" value={request.name} highlight />
+                    <InfoCard icon={Mail} label="Email" value={request.email} copyable onCopy={copyToClipboard} copied={copiedField} />
+                    <InfoCard icon={Phone} label="Phone" value={request.phone} copyable onCopy={copyToClipboard} copied={copiedField} />
+                    <InfoCard icon={Tag} label="Subject" value={request.subject} className="lg:col-span-full" />
+                    <InfoCard icon={MessageCircle} label="Message" value={request.message} className="lg:col-span-full" />
+                    <InfoCard icon={User} label="User Type" value={request.userType} />
+                    <InfoCard icon={Tag} label="Status" value={request.status} />
+                    <InfoCard icon={Tag} label="Priority" value={request.priority} />
+                    {request.adminNotes && (
+                      <InfoCard icon={FileText} label="Admin Notes" value={request.adminNotes} className="lg:col-span-full" />
+                    )}
+                    {request.respondedAt && (
+                      <InfoCard icon={Calendar} label="Responded At" value={formatDate(request.respondedAt)} />
                     )}
                   </>
                 )}
@@ -1162,9 +1188,8 @@ const Section = ({ title, icon: Icon, children, badge, tip }) => (
 const InfoCard = ({ icon: Icon, label, value, className = "", copyable, onCopy, copied, highlight = false }) => (
   <motion.div
     whileHover={copyable ? { scale: 1.02, y: -2 } : { y: -1 }}
-    className={`group p-5 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl border-2 border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md transition-all duration-300 ${className} ${
-      highlight ? "ring-2 ring-purple-500 ring-opacity-50" : ""
-    }`}
+    className={`group p-5 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl border-2 border-gray-200 dark:border-gray-600 shadow-sm hover:shadow-md transition-all duration-300 ${className} ${highlight ? "ring-2 ring-purple-500 ring-opacity-50" : ""
+      }`}
   >
     <div className="flex items-start justify-between mb-3">
       <div className="flex items-center gap-3">

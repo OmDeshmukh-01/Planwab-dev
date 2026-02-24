@@ -22,7 +22,7 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Download,
-  SlidersHorizontal,
+
   MapPin,
   Sparkles,
   LayoutGrid,
@@ -44,7 +44,7 @@ const statusConfig = {
   cancelled: { color: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300", icon: XCircle },
 };
 
-export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, refreshTrigger }) {
+export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, refreshTrigger, onStatsUpdate }) {
   const [events, setEvents] = useState([]);
   const [allEventsData, setAllEventsData] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,7 +56,7 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
   const [sortBy, setSortBy] = useState("createdAt");
   const [sortOrder, setSortOrder] = useState("desc");
   const [viewMode, setViewMode] = useState("table");
-  const [showFilters, setShowFilters] = useState(false);
+
   const [apiStats, setApiStats] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
@@ -99,6 +99,13 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents, refreshTrigger]);
+
+  // Notify parent of total count for tab badge
+  useEffect(() => {
+    if (onStatsUpdate) {
+      onStatsUpdate({ total: allEventsData.length });
+    }
+  }, [allEventsData.length, onStatsUpdate]);
 
   const filteredEvents = useMemo(() => {
     let filtered = [...allEventsData];
@@ -466,19 +473,15 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
 
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all ${showFilters || hasActiveFilters
-                  ? "bg-indigo-50 dark:bg-indigo-900/30 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300"
-                  : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-medium transition-colors ${sortOrder === "desc"
+                  ? "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
+                  : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
                   }`}
+                title={sortOrder === "asc" ? "Ascending" : "Descending"}
               >
-                <SlidersHorizontal size={16} />
-                <span className="hidden sm:inline">Filters</span>
-                {hasActiveFilters && (
-                  <span className="w-5 h-5 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center">
-                    {searchQuery ? 1 : 0}
-                  </span>
-                )}
+                {sortOrder === "asc" ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+                <span className="hidden sm:inline">{sortOrder === "asc" ? "Asc" : "Desc"}</span>
               </button>
 
               <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-xl overflow-hidden">
@@ -524,53 +527,8 @@ export default function AllEvents({ onViewEvent, onEditEvent, onDeleteSuccess, r
               </button>
             </div>
           </div>
-
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="overflow-hidden"
-              >
-                <div className="flex flex-wrap items-center gap-3 pt-3 border-t border-gray-200 dark:border-gray-700">
-                  <FilterDropdown
-                    label="Sort By"
-                    options={sortOptions}
-                    value={sortBy}
-                    onChange={(val) => {
-                      setSortBy(val);
-                      setCurrentPage(1);
-                    }}
-                    icon={TrendingUp}
-                  />
-                  <button
-                    onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-sm transition-colors ${sortOrder === "desc"
-                      ? "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600"
-                      : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600"
-                      }`}
-                    title={sortOrder === "asc" ? "Ascending" : "Descending"}
-                  >
-                    {sortOrder === "asc" ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                    <span className="hidden sm:inline">{sortOrder === "asc" ? "Asc" : "Desc"}</span>
-                  </button>
-
-                  {hasActiveFilters && (
-                    <button
-                      onClick={clearFilters}
-                      className="flex items-center gap-1 px-3 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    >
-                      <X size={14} />
-                      Clear All
-                    </button>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
         </div>
+
       </div>
 
       {viewMode === "table" ? (

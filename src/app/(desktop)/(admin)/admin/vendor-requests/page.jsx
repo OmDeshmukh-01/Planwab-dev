@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { List, Eye, ArrowLeft, TrendingUp, RefreshCw, ChevronRight, Home, UserCheck, Cake, CalendarDays, Rocket } from "lucide-react";
+import { List, Eye, ArrowLeft, TrendingUp, RefreshCw, ChevronRight, Home, UserCheck, Cake, CalendarDays, Rocket, MessageSquare } from "lucide-react";
 import ViewVendorRequestTab from "@/components/desktop/admin/vendor-requests/viewVendorRequestTab";
 import AllVendorRequests from "@/components/desktop/admin/vendor-requests/AllVendorRequests";
 
@@ -48,12 +48,23 @@ export default function RequestsPage() {
 
   const fetchRequestById = useCallback(async (id) => {
     try {
+      // Contact requests have their own direct endpoint
+      if (requestType === "contact") {
+        const res = await fetch(`/api/contact/${id}`);
+        const resData = await res.json();
+        if (resData.success && resData.data) {
+          setSelectedRequest(resData.data);
+        } else {
+          throw new Error("Contact request not found");
+        }
+        return;
+      }
+
       let endpoint = "/api/vendor/requests";
       if (requestType === "birthday") endpoint = "/api/vendor/requests/birthday-routes";
       else if (requestType === "booking") endpoint = "/api/vendor/requests/detail-booking";
       else if (requestType === "leads") endpoint = "/api/leads";
 
-      // Fetch requests based on type; some endpoints require list fetching
       let fetchUrl = endpoint;
       if (requestType === "birthday") fetchUrl += "?limit=10000";
       else if (requestType === "booking") fetchUrl += "?all=true";
@@ -73,7 +84,6 @@ export default function RequestsPage() {
         const list = result.leads || result.data || [];
         data = list.find(item => item._id === id);
       } else {
-        // Direct ID fetching for vendor requests
         const res = await fetch(`${endpoint}?id=${id}`);
         const resData = await res.json();
         data = resData.data || resData;
@@ -85,11 +95,11 @@ export default function RequestsPage() {
         throw new Error("Request not found in list");
       }
     } catch (error) {
-      console.error("Error fetching request:", error);
       updateURL("all");
       setSelectedRequest(null);
     }
   }, [requestType]);
+
 
   const updateURL = useCallback(
     (tab, requestId = null, editMode = false) => {
@@ -220,6 +230,8 @@ export default function RequestsPage() {
 
   const getTypeConfig = () => {
     switch (requestType) {
+      case "contact":
+        return { label: "Contact Requests", icon: MessageSquare, description: "Manage contact form submissions" };
       case "birthday":
         return { label: "Birthday Requests", icon: Cake, description: "Manage birthday party requests" };
       case "booking":
@@ -437,7 +449,7 @@ export default function RequestsPage() {
                   onEditRequest={handleEditRequest}
                   refreshTrigger={refreshTrigger}
                   onDeleteSuccess={handleDeleteSuccess}
-                  onStatsUpdate={handleStatsUpdate} // Pass callback
+                  onStatsUpdate={handleStatsUpdate}
                 />
               )}
 
