@@ -93,7 +93,7 @@ const availabilityConfig = {
   Closed: { color: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300", icon: XCircle },
 };
 
-export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger }) {
+export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger, onStatsUpdate }) {
   const [vendors, setVendors] = useState([]);
   const [allVendorsData, setAllVendorsData] = useState([]);
   const [paginationData, setPaginationData] = useState(null);
@@ -231,6 +231,13 @@ export default function AllVendors({ onViewVendor, onEditVendor, refreshTrigger 
     const debounceTimer = setTimeout(() => fetchVendors(), searchQuery ? 300 : 0);
     return () => clearTimeout(debounceTimer);
   }, [fetchVendors, refreshTrigger]);
+
+  // Notify parent of total count for tab badge
+  useEffect(() => {
+    if (onStatsUpdate) {
+      onStatsUpdate({ total: stats.total });
+    }
+  }, [stats.total, onStatsUpdate]);
 
   const handleViewClick = useCallback(
     (vendor) => {

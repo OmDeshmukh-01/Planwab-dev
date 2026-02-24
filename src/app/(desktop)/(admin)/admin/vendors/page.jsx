@@ -35,6 +35,7 @@ export default function VendorsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [mounted, setMounted] = useState(false);
+  const [stats, setStats] = useState(null);
 
   useEffect(() => {
     setMounted(true);
@@ -158,6 +159,10 @@ export default function VendorsPage() {
     updateURL("all");
   }, [updateURL]);
 
+  const handleStatsUpdate = useCallback((newStats) => {
+    setStats(newStats);
+  }, []);
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && (activeTab === "view" || activeTab === "edit")) {
@@ -174,7 +179,7 @@ export default function VendorsPage() {
   }, [activeTab, handleBackToList, handleRefresh]);
 
   const tabs = [
-    { id: "all", label: "All Vendors", icon: List, description: "View and manage all vendors" },
+    { id: "all", label: "All Vendors", icon: List, description: "View and manage all vendors", badge: stats?.total },
     { id: "add", label: "Add Vendor", icon: PlusCircle, description: "Register a new vendor" },
   ];
 
@@ -342,22 +347,20 @@ export default function VendorsPage() {
                   <div className="flex gap-2 flex-shrink-0">
                     <button
                       onClick={() => setActiveTab("view")}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                        activeTab === "view"
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${activeTab === "view"
                           ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
                           : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      }`}
+                        }`}
                     >
                       <Eye size={14} />
                       <span className="hidden sm:inline">View</span>
                     </button>
                     <button
                       onClick={() => setActiveTab("edit")}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                        activeTab === "edit"
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${activeTab === "edit"
                           ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
                           : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                      }`}
+                        }`}
                     >
                       <Edit size={14} />
                       <span className="hidden sm:inline">Edit</span>
@@ -382,6 +385,7 @@ export default function VendorsPage() {
                   onViewVendor={handleViewVendor}
                   onEditVendor={handleEditVendor}
                   refreshTrigger={refreshTrigger}
+                  onStatsUpdate={handleStatsUpdate}
                 />
               )}
 
@@ -423,28 +427,33 @@ export default function VendorsPage() {
 const TabButton = ({ tab, isActive, onClick }) => (
   <button
     onClick={onClick}
-    className={`group flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
-      isActive
+    className={`group flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-medium transition-all ${isActive
         ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 shadow-sm"
         : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
-    }`}
+      }`}
   >
     <tab.icon
       size={18}
-      className={`flex-shrink-0 transition-transform group-hover:scale-110 ${
-        isActive ? "text-indigo-600 dark:text-indigo-400" : ""
-      }`}
+      className={`flex-shrink-0 transition-transform group-hover:scale-110 ${isActive ? "text-indigo-600 dark:text-indigo-400" : ""
+        }`}
     />
     <div className="text-left">
       <span className="block">{tab.label}</span>
       <span
-        className={`text-xs font-normal hidden md:block ${
-          isActive ? "text-indigo-500 dark:text-indigo-400" : "text-gray-400 dark:text-gray-500"
-        }`}
+        className={`text-xs font-normal hidden md:block ${isActive ? "text-indigo-500 dark:text-indigo-400" : "text-gray-400 dark:text-gray-500"
+          }`}
       >
         {tab.description}
       </span>
     </div>
+    {tab.badge !== undefined && (
+      <span className={`ml-2 px-2.5 py-0.5 rounded-full text-xs font-semibold ${isActive
+          ? "bg-indigo-600 text-white"
+          : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 group-hover:bg-gray-300 dark:group-hover:bg-gray-600"
+        }`}>
+        {tab.badge}
+      </span>
+    )}
     {isActive && (
       <motion.div
         layoutId="activeTabIndicator"

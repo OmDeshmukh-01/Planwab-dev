@@ -130,6 +130,8 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
         endpoint = user ? `/api/plannedevent?userId=${user.id}&limit=1000` : "";
       } else if (requestType === "planning-tools") {
         endpoint = "/api/planned-events/get-all?page=1&limit=10";
+      } else if (requestType === "contact") {
+        endpoint = "/api/contact?limit=10000&sortBy=createdAt&sortOrder=desc";
       }
 
       const response = await fetch(endpoint);
@@ -151,6 +153,8 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
           requestsArray = result.leads || result.data || [];
         } else if (requestType === "planning-tools") {
           requestsArray = result.tools || result.data || [];
+        } else if (requestType === "contact") {
+          requestsArray = result.data || [];
         } else {
           requestsArray = result.data?.requests || [];
           setApiStats(result.data?.statusStats);
@@ -209,6 +213,14 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
             request.name?.toLowerCase().includes(query) ||
             request.userId?.toLowerCase().includes(query) ||
             request.category?.toLowerCase().includes(query)
+          );
+        }
+        if (requestType === "contact") {
+          return (
+            request.name?.toLowerCase().includes(query) ||
+            request.email?.toLowerCase().includes(query) ||
+            request.phone?.toLowerCase().includes(query) ||
+            request.subject?.toLowerCase().includes(query)
           );
         }
         return (
@@ -335,12 +347,23 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
       setSelectedRequest(request);
       if (action === "view") onViewRequest?.(request);
       if (action === "edit") {
-        setEditFormData({
-          ...request,
-          services: request.services || [],
-          portfolioImages: request.portfolioImages || [],
-          serviceAreas: request.serviceAreas || [],
-        });
+        let formData;
+        if (requestType === "contact") {
+          formData = {
+            _id: request._id,
+            status: request.status || "pending",
+            priority: request.priority || "medium",
+            adminNotes: request.adminNotes || "",
+          };
+        } else {
+          formData = {
+            ...request,
+            services: request.services || [],
+            portfolioImages: request.portfolioImages || [],
+            serviceAreas: request.serviceAreas || [],
+          };
+        }
+        setEditFormData(formData);
         setEditModalOpen(true);
       }
       if (action === "delete") setDeleteModalOpen(true);
@@ -370,6 +393,12 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
         endpoint = `/api/leads?id=${selectedRequest._id}&adminPassword=${encodeURIComponent(adminPassword)}`;
       } else if (requestType === "planning-tools") {
         endpoint = `/api/planning-tools?id=${selectedRequest._id}&adminPassword=${encodeURIComponent(adminPassword)}`;
+      } else if (requestType === "contact") {
+        if (action === "delete") {
+          endpoint = `/api/contact/${selectedRequest._id}?password=${encodeURIComponent(adminPassword)}`;
+        } else {
+          endpoint = `/api/contact/${selectedRequest._id}`;
+        }
       }
 
       if (action === "delete") {
@@ -396,10 +425,14 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
         let body = {};
 
         if (requestType === "vendor") {
-          // For vendor, send everything + reviewedBy
           body = { ...editFormData, reviewedBy: "Admin" };
+        } else if (requestType === "contact") {
+          body = {
+            status: editFormData.status,
+            priority: editFormData.priority,
+            adminNotes: editFormData.adminNotes,
+          };
         } else {
-          // For Birthday, Booking, Leads - Update only status to prevent data overwrite
           body = { status: editFormData.status };
         }
 
@@ -501,6 +534,18 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
         r.phone || "",
         r.source || "",
         r.status || "pending",
+        r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "",
+      ]);
+    } else if (requestType === "contact") {
+      headers = ["Name", "Email", "Phone", "Subject", "User Type", "Status", "Priority", "Date"];
+      rows = filteredRequests.map((r) => [
+        r.name || "",
+        r.email || "",
+        r.phone || "",
+        r.subject || "",
+        r.userType || "",
+        r.status || "pending",
+        r.priority || "medium",
         r.createdAt ? new Date(r.createdAt).toLocaleDateString() : "",
       ]);
     } else {
@@ -820,32 +865,32 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Event
                       </th>
-
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         User ID
                       </th>
-
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">
                         Category
                       </th>
-
-                      {/* NEW FIELD 1 */}
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">
                         Guests
                       </th>
-
-                      {/* NEW FIELD 2 */}
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">
                         Venue
                       </th>
-
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">
                         Date
                       </th>
-
                       <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">
                         Budget
                       </th>
+                    </>
+                  )}
+                  {requestType === "contact" && (
+                    <>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name / Contact</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subject</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden md:table-cell">User Type</th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hidden lg:table-cell">Priority</th>
                     </>
                   )}
                   <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -1613,6 +1658,81 @@ const RequestTableRow = ({ request, requestType, onAction }) => {
   const status = statusConfig[request.status] || statusConfig.PENDING;
   const StatusIcon = status.icon;
 
+  if (requestType === "contact") {
+    const priorityColors = {
+      low: "bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300",
+      medium: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",
+      high: "bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300",
+      urgent: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300",
+    };
+    const priority = request.priority || "medium";
+    const contactStatusColors = {
+      pending: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
+      "in-progress": "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
+      resolved: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
+      closed: "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+    };
+    return (
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-sm flex-shrink-0">
+              {request.name?.charAt(0).toUpperCase() || "?"}
+            </div>
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">{request.name || "Unknown"}</h3>
+              <div className="flex flex-col gap-0.5 text-xs text-gray-500 dark:text-gray-400">
+                <span className="flex items-center gap-1"><Mail size={11} />{request.email || "N/A"}</span>
+                <span className="flex items-center gap-1"><Phone size={11} />{request.phone || "N/A"}</span>
+              </div>
+            </div>
+          </div>
+        </td>
+        <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+          <p className="max-w-[200px] truncate" title={request.subject}>{request.subject || "N/A"}</p>
+        </td>
+        <td className="px-4 py-3 hidden md:table-cell">
+          <span className="text-xs font-medium capitalize text-gray-600 dark:text-gray-400">{request.userType || "customer"}</span>
+        </td>
+        <td className="px-4 py-3 hidden lg:table-cell">
+          <span className={`inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full capitalize ${priorityColors[priority]}`}>
+            {priority}
+          </span>
+        </td>
+        <td className="px-4 py-3">
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium capitalize ${contactStatusColors[request.status] || contactStatusColors.pending}`}>
+            {request.status?.replace("-", " ") || "pending"}
+          </span>
+        </td>
+        <td className="px-4 py-3 text-right">
+          <div className="flex items-center justify-end gap-2 transition-opacity">
+            <button
+              onClick={() => onAction("view", request)}
+              className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+              title="View Details"
+            >
+              <Eye size={16} />
+            </button>
+            <button
+              onClick={() => onAction("edit", request)}
+              className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+              title="Edit Request"
+            >
+              <Edit size={16} />
+            </button>
+            <button
+              onClick={() => onAction("delete", request)}
+              className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+              title="Delete Request"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        </td>
+      </tr>
+    );
+  }
+
   if (requestType === "birthday") {
     return (
       <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
@@ -1826,90 +1946,90 @@ const RequestTableRow = ({ request, requestType, onAction }) => {
   }
 
   if (requestType === "planning-tools") {
-  return (
-  <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
-    
-    {/* Event Name */}
-    <td className="px-4 py-3">
-      <div className="flex items-center gap-3">
-        <div>
-          <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-            {request.name || "Unnamed Event"}
-          </h3>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            {request.venue || "No Venue"}
-          </p>
-        </div>
-      </div>
-    </td>
+    return (
+      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
 
-    {/* User ID */}
-    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-      {request.userId}
-    </td>
+        {/* Event Name */}
+        <td className="px-4 py-3">
+          <div className="flex items-center gap-3">
+            <div>
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+                {request.name || "Unnamed Event"}
+              </h3>
+              <p className="text-xs text-gray-500 dark:text-gray-400">
+                {request.venue || "No Venue"}
+              </p>
+            </div>
+          </div>
+        </td>
 
-    {/* Category */}
-    <td className="px-4 py-3 hidden md:table-cell text-sm text-gray-600 dark:text-gray-300 capitalize">
-      {request.category || "N/A"}
-    </td>
-    <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
-  {request.guestCount || 0}
-</td>
+        {/* User ID */}
+        <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+          {request.userId}
+        </td>
 
-{/* Venue */}
-<td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
-  {request.venue || "N/A"}
-</td>
+        {/* Category */}
+        <td className="px-4 py-3 hidden md:table-cell text-sm text-gray-600 dark:text-gray-300 capitalize">
+          {request.category || "N/A"}
+        </td>
+        <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
+          {request.guestCount || 0}
+        </td>
 
-    {/* Date */}
-    <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
-      {request.date
-        ? new Date(request.date).toLocaleDateString()
-        : "N/A"}
-    </td>
+        {/* Venue */}
+        <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
+          {request.venue || "N/A"}
+        </td>
 
-    {/* Budget */}
-    <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
-      ₹{request.budget?.toLocaleString() || 0}
-    </td>
+        {/* Date */}
+        <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
+          {request.date
+            ? new Date(request.date).toLocaleDateString()
+            : "N/A"}
+        </td>
 
-    {/* Status */}
-    <td className="px-4 py-3">
-      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 capitalize">
-        {request.status || "unknown"}
-      </span>
-    </td>
+        {/* Budget */}
+        <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
+          ₹{request.budget?.toLocaleString() || 0}
+        </td>
 
-    {/* Actions */}
-    <td className="px-4 py-3 text-right">
-      <div className="flex items-center justify-end gap-2">
-        <button
-          onClick={() => onAction("view", request)}
-          className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
-          title="View Event"
-        >
-          <Eye size={16} />
-        </button>
+        {/* Status */}
+        <td className="px-4 py-3">
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 capitalize">
+            {request.status || "unknown"}
+          </span>
+        </td>
 
-        <button
-          onClick={() => onAction("edit", request)}
-          className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-          title="Edit Event"
-        >
-          <Edit size={16} />
-        </button>
+        {/* Actions */}
+        <td className="px-4 py-3 text-right">
+          <div className="flex items-center justify-end gap-2">
+            <button
+              onClick={() => onAction("view", request)}
+              className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+              title="View Event"
+            >
+              <Eye size={16} />
+            </button>
 
-        <button
-          onClick={() => onAction("delete", request)}
-          className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-          title="Delete Event"
-        >
-          <Trash2 size={16} />
-        </button>
-      </div>
-    </td>
-  </tr>
-);
+            <button
+              onClick={() => onAction("edit", request)}
+              className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
+              title="Edit Event"
+            >
+              <Edit size={16} />
+            </button>
+
+            <button
+              onClick={() => onAction("delete", request)}
+              className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
+              title="Delete Event"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
+        </td>
+      </tr>
+    );
 
   }
 

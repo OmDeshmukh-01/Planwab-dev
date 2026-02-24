@@ -370,7 +370,7 @@ const ProfileCard = ({ profile, onView }) => {
 };
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function AllVendorProfiles({ onViewProfile, refreshTrigger }) {
+export default function AllVendorProfiles({ onViewProfile, refreshTrigger, onStatsUpdate }) {
     const [profiles, setProfiles] = useState([]);
     const [allProfilesData, setAllProfilesData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -409,6 +409,13 @@ export default function AllVendorProfiles({ onViewProfile, refreshTrigger }) {
     useEffect(() => {
         fetchProfiles();
     }, [fetchProfiles, refreshTrigger]);
+
+    // Notify parent of total count for tab badge
+    useEffect(() => {
+        if (onStatsUpdate) {
+            onStatsUpdate({ total: allProfilesData.length });
+        }
+    }, [allProfilesData.length, onStatsUpdate]);
 
     // Client-side filtering + sorting
     const filteredProfiles = useMemo(() => {

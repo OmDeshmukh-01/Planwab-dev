@@ -17,6 +17,7 @@ export default function VendorProfilesPage() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [lastRefresh, setLastRefresh] = useState(new Date());
     const [mounted, setMounted] = useState(false);
+    const [stats, setStats] = useState(null);
 
     useEffect(() => {
         setMounted(true);
@@ -52,8 +53,12 @@ export default function VendorProfilesPage() {
         setSelectedProfile(null);
     }, []);
 
+    const handleStatsUpdate = useCallback((newStats) => {
+        setStats(newStats);
+    }, []);
+
     const tabs = [
-        { id: "all", label: "All Vendor Profiles", icon: List, description: "View all vendor profiles across the platform" },
+        { id: "all", label: "All Vendor Profiles", icon: List, description: "View all vendor profiles across the platform", badge: stats?.total },
     ];
 
     if (activeTab === "view" && selectedProfile) {
@@ -153,7 +158,7 @@ export default function VendorProfilesPage() {
                         transition={{ duration: 0.3, ease: "easeInOut" }}
                     >
                         {activeTab === "all" && (
-                            <AllVendorProfiles onViewProfile={handleViewProfile} refreshTrigger={refreshTrigger} />
+                            <AllVendorProfiles onViewProfile={handleViewProfile} refreshTrigger={refreshTrigger} onStatsUpdate={handleStatsUpdate} />
                         )}
 
                         {activeTab === "view" && selectedProfile && (
@@ -195,6 +200,14 @@ const TabButton = ({ tab, isActive, onClick }) => (
                 {tab.description}
             </span>
         </div>
+        {tab.badge !== undefined && (
+            <span className={`ml-2 px-2.5 py-0.5 rounded-full text-xs font-semibold ${isActive
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 group-hover:bg-gray-300 dark:group-hover:bg-gray-600"
+                }`}>
+                {tab.badge}
+            </span>
+        )}
         {isActive && (
             <motion.div
                 layoutId="activeTabIndicator"
