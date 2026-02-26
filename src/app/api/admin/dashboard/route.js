@@ -8,10 +8,19 @@ import VendorRequest from "@/database/models/VendorRequestsModel";
 import BirthdayBooking from "@/database/models/BirthdayBooking";
 import DetailsBookingRequest from "@/database/models/DetailsBookingRequestModel";
 import Lead from "@/database/models/LeadsModel";
+import mongoose from "mongoose";
 
 export async function GET() {
     try {
         await connectToDatabase();
+
+        let ContactUs;
+        try {
+            ContactUs = mongoose.models.ContactForm || require("@/database/models/ContactUsModel").default;
+        } catch (error) {
+            console.error("Failed to load ContactUs model safely:", error);
+            ContactUs = { countDocuments: () => Promise.resolve(0) };
+        }
 
         const [
             totalVendors,
@@ -23,7 +32,8 @@ export async function GET() {
             vendorRequests,
             totalBirthdayRequests,
             totalBookingRequests,
-            totalLeadsRequests
+            totalLeadsRequests,
+            totalContactRequests
         ] = await Promise.all([
             Vendor.countDocuments(),
             Vendor.countDocuments({ isFeatured: true }),
@@ -34,7 +44,8 @@ export async function GET() {
             VendorRequest.countDocuments(),
             BirthdayBooking.countDocuments(),
             DetailsBookingRequest.countDocuments(),
-            Lead.countDocuments()
+            Lead.countDocuments(),
+            ContactUs.countDocuments()
         ]);
 
         const totalCategories = categories.length;
@@ -52,7 +63,8 @@ export async function GET() {
                     vendorRequests,
                     totalBirthdayRequests,
                     totalBookingRequests,
-                    totalLeadsRequests
+                    totalLeadsRequests,
+                    totalContactRequests
                 },
             },
             { status: 200 }
