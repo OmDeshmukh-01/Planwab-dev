@@ -51,7 +51,7 @@ const CardSkeleton = memo(() => (
 CardSkeleton.displayName = "CardSkeleton";
 
 // Individual Card
-const CarouselCard = memo(({ item, index, onAddToCart, isInCart, user }) => {
+const CarouselCard = memo(({ item, index, onAddToCart, isInCart, user, theme }) => {
   const router = useRouter();
   const [imgLoaded, setImgLoaded] = useState(false);
 
@@ -253,7 +253,7 @@ const CarouselCard = memo(({ item, index, onAddToCart, isInCart, user }) => {
             className={`p-3.5 rounded-2xl transition-all duration-300 shadow-lg ${
               inCart
                 ? "bg-emerald-500 text-white shadow-emerald-200"
-                : "bg-slate-900 text-white shadow-slate-300 hover:bg-indigo-600 hover:shadow-indigo-200"
+                : `${theme.gradientLight} text-white shadow-slate-300 hover:bg-indigo-600 hover:shadow-indigo-200`
             }`}
           >
             {inCart ? <Check size={18} strokeWidth={3} /> : <Plus size={18} strokeWidth={3} />}
@@ -334,7 +334,7 @@ export const LandingCarousel = memo(
     items = [],
     isLoading = false,
     icon: Icon = Sparkles,
-    accentColor = "#6366f1",
+    theme,
   }) => {
     const scrollRef = useRef(null);
     const router = useRouter();
@@ -392,9 +392,9 @@ export const LandingCarousel = memo(
             <motion.div
               whileHover={{ scale: 1.1, rotate: 5 }}
               className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
-              style={{ backgroundColor: `${accentColor}15`, boxShadow: `0 8px 24px ${accentColor}20` }}
+              style={{ backgroundColor: `${theme.accentBg}15`, boxShadow: `0 8px 24px ${theme.accentBg}20` }}
             >
-              <Icon size={26} style={{ color: accentColor }} />
+              <Icon size={26} style={{ color: theme.accentColor }} />
             </motion.div>
             <div>
               <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">{title}</h2>
@@ -410,7 +410,7 @@ export const LandingCarousel = memo(
             whileTap={{ scale: 0.95 }}
             onClick={handleViewAll}
             className="hidden sm:flex items-center gap-2 text-xs font-black px-5 py-2.5 rounded-xl transition-all uppercase tracking-widest"
-            style={{ color: accentColor, backgroundColor: `${accentColor}10` }}
+            style={{ color: theme.accentColor, backgroundColor: `${theme.accentColor}10` }}
           >
             <span>View All</span>
             <ArrowRight size={14} />
@@ -440,6 +440,7 @@ export const LandingCarousel = memo(
                     onAddToCart={handleAddToCart}
                     isInCart={isInCart}
                     user={user}
+                    theme={theme}
                   />
                 ))}
                 {items.length > 0 && <ExploreMoreCard title={title} onViewAll={handleViewAll} />}
@@ -455,7 +456,7 @@ export const LandingCarousel = memo(
           viewport={{ once: true }}
           onClick={handleViewAll}
           className="sm:hidden w-full mt-6 flex items-center justify-center gap-2 text-sm font-black py-4 rounded-2xl"
-          style={{ color: accentColor, backgroundColor: `${accentColor}10` }}
+          style={{ color: theme.accentColor, backgroundColor: `${theme.accentColor}10` }}
         >
           <span>View All {title}</span>
           <ArrowRight size={18} />

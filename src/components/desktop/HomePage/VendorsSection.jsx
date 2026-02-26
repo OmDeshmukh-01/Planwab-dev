@@ -74,7 +74,7 @@ const filters = [
   { label: "Barat", icon: <Users2 size={18} />, gradient: "from-indigo-500 to-purple-600" },
 ];
 
-const CollapsibleFilters = ({ activeFilter, setActiveFilter }) => {
+const CollapsibleFilters = ({ activeFilter, setActiveFilter, buttonColor }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const visibleCount = 8;
   const visibleFilters = isExpanded ? filters : filters.slice(0, visibleCount);
@@ -90,7 +90,7 @@ const CollapsibleFilters = ({ activeFilter, setActiveFilter }) => {
               onClick={() => setActiveFilter(filter.label)}
               className={`relative px-5 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-300 ${
                 activeFilter === filter.label
-                  ? "text-white shadow-lg scale-105"
+                  ? `${buttonColor} text-white shadow-lg scale-105`
                   : "text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-600/50"
               }`}
               whileHover={{ scale: activeFilter === filter.label ? 1.05 : 1.03 }}
@@ -116,7 +116,7 @@ const CollapsibleFilters = ({ activeFilter, setActiveFilter }) => {
           {hasMore && (
             <motion.button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-600/50 transition-all duration-300"
+              className={`px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700/50 hover:bg-gray-200 dark:hover:bg-gray-600/50 transition-all duration-300 ${buttonColor}`}
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.98 }}
               initial={{ opacity: 0, y: 10 }}
@@ -182,7 +182,7 @@ const ViewAllCard = () => (
   </Link>
 );
 
-export default function VendorsCatSection() {
+export default function VendorsCatSection({buttonColor}) {
   const [activeFilter, setActiveFilter] = useState("All");
   const [vendorsData, setVendorsData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -267,7 +267,7 @@ export default function VendorsCatSection() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="mb-12"
         >
-          <CollapsibleFilters activeFilter={activeFilter} setActiveFilter={setActiveFilter} />
+          <CollapsibleFilters activeFilter={activeFilter} setActiveFilter={setActiveFilter} buttonColor={buttonColor} />
         </motion.div>
 
         <AnimatePresence mode="wait">
@@ -308,7 +308,7 @@ export default function VendorsCatSection() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: index * 0.05 }}
                 >
-                  <MobileStyleVendorCard vendor={vendor} />
+                  <MobileStyleVendorCard vendor={vendor} buttonColor={buttonColor} />
                 </motion.div>
               ))}
 

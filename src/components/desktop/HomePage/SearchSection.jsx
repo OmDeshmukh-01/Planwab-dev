@@ -856,7 +856,7 @@ export default function SearchSection({ activeCategory, theme }) {
           <button
             onClick={handleSearch}
             disabled={isPending}
-            className={`${theme.buttonBg} text-white rounded-lg px-6 py-2.5 text-sm font-bold transition-all duration-300 hover:shadow-lg ${theme.buttonGlow} hover:scale-[1.03] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2`}
+            className={`${theme.gradientLight} text-white rounded-lg px-6 py-2.5 text-sm font-bold transition-all duration-300 hover:shadow-lg ${theme.buttonGlow} hover:scale-[1.03] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center gap-2`}
           >
             {isPending ? (
               <>

@@ -4,12 +4,12 @@ import React from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useCategoryStore } from "../../../GlobalState/CategoryStore";
 
 // Utility to capitalize first letter for the category
 const capitalize = (s) => (s && s[0].toUpperCase() + s.slice(1)) || "";
 
-const FeaturedCard = ({ item }) => {
+const FeaturedCard = ({ item, buttonColor }) => {
   // Determine background image based on type (mimicking the original CSS classes)
   const bgImage =
     item.backgroundType === "venues"
@@ -66,7 +66,7 @@ const FeaturedCard = ({ item }) => {
         </p>
         <Link
           href={item.linkHref}
-          className="px-5 py-2 bg-[#d6536d] text-white text-[13px] font-semibold rounded shadow-sm hover:bg-[#b03d55] transition-colors duration-200"
+          className={`px-5 py-2 ${buttonColor} text-white text-[13px] font-semibold rounded shadow-sm hover:${buttonColor.replace("500", "600")} transition-colors duration-200`}
         >
           {item.linkText}
         </Link>
@@ -75,7 +75,7 @@ const FeaturedCard = ({ item }) => {
   );
 };
 
-const SimpleCard = ({ item }) => {
+const SimpleCard = ({ item, buttonColor }) => {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -98,7 +98,7 @@ const SimpleCard = ({ item }) => {
         {/* .simple-card-tile__link */}
         <Link
           href={item.linkHref}
-          className="text-[12px] font-semibold text-[#d6536d] no-underline hover:underline"
+          className={`text-[12px] font-semibold ${buttonColor.replace("bg", "text")} no-underline hover:underline`}
         >
           {item.linkText}
         </Link>
@@ -115,14 +115,10 @@ const SimpleCard = ({ item }) => {
   );
 };
 
-export default function WeddingPlanningTools({ heading, description }) {
-  const params = useParams();
-  
-  // Default to "Wedding" if category param is missing, otherwise capitalize the param
-  const categoryName = params?.category 
-    ? capitalize(decodeURIComponent(params.category)) 
-    : "Wedding";
+export default function WeddingPlanningTools({ buttonColor }) {
 
+  const { activeCategoryDesktop } = useCategoryStore();
+  const categoryName = activeCategoryDesktop && activeCategoryDesktop.toLowerCase();
   // Dynamic Data Construction
   const dynamicData = [
     {
@@ -177,7 +173,7 @@ export default function WeddingPlanningTools({ heading, description }) {
 
   return (
     // .home-tools-section mapping: padding: 40px 0 (mobile) -> 60px 0 (tablet+), bg #f8f8f8
-    <section className="py-[40px] pt-0 md:pt-8 md:py-[60px] pb-3 md:pb-3">
+    <section className="py-[40px] pt-0 md:pt-8 md:py-[60px] pb-3 md:pb-3" style={{display: categoryName === "events" ? "flex" : "none"}}>
       
       {/* Container for cards - max-w-4xl mx-auto (from original HTML) + padding mappings */}
       {/* Original CSS .home-tools-section__cards: px-4 (16px), md:px-10 (40px), lg:px-[60px] */}
@@ -208,9 +204,9 @@ export default function WeddingPlanningTools({ heading, description }) {
                 role="listitem"
               >
                 {item.type === "featured" ? (
-                  <FeaturedCard item={item} />
+                  <FeaturedCard item={item} buttonColor={buttonColor} />
                 ) : (
-                  <SimpleCard item={item} />
+                  <SimpleCard item={item} buttonColor={buttonColor} />
                 )}
               </div>
             );

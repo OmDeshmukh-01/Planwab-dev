@@ -27,7 +27,7 @@ function useHapticFeedback() {
   }, []);
 }
 
-const MobileStyleVendorCard = memo(({ vendor }) => {
+const MobileStyleVendorCard = memo(({ vendor, buttonColor }) => {
   const [liked, setLiked] = useState(false);
   const [likingLoading, setLikingLoading] = useState(false);
   const { addToCart, removeFromCart, cartItems, isInCart } = useCartStore();
@@ -286,7 +286,7 @@ const MobileStyleVendorCard = memo(({ vendor }) => {
               className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-1 transition-all active:scale-90 whitespace-nowrap flex-shrink-0 shadow-md hover:shadow-lg ${
                 inCart 
                   ? "bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700" 
-                  : "bg-gradient-to-r from-gray-900 to-gray-800 text-white hover:from-gray-800 hover:to-gray-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800"
+                  : `${buttonColor || "bg-gradient-to-r from-gray-900 to-gray-800"} text-white hover:from-gray-800 hover:to-gray-700 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800`
               }`}
             >
               {inCart ? (
