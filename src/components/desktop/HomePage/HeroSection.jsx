@@ -123,7 +123,7 @@ export default function HeroSection({ activeCategory, theme, categoryData }) {
 
   return (
     <section className="relative max-w-6xl mx-auto bg-white/70 dark:bg-gray-900/70 backdrop-blur-lg rounded-4xl shadow-2xl border border-white/40 dark:border-gray-700/50 mb-6">
-      <div className="overflow-hidden rounded-4xl border-1 border-bl-gray-500 mb-5">
+      <div className="overflow-hidden rounded-4xl border-1 border-bl-gray-500 mb-0">
         {/* ═══ Main Split Layout ═══ */}
         <div className="flex h-[410px]">
           {/* ──── LEFT: Carousel + Search ──── */}
@@ -360,7 +360,7 @@ export default function HeroSection({ activeCategory, theme, categoryData }) {
             >
               <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-xl px-4 py-2.5 shadow-xl border border-white/50 dark:border-gray-700/50">
                 <div className="flex items-center gap-2.5">
-                  <div className={`w-8 h-8 rounded-full ${theme.accentBg} flex items-center justify-center shrink-0`}>
+                  <div className={`w-8 h-8 rounded-full ${theme.gradientLight} flex items-center justify-center shrink-0`}>
                     <svg
                       className="w-4 h-4 text-white"
                       fill="none"

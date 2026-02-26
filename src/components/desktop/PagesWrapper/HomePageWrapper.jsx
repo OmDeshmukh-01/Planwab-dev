@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCategoryStore } from "@/GlobalState/CategoryStore";
@@ -23,7 +23,7 @@ export const categoryThemes = {
     glow: "bg-violet-500/10 dark:bg-violet-500/20",
     accent: "text-violet-600 dark:text-violet-400",
     accentBg: "bg-violet-500",
-    gradientLight: "#ede9fe",
+    gradientLight: "bg-[#1b1365]",
     gradientDark: "#2e1065",
     cardActiveBorder: "border-violet-500",
     cardActiveGlow: "shadow-violet-500/20",
@@ -37,7 +37,7 @@ export const categoryThemes = {
     glow: "bg-rose-500/10 dark:bg-rose-500/20",
     accent: "text-rose-600 dark:text-rose-400",
     accentBg: "bg-rose-500",
-    gradientLight: "#ffe4e6",
+    gradientLight: "bg-[#09566f]",
     gradientDark: "#4c0519",
     cardActiveBorder: "border-rose-500",
     cardActiveGlow: "shadow-rose-500/20",
@@ -51,7 +51,7 @@ export const categoryThemes = {
     glow: "bg-amber-500/10 dark:bg-amber-500/20",
     accent: "text-amber-600 dark:text-amber-400",
     accentBg: "bg-amber-500",
-    gradientLight: "#fef3c7",
+    gradientLight: "bg-[#74001d]",
     gradientDark: "#451a03",
     cardActiveBorder: "border-amber-500",
     cardActiveGlow: "shadow-amber-500/20",
@@ -65,7 +65,7 @@ export const categoryThemes = {
     glow: "bg-sky-500/10 dark:bg-sky-500/20",
     accent: "text-sky-600 dark:text-sky-400",
     accentBg: "bg-sky-500",
-    gradientLight: "#e0f2fe",
+    gradientLight: "bg-[#96730e]",
     gradientDark: "#0c4a6e",
     cardActiveBorder: "border-sky-500",
     cardActiveGlow: "shadow-sky-500/20",
@@ -200,21 +200,210 @@ const categoryGradients = {
   Birthday: ["#FCD34D", "#D97706"],
 };
 
+// ── Category-Specific API Configuration ──
+const CATEGORY_SECTIONS_CONFIG = {
+  Events: {
+    featured: {
+      query: "featured=true&sortBy=rating&limit=12&sortOrder=desc&page=1",
+      title: "Featured Event Vendors",
+      subtitle: "Top-rated vendors for all your events",
+    },
+    planners: {
+      query: "categories=planners&sortBy=rating&limit=12&sortOrder=desc&page=1",
+      title: "Event Planners",
+      subtitle: "Professional planners for seamless events",
+    },
+    photographers: {
+      query: "categories=photographers&sortBy=rating&limit=12&sortOrder=desc&page=1",
+      title: "Event Photographers",
+      subtitle: "Capture every moment perfectly",
+    },
+    venues: {
+      query: "categories=venues&sortBy=rating&limit=12&sortOrder=desc&page=1",
+      title: "Event Venues",
+      subtitle: "Perfect spaces for your gatherings",
+    },
+    catering: {
+      query: "categories=catering&sortBy=rating&limit=12&sortOrder=desc&page=1",
+      title: "Caterers",
+      subtitle: "Delicious food for your guests",
+    },
+    djs: {
+      query: "categories=djs&sortBy=rating&limit=12&sortOrder=desc&page=1",
+      title: "DJs & Entertainment",
+      subtitle: "Keep your guests entertained",
+    },
+    // decorators: {
+    //   query: "categories=decorators&sortBy=rating&limit=12&sortOrder=desc&page=1",
+    //   title: "Event Decorators",
+    //   subtitle: "Transform your venue beautifully",
+    // },
+  },
+
+  Wedding: {
+    featured: {
+      query: "featured=true&sortBy=rating&limit=12&sortOrder=desc&page=2",
+      title: "Featured Wedding Vendors",
+      subtitle: "Top-rated vendors for your special day",
+    },
+    planners: {
+      query: "categories=planners&sortBy=rating&limit=12&sortOrder=desc&page=2",
+      title: "Wedding Planners",
+      subtitle: "Plan with the best in the business",
+    },
+    photographers: {
+      query: "categories=photographers&sortBy=rating&limit=12&sortOrder=desc&page=2",
+      title: "Wedding Photographers",
+      subtitle: "Capture your love story",
+    },
+    venues: {
+      query: "categories=venues&sortBy=rating&limit=12&sortOrder=desc&page=2",
+      title: "Wedding Venues",
+      subtitle: "Find the perfect setting for your big day",
+    },
+    invitations: {
+      query: "categories=invitations&sortBy=rating&limit=12&sortOrder=desc&page=2",
+      title: "Wedding Invitations",
+      subtitle: "Beautiful invitations for your special day",
+    },
+    makeup: {
+      query: "categories=makeup&sortBy=rating&limit=12&sortOrder=desc&page=2",
+      title: "Bridal Makeup Artists",
+      subtitle: "Look stunning on your special day",
+    },
+    mehendi: {
+      query: "categories=mehendi&sortBy=rating&limit=12&sortOrder=desc&page=2",
+      title: "Mehendi Artists",
+      subtitle: "Beautiful henna designs for your celebration",
+    },
+    catering: {
+      query: "categories=catering&sortBy=rating&limit=12&sortOrder=desc&page=2",
+      title: "Wedding Caterers",
+      subtitle: "Exquisite dining experiences",
+    },
+    djs: {
+      query: "categories=djs&sortBy=rating&limit=12&sortOrder=desc&page=2",
+      title: "Wedding DJs",
+      subtitle: "Music that makes memories",
+    },
+  },
+
+  Anniversary: {
+    featured: {
+      query: "featured=true&sortBy=rating&limit=12&sortOrder=desc&page=3",
+      title: "Featured Anniversary Vendors",
+      subtitle: "Celebrate your love with the best",
+    },
+    planners: {
+      query: "categories=planners&sortBy=rating&limit=12&sortOrder=desc&page=3",
+      title: "Anniversary Planners",
+      subtitle: "Make your milestone unforgettable",
+    },
+    photographers: {
+      query: "categories=photographers&sortBy=rating&limit=12&sortOrder=desc&page=3",
+      title: "Anniversary Photographers",
+      subtitle: "Capture your continued journey",
+    },
+    dhol: {
+      query: "categories=dhol&sortBy=rating&limit=12&sortOrder=desc&page=3",
+      title: "Dhol Players",
+      subtitle: "Add traditional beats to your celebration",
+    },
+    venues: {
+      query: "categories=venues&sortBy=rating&limit=12&sortOrder=desc&page=3",
+      title: "Anniversary Venues",
+      subtitle: "Intimate spaces for your celebration",
+    },
+    makeup: {
+      query: "categories=makeup&sortBy=rating&limit=12&sortOrder=desc&page=3",
+      title: "Makeup Artists",
+      subtitle: "Look radiant for your special day",
+    },
+    catering: {
+      query: "categories=catering&sortBy=rating&limit=12&sortOrder=desc&page=3",
+      title: "Anniversary Caterers",
+      subtitle: "Fine dining for your celebration",
+    },
+    // decorators: {
+    //   query: "categories=decorators&sortBy=rating&limit=12&sortOrder=desc&page=3",
+    //   title: "Decorators",
+    //   subtitle: "Romantic ambiance for your day",
+    // },
+    // florists: {
+    //   query: "categories=florists&sortBy=rating&limit=12&sortOrder=desc&page=3",
+    //   title: "Florists",
+    //   subtitle: "Beautiful flowers for your anniversary",
+    // },
+  },
+
+  Birthday: {
+    featured: {
+      query: "featured=true&sortBy=rating&limit=12&sortOrder=desc&page=4",
+      title: "Featured Birthday Vendors",
+      subtitle: "Make birthdays legendary",
+    },
+    planners: {
+      query: "categories=planners&sortBy=rating&limit=12&sortOrder=desc&page=4",
+      title: "Birthday Party Planners",
+      subtitle: "Experts in birthday celebrations",
+    },
+    photographers: {
+      query: "categories=photographers&sortBy=rating&limit=12&sortOrder=desc&page=4",
+      title: "Birthday Photographers",
+      subtitle: "Capture the joy and excitement",
+    },
+    venues: {
+      query: "categories=venues&sortBy=rating&limit=12&sortOrder=desc&page=4",
+      title: "Birthday Party Venues",
+      subtitle: "Fun spaces for every age",
+    },
+    // cakes: {
+    //   query: "categories=cakes&sortBy=rating&limit=12&sortOrder=desc&page=4",
+    //   title: "Cake Designers",
+    //   subtitle: "Custom cakes that wow",
+    // },
+    // decorators: {
+    //   query: "categories=decors&sortBy=rating&limit=12&sortOrder=desc&page=4",
+    //   title: "Birthday Decorators",
+    //   subtitle: "Themed decorations that delight",
+    // },
+    catering: {
+      query: "categories=catering&sortBy=rating&limit=12&sortOrder=desc&page=4",
+      title: "Party Caterers",
+      subtitle: "Delicious food for all ages",
+    },
+  },
+};
+
 export default function DesktopHomePageWrapper() {
   const { activeCategoryDesktop: activeCategory, setActiveCategoryDesktop: setActiveCategory } = useCategoryStore();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [sections, setSections] = useState({
-    featured: { data: [], loading: true },
-    planners: { data: [], loading: true },
-    photographers: { data: [], loading: true },
-    venues: { data: [], loading: true },
-    makeup: { data: [], loading: true },
-    catering: { data: [], loading: true },
-    djs: { data: [], loading: true },
-    mehendi: { data: [], loading: true },
+  const [sections, setSections] = useState(() => {
+    const initialCategory = activeCategory || "Wedding";
+    const config = CATEGORY_SECTIONS_CONFIG[initialCategory] || CATEGORY_SECTIONS_CONFIG.Wedding;
+
+    return Object.keys(config).reduce((acc, key) => {
+      acc[key] = { data: [], loading: true, error: null };
+      return acc;
+    }, {});
   });
+
+  // Get current category configuration
+  const currentCategoryConfig = useMemo(() => {
+    const config = CATEGORY_SECTIONS_CONFIG[activeCategory];
+    if (!config) {
+      console.warn(`Configuration not found for category: ${activeCategory}, using Wedding`);
+      return CATEGORY_SECTIONS_CONFIG.Wedding;
+    }
+    return config;
+  }, [activeCategory]);
+
+  // Get section keys for current category
+  const currentSectionKeys = useMemo(() => {
+    return Object.keys(currentCategoryConfig);
+  }, [currentCategoryConfig]);
 
   useEffect(() => {
     setIsDarkMode(document.documentElement.classList.contains("dark"));
@@ -230,34 +419,117 @@ export default function DesktopHomePageWrapper() {
     }
   }, [searchParams, setActiveCategory]);
 
-  const fetchSection = async (key, query) => {
-    try {
-      const res = await fetch(`/api/vendor?${query}&limit=12`);
-      const json = await res.json();
-      setSections((prev) => ({ ...prev, [key]: { data: json.data || [], loading: false } }));
-    } catch (e) {
-      setSections((prev) => ({ ...prev, [key]: { data: [], loading: false } }));
+  const fetchSection = useCallback(async (key, query, signal) => {
+    if (!key || !query) {
+      console.error(`Invalid parameters for fetchSection: key=${key}, query=${query}`);
+      return;
     }
-  };
+
+    setSections((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], loading: true, error: null },
+    }));
+
+    try {
+      const res = await fetch(`/api/vendor?${query}`, { signal });
+
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+
+      const json = await res.json();
+
+      if (!signal?.aborted) {
+        setSections((prev) => ({
+          ...prev,
+          [key]: {
+            data: Array.isArray(json?.data) ? json.data : [],
+            loading: false,
+            error: null,
+          },
+        }));
+      }
+    } catch (error) {
+      if (error.name === "AbortError") {
+        console.log(`Fetch aborted for ${key}`);
+        return;
+      }
+
+      console.error(`Error fetching ${key}:`, error);
+
+      if (!signal?.aborted) {
+        setSections((prev) => ({
+          ...prev,
+          [key]: {
+            data: [],
+            loading: false,
+            error: error.message || "Failed to fetch data",
+          },
+        }));
+      }
+    }
+  }, []);
 
   useEffect(() => {
-    fetchSection("featured", "featured=true&sortBy=rating");
-    fetchSection("planners", "categories=planners&sortBy=rating");
-    fetchSection("photographers", "categories=photographers&sortBy=rating");
-    fetchSection("makeup", "categories=makeup&sortBy=rating");
-    fetchSection("venues", "categories=venues&sortBy=rating");
-    fetchSection("catering", "categories=catering&sortBy=rating");
-    fetchSection("djs", "categories=djs&sortBy=rating");
-    fetchSection("mehendi", "categories=mehendi&sortBy=rating");
-  }, []);
+    if (!activeCategory || !CATEGORY_SECTIONS_CONFIG[activeCategory]) {
+      console.warn(`Invalid category: ${activeCategory}, using default Wedding`);
+      return;
+    }
+
+    const abortController = new AbortController();
+    const categoryConfig = CATEGORY_SECTIONS_CONFIG[activeCategory];
+
+    setSections(
+      Object.keys(categoryConfig).reduce((acc, key) => {
+        acc[key] = { data: [], loading: true, error: null };
+        return acc;
+      }, {}),
+    );
+
+    const fetchPromises = Object.entries(categoryConfig).map(([key, config]) => {
+      if (config?.query) {
+        return fetchSection(key, config.query, abortController.signal);
+      } else {
+        console.warn(`Invalid config for section ${key}:`, config);
+        return Promise.resolve();
+      }
+    });
+
+    Promise.allSettled(fetchPromises).then((results) => {
+      results.forEach((result, index) => {
+        if (result.status === "rejected") {
+          const sectionKey = Object.keys(categoryConfig)[index];
+          console.error(`Failed to fetch section ${sectionKey}:`, result.reason);
+        }
+      });
+    });
+
+    return () => {
+      abortController.abort();
+    };
+  }, [activeCategory, fetchSection]);
 
   const handleCategoryChange = (categoryName) => {
     setActiveCategory(categoryName);
     router.push(`?category=${categoryName.toLowerCase()}`, { scroll: false });
   };
 
-  const currentTheme = categoryThemes[activeCategory] || categoryThemes.Events;
-  const activeCategoryData = categoryCards.find((c) => c.name === activeCategory) || categoryCards[1];
+  const currentTheme = useMemo(() => {
+    const theme = categoryThemes[activeCategory];
+    if (!theme) {
+      console.warn(`Theme not found for category: ${activeCategory}, using Events theme`);
+      return categoryThemes.Events;
+    }
+    return theme;
+  }, [activeCategory]);
+  const activeCategoryData = useMemo(() => {
+    const data = categoryCards.find((c) => c.name === activeCategory);
+    if (!data) {
+      console.warn(`Category data not found for: ${activeCategory}, using default`);
+      return categoryCards[0];
+    }
+    return data;
+  }, [activeCategory]);
 
   const cardsData1 = [
     {
@@ -315,6 +587,11 @@ export default function DesktopHomePageWrapper() {
         "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594540/VenuesEventsDesktopCarHeaderCard_itlslv.webp",
       makeup:
         "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594540/MakeUpEventsDesktopCarHeaderCard_z8xdef.avif",
+      catering:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105015/CateringVendorsEventsDesktopCarHeaderCard_wdqf9t.avif",
+      djs: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105012/DjsEventsDesktopCarHeaderCard_oyj1cv.avif",
+      decorators:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105013/DecorsEventsDesktopCarHeaderCard_oek0kn.webp",
 
       cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597012/EventsCWB_femplz.webp",
     },
@@ -329,6 +606,15 @@ export default function DesktopHomePageWrapper() {
         "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/VenuesWeddingDesktopCarHeaderCard_n3iamk.webp",
       makeup:
         "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/MakeUpWeddingDesktopCarHeaderCard_bmnfxf.avif",
+      catering:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104867/CateringVendorsWeddingDesktopCarHeaderCard_cvi6cd.avif",
+      decorators:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104866/DecorsWeddingDesktopCarHeaderCard_odfjpx.webp",
+      florists:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104865/floristsWeddingDesktopCarHeaderCard_jfx1fu.avif",
+      invitations:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105152/InvitationsWeddingDesktopCarHeaderCard_cxalqt.avif",
+      mehendi: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105477/MehendiWeddingDesktopCarHeaderCard_doklaf.avif",  
 
       cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597043/WeddingCWB_g5s05q.webp",
     },
@@ -343,6 +629,12 @@ export default function DesktopHomePageWrapper() {
         "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595641/VenuesAnniversaryDesktopCarHeaderCard_r5eci4.webp",
       makeup:
         "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595640/MakeUpAnniversaryDesktopCarHeaderCard_ei91ro.avif",
+      catering:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104702/CateringVendorsAnniversaryDesktopCarHeaderCard_k5kwjl.avif",
+      decorators:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104711/DecorsAnniversaryDesktopCarHeaderCard_jgi3d7.webp",
+      florists:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104741/floristsAnniversaryDesktopCarHeaderCard_n5i10s.avif",
 
       cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597071/AnniversaryCWB_h9zf4i.webp",
     },
@@ -357,6 +649,14 @@ export default function DesktopHomePageWrapper() {
         "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595844/VenuesBirthdayDesktopCarHeaderCard_y7mr16.webp",
       makeup:
         "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595844/MakeUpBirthdayDesktopCarHeaderCard_yqp2u4.avif",
+      cakes:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104510/CakesBirthdayDesktopCarHeaderCard_xcyw37.avif",
+      decorators:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104510/DecorsBirthdayDesktopCarHeaderCard_f7hvtq.webp",
+      entertainment:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104511/EntertainmentGrapherBirthdayDesktopCarHeaderCard_zjvbai.avif",
+      catering:
+        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104510/CateringVendorsBirthdayDesktopCarHeaderCard_xlu8w4.avif",
 
       cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597110/BirthdayCWB_xzl9iq.webp",
     },
@@ -365,6 +665,60 @@ export default function DesktopHomePageWrapper() {
   const carouselHeaderImagesCategoryWise = useMemo(() => {
     return CarouselHeaderImages[activeCategory.toLowerCase()] || CarouselHeaderImages.wedding;
   }, [activeCategory]);
+
+  // Helper to safely render carousel with category-specific data
+  const renderCarouselSection = useCallback(
+    (sectionKey, icon, accentColor = "#ec4899") => {
+      const sectionData = sections[sectionKey];
+      const sectionConfig = currentCategoryConfig[sectionKey];
+
+      if (!sectionData || !sectionConfig) {
+        console.warn(`Section ${sectionKey} not configured for category ${activeCategory}`);
+        return null;
+      }
+
+      return (
+        <LandingCarousel
+          key={`${activeCategory}-${sectionKey}`}
+          title={sectionConfig.title}
+          subtitle={sectionConfig.subtitle}
+          items={sectionData.data || []}
+          isLoading={sectionData.loading}
+          error={sectionData.error}
+          icon={icon}
+          theme={currentTheme}
+        />
+      );
+    },
+    [sections, currentCategoryConfig, activeCategory, currentTheme],
+  );
+
+  // Helper to render carousel header
+  const renderCarouselHeader = useCallback(
+    (sectionKey, contentSide = "left") => {
+      const sectionConfig = currentCategoryConfig[sectionKey];
+
+      if (!sectionConfig) return null;
+
+      const categoryLower = activeCategory.toLowerCase();
+      const headerImages = CarouselHeaderImages[categoryLower] || CarouselHeaderImages.wedding;
+      const imageSrc = headerImages[sectionKey] || headerImages.featured;
+
+      return (
+        <CarouselHeader
+          key={`header-${activeCategory}-${sectionKey}`}
+          title={sectionConfig.title}
+          description={sectionConfig.subtitle}
+          buttonText={`Explore ${sectionConfig.title}`}
+          buttonLink={`/vendors/marketplace?${sectionConfig.query.split("&")[0]}`}
+          buttonColor={currentTheme?.gradientLight || "#ec4899"}
+          imageSrc={imageSrc}
+          contentSide={contentSide}
+        />
+      );
+    },
+    [currentCategoryConfig, activeCategory, currentTheme],
+  );
 
   return (
     <main className={`relative w-full overflow-x-hidden dark:bg-[#0d1117]`}>
@@ -418,101 +772,136 @@ export default function DesktopHomePageWrapper() {
           {/* ── Main Content Card ── */}
           <HeroSection activeCategory={activeCategory} theme={currentTheme} categoryData={activeCategoryData} />
         </div>
-        <WeddingPlanningTools />
+        <WeddingPlanningTools activeCategory={activeCategory} buttonColor={currentTheme?.gradientLight || "#ec4899"} />
         {/* White merging effect — light mode only */}
         <div className="pointer-events-none absolute bottom-0 left-0 w-full h-22 dark:hidden">
           <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
         </div>
       </motion.div>
       {/* ── Rest of Page ── */}
-      <CarouselHeader
-        title={`${activeCategory} Planners`}
-        description={`Find the best ${activeCategory.toLowerCase()} planners that will bring your vision to life and keep things running smoothly.`}
-        buttonText={`Explore ${activeCategory} Planners`}
-        buttonLink={`/vendors/marketplace?categories=planners`}
-        imageSrc={carouselHeaderImagesCategoryWise.planners}
-      />
 
-      <LandingCarousel
-        title="Featured Planners"
-        subtitle="Plan with the best in the business"
-        items={sections.planners.data}
-        isLoading={sections.planners.loading}
-        icon={PersonStanding}
-        accentColor="#ec4899"
-      />
-      <CarouselHeader
-        title={`${activeCategory} Photographers`}
-        description={`Find the best ${activeCategory.toLowerCase()} photographers that will bring your vision to life and keep things running smoothly.`}
-        buttonText={`Explore ${activeCategory} Photographers`}
-        buttonLink={`/vendors/marketplace?categories=photographers`}
-        imageSrc={carouselHeaderImagesCategoryWise.photographers}
-        contentSide="right"
-      />
-      <LandingCarousel
-        title="Top Photographers"
-        subtitle="Capture your moments"
-        items={sections.photographers.data}
-        isLoading={sections.photographers.loading}
-        icon={Camera}
-        accentColor="#ec4899"
-      />
-      <CardsWithBanner
-        heading="Top Categories For You ..."
-        contentSide="right"
-        backgroundImage={carouselHeaderImagesCategoryWise.cardsWithBanner1}
-        cards={cardsData1}
-      />
-      <CarouselHeader
-        title={`${activeCategory} Venues`}
-        description={`Find the best ${activeCategory.toLowerCase()} venues that will bring your vision to life and keep things running smoothly.`}
-        buttonText={`Explore ${activeCategory} Venues`}
-        buttonLink={`/vendors/marketplace?categories=venues`}
-        imageSrc={carouselHeaderImagesCategoryWise.venues}
-        contentSide="left"
-      />
-      <LandingCarousel
-        title="Top Venues"
-        subtitle="Find the perfect setting for your event"
-        items={sections.venues.data}
-        isLoading={sections.venues.loading}
-        icon={MapPin}
-        accentColor="#ec4899"
-      />
-      <CarouselHeader
-        title={`${activeCategory} Makeup Artists`}
-        description={`Find the best ${activeCategory.toLowerCase()} makeup artists that will bring your vision to life and keep things running smoothly.`}
-        buttonText={`Explore ${activeCategory} Makeup Artists`}
-        buttonLink={`/vendors/marketplace?categories=makeup`}
-        imageSrc={carouselHeaderImagesCategoryWise.makeup}
-        contentSide="right"
-      />
-      <LandingCarousel
-        title="Top Makeup Artists"
-        subtitle="Look your best with top makeup artists"
-        items={sections.makeup.data}
-        isLoading={sections.makeup.loading}
-        icon={PersonStanding}
-        accentColor="#ec4899"
-      />
-      <HowItWorksSection />
-      <CarouselHeader
-        title={`${activeCategory} Featured Vendors.`}
-        description={`Find the best ${activeCategory.toLowerCase()} vendors that will bring your vision to life and keep things running smoothly.`}
-        buttonText={`Explore ${activeCategory} Vendors`}
-        buttonLink={`/vendors/marketplace?featured=true`}
-        imageSrc={carouselHeaderImagesCategoryWise.featured}
-        contentSide="left"
-      />
-      <LandingCarousel
-        title="Featured Vendors"
-        subtitle="Look your best with top vendors in every category"
-        items={sections.featured.data}
-        isLoading={sections.featured.loading}
-        icon={PersonStanding}
-        accentColor="#ec4899"
-      />
-      <VendorsCatSection />
+      {/* Dynamic Category-Based Carousels */}
+      {currentSectionKeys.includes("planners") && (
+        <>
+          {renderCarouselHeader("planners", "left")}
+          {renderCarouselSection("planners", PersonStanding, "#ec4899")}
+        </>
+      )}
+
+      {currentSectionKeys.includes("photographers") && (
+        <>
+          {renderCarouselHeader("photographers", "right")}
+          {renderCarouselSection("photographers", Camera, "#ec4899")}
+        </>
+      )}
+
+      {/* Cards With Banner - Only for certain categories */}
+      {(activeCategory === "Events" || activeCategory === "Wedding") && (
+        <CardsWithBanner
+          heading="Top Categories For You ..."
+          contentSide="right"
+          backgroundImage={carouselHeaderImagesCategoryWise.cardsWithBanner1}
+          cards={cardsData1}
+        />
+      )}
+
+      {currentSectionKeys.includes("venues") && (
+        <>
+          {renderCarouselHeader("venues", "left")}
+          {renderCarouselSection("venues", MapPin, "#ec4899")}
+        </>
+      )}
+
+      {currentSectionKeys.includes("makeup") && (
+        <>
+          {renderCarouselHeader("makeup", "right")}
+          {renderCarouselSection("makeup", PersonStanding, "#ec4899")}
+        </>
+      )}
+
+      {/* Birthday-specific sections */}
+      {currentSectionKeys.includes("cakes") && (
+        <>
+          {renderCarouselHeader("cakes", "left")}
+          {renderCarouselSection("cakes", PersonStanding, "#ec4899")}
+        </>
+      )}
+
+      {currentSectionKeys.includes("decorators") && (
+        <>
+          {renderCarouselHeader("decorators", "right")}
+          {renderCarouselSection("decorators", PersonStanding, "#ec4899")}
+        </>
+      )}
+
+      {currentSectionKeys.includes("entertainment") && (
+        <>
+          {renderCarouselHeader("entertainment", "left")}
+          {renderCarouselSection("entertainment", PersonStanding, "#ec4899")}
+        </>
+      )}
+
+      {/* Anniversary-specific sections */}
+      {currentSectionKeys.includes("florists") && (
+        <>
+          {renderCarouselHeader("florists", "right")}
+          {renderCarouselSection("florists", PersonStanding, "#ec4899")}
+        </>
+      )}
+
+      {currentSectionKeys.includes("mehendi") && (
+        <>
+          {renderCarouselHeader("mehendi", "left")}
+          {renderCarouselSection("mehendi", PersonStanding, "#ec4899")}
+        </>
+      )}
+
+      {currentSectionKeys.includes("dhol") && (
+        <>
+          {renderCarouselHeader("dhol", "right")}
+          {renderCarouselSection("dhol", PersonStanding, "#ec4899")}
+        </>
+      )}
+
+      {currentSectionKeys.includes("catering") && (
+        <>
+          {renderCarouselHeader("catering", "right")}
+          {renderCarouselSection("catering", PersonStanding, "#ec4899")}
+        </>
+      )}
+
+      {currentSectionKeys.includes("djs") && (
+        <>
+          {renderCarouselHeader("djs", "left")}
+          {renderCarouselSection("djs", PersonStanding, "#ec4899")}
+        </>
+      )}
+
+      {currentSectionKeys.includes("invitations") && (
+        <>
+          {renderCarouselHeader("invitations", "right")}
+          {renderCarouselSection("invitations", PersonStanding, "#ec4899")}
+        </>
+      )}
+
+      {currentSectionKeys.includes("dhol") && (
+        <>
+          {renderCarouselHeader("dhol", "left")}
+          {renderCarouselSection("dhol", PersonStanding, "#ec4899")}
+        </>
+      )}
+
+      <HowItWorksSection buttonColor={currentTheme?.gradientLight || "#ec4899"} />
+
+      {/* Featured Section - Available in all categories */}
+      {currentSectionKeys.includes("featured") && (
+        <>
+          {renderCarouselHeader("featured", "left")}
+          {renderCarouselSection("featured", PersonStanding, "#ec4899")}
+        </>
+      )}
+
+      <VendorsCatSection buttonColor={currentTheme?.gradientLight || "#ec4899"} />
       <ServicesBanner />
       <Testimonials />
     </main>

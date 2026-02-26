@@ -92,7 +92,7 @@ const STEPS = [
   },
 ];
 
-export default function HowItWorksSection() {
+export default function HowItWorksSection({buttonColor}) {
   const [activeStep, setActiveStep] = useState(0);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const stepRefs = useRef([]);
@@ -155,7 +155,7 @@ export default function HowItWorksSection() {
                   >
                     <div className="flex items-start gap-4 sm:gap-6">
                       <motion.div
-                        className="relative z-10 flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg border-4"
+                        className={`relative z-10 flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg border-4 ${buttonColor}`}
                         animate={{
                           borderColor: isActive
                             ? isDarkMode
@@ -164,13 +164,6 @@ export default function HowItWorksSection() {
                             : isDarkMode
                               ? "#374151"
                               : "#F3F4F6",
-                          backgroundColor: isActive
-                            ? isDarkMode
-                              ? "#D97706"
-                              : "#F59E0B"
-                            : isDarkMode
-                              ? "#1F2937"
-                              : "#FFFFFF",
                           color: isActive
                             ? "#FFFFFF"
                             : isDarkMode

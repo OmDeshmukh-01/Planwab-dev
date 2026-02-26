@@ -9,6 +9,7 @@ export default function CarouselHeader({
   description = "Section description goes here.",
   buttonText = "View more",
   buttonLink = "#",
+  buttonColor,
   imageSrc,
   imageAlt = "banner image",
   contentSide = "left", // left | right
@@ -46,7 +47,7 @@ export default function CarouselHeader({
 
             <a
               href={buttonLink}
-              className="inline-block w-full text-center mt-5 bg-red-500 hover:bg-red-600 text-white font-medium px-5 py-3 rounded-lg transition"
+              className={`inline-block w-full text-center mt-5 ${buttonColor} hover:${buttonColor.replace("500", "600")} text-white font-medium px-5 py-3 rounded-lg transition`}
             >
               {buttonText}
             </a>
