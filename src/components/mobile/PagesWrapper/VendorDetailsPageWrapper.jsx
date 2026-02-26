@@ -781,7 +781,7 @@ const VendorCard = memo(({ item, type = "horizontal" }) => {
             </p>
             <div className="mt-2 flex items-center justify-between">
               <p className="text-blue-600 dark:text-blue-400 font-black text-sm">
-                ₹{item.perDayPrice?.min?.toLocaleString("en-IN") || item.basePrice?.toLocaleString("en-IN") || "N/A"}
+                ₹{(item.perDayPrice?.min ?? item.basePrice)?.toLocaleString("en-IN") || "N/A"}
               </p>
               <span className="text-[9px] text-gray-400 font-bold uppercase bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">
                 /{item.priceUnit || "day"}

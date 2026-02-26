@@ -17,10 +17,12 @@ import {
   Star,
   Users,
   Heart,
+  ImageIcon,
   X,
   Search,
   Sparkles,
   TrendingUp,
+  Award,
   ChevronLeft,
   ChevronRight,
   DollarSign,
@@ -964,76 +966,97 @@ const CartPreview = memo(({ colorPrimary }) => {
 });
 CartPreview.displayName = "CartPreview";
 
-const PromoCarousel = memo(({ colorPrimary, colorSecondary }) => {
+const VendorProfilesCarousel = memo(({ colorPrimary, colorSecondary,selectedCategories = [],
+  selectedSubcategory = "",
+  selectedLocations = [],
+  priceRange = [0, 1000000],
+  sortBy = "trust",
+  sortOrder = "desc",
+  ratingFilter = 0,
+  showFeaturedOnly = false, }) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [copiedCode, setCopiedCode] = useState(null);
-  const [isExpanded, setIsExpanded] = useLocalStorage("mp_promoExpanded", true);
+  const [isExpanded, setIsExpanded] = useLocalStorage("mp_vendorsExpanded", true);
+  const [vendors, setVendors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const haptic = useHapticFeedback();
   const scrollRef = useRef(null);
   const autoScrollRef = useRef(null);
+  const router = useRouter();
 
-  const promos = useMemo(
-    () => [
-      {
-        id: 1,
-        badge: "LIMITED TIME",
-        title: "20% Off Venue Booking",
-        subtitle: "Book your dream venue today",
-        code: "PLANWAB20",
-        gradient: `linear-gradient(135deg, ${colorPrimary}, #1e40af)`,
-        icon: Building,
-        validUntil: "Dec 31",
-      },
-      {
-        id: 2,
-        badge: "EXCLUSIVE",
-        title: "Free Pre-Wedding Shoot",
-        subtitle: "With any photography package",
-        code: "FREESHOOT",
-        gradient: "linear-gradient(135deg, #ec4899, #be185d)",
-        icon: Camera,
-        validUntil: "Jan 15",
-      },
-      {
-        id: 3,
-        badge: "FLASH SALE",
-        title: "₹5000 Off Catering",
-        subtitle: "Min. order ₹50,000",
-        code: "FEAST5K",
-        gradient: `linear-gradient(135deg, ${colorSecondary}, #b45309)`,
-        icon: Utensils,
-        validUntil: "Dec 25",
-      },
-      {
-        id: 4,
-        badge: "NEW USER",
-        title: "First Booking Bonus",
-        subtitle: "Extra 10% cashback",
-        code: "WELCOME10",
-        gradient: "linear-gradient(135deg, #10b981, #047857)",
-        icon: Gift,
-        validUntil: "Ongoing",
-      },
-    ],
-    [colorPrimary, colorSecondary],
-  );
+  useEffect(() => {
+    const fetchVendorProfiles = async () => {
+      try {
+        setLoading(true);
+        setError(null);
 
-  const handleCopyCode = useCallback(
-    async (code, e) => {
-      e.stopPropagation();
-      haptic("success");
-      const success = await copyToClipboard(code);
-      if (success) {
-        setCopiedCode(code);
-        setTimeout(() => setCopiedCode(null), 2000);
+        // ✅ ADD: Build query params with filters
+        const queryParams = new URLSearchParams({
+          sortBy: sortBy,
+          sortOrder: sortOrder,
+          page: "1",
+          limit: "20",
+        });
+
+        // ✅ ADD: Apply marketplace filters
+        if (selectedCategories.length > 0) {
+          queryParams.set("categories", selectedCategories.join(","));
+        }
+        if (selectedSubcategory) {
+          queryParams.set("subcategory", selectedSubcategory);
+        }
+        if (selectedLocations.length > 0) {
+          queryParams.set("cities", selectedLocations.join(","));
+        }
+        if (priceRange[0] > 0) {
+          queryParams.set("minPrice", priceRange[0].toString());
+        }
+        if (priceRange[1] < 1000000) {
+          queryParams.set("maxPrice", priceRange[1].toString());
+        }
+        if (ratingFilter > 0) {
+          queryParams.set("minRating", ratingFilter.toString());
+        }
+        if (showFeaturedOnly) {
+          queryParams.set("featured", "true");
+        }
+
+        const response = await fetch(`/api/vendor/profile/lists?${queryParams.toString()}`);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+
+        if (result.success && Array.isArray(result.data)) {
+          setVendors(result.data);
+        } else {
+          throw new Error(result.message || "Failed to fetch vendor profiles");
+        }
+      } catch (err) {
+        console.error("Error fetching vendor profiles:", err);
+        setError(err.message || "Failed to load vendors");
+      } finally {
+        setLoading(false);
       }
-    },
-    [haptic],
-  );
+    };
+
+    fetchVendorProfiles();
+  }, [
+    selectedCategories,
+    selectedSubcategory,
+    selectedLocations,
+    priceRange,
+    sortBy,
+    sortOrder,
+    ratingFilter,
+    showFeaturedOnly,
+  ]);
 
   const scrollToIndex = useCallback((index) => {
     if (scrollRef.current) {
-      const cardWidth = scrollRef.current.offsetWidth * 0.82 + 12;
+      const cardWidth = 100 + 16; // 100px width + 16px gap
       scrollRef.current.scrollTo({ left: index * cardWidth, behavior: "smooth" });
     }
   }, []);
@@ -1041,35 +1064,113 @@ const PromoCarousel = memo(({ colorPrimary, colorSecondary }) => {
   const handleScroll = useCallback((e) => {
     const target = e.target;
     const scrollLeft = target.scrollLeft;
-    const cardWidth = target.offsetWidth * 0.82 + 12;
+    const cardWidth = 100 + 16;
     const newIndex = Math.round(scrollLeft / cardWidth);
-    setActiveIndex(Math.min(newIndex, 3));
-  }, []);
+    setActiveIndex(Math.min(newIndex, vendors.length - 1));
+  }, [vendors.length]);
 
-  useEffect(() => {
-    autoScrollRef.current = setInterval(() => {
-      const nextIndex = (activeIndex + 1) % promos.length;
-      scrollToIndex(nextIndex);
-    }, 4000);
-    return () => {
-      if (autoScrollRef.current) clearInterval(autoScrollRef.current);
-    };
-  }, [activeIndex, promos.length, scrollToIndex]);
+  const handleVendorClick = useCallback((vendor) => {
+    haptic("medium");
+   if (vendor?.vendorId) {
+      router.push(`/vendor/${vendor.category}/${vendor.vendorId}/profile`);
+    } else {
+      router.push(`/vendor/${vendor.category}/profile/${vendor.username}`);
+    }
+  }, [haptic, router]);
+
+  // Auto-scroll effect
+  // useEffect(() => {
+  //   if (!loading && vendors.length > 0 && isExpanded) {
+  //     autoScrollRef.current = setInterval(() => {
+  //       const nextIndex = (activeIndex + 1) % Math.min(vendors.length, 10);
+  //       scrollToIndex(nextIndex);
+  //     }, 4000);
+  //   }
+
+  //   return () => {
+  //     if (autoScrollRef.current) clearInterval(autoScrollRef.current);
+  //   };
+  // }, [activeIndex, vendors.length, scrollToIndex, loading, isExpanded]);
+
+  const getTrustBadgeColor = (trust) => {
+    if (trust >= 80) return "bg-green-500";
+    if (trust >= 60) return "bg-blue-500";
+    if (trust >= 40) return "bg-yellow-500";
+    return "bg-gray-400";
+  };
+
+  const formatCategory = (category) => {
+    return category
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
+  const LoadingSkeleton = () => (
+    <div className="flex gap-4 overflow-hidden">
+      {[...Array(8)].map((_, idx) => (
+        <div key={idx} className="flex flex-col items-center gap-2 min-w-[100px]">
+          <div className="w-[100px] h-[100px] rounded-full bg-gray-200 animate-pulse" />
+          <div className="h-3 w-20 bg-gray-200 rounded animate-pulse" />
+          <div className="h-2 w-16 bg-gray-200 rounded animate-pulse" />
+        </div>
+      ))}
+    </div>
+  );
+
+  const ErrorState = () => (
+    <div className="flex flex-col items-center justify-center py-8 px-4">
+      <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center mb-3">
+        <AlertCircle size={32} className="text-red-500" />
+      </div>
+      <p className="text-sm font-medium text-gray-900 mb-1">Unable to Load Vendors</p>
+      <p className="text-xs text-gray-500 text-center mb-4">{error}</p>
+      <motion.button
+        whileTap={{ scale: 0.95 }}
+        onClick={() => window.location.reload()}
+        className="px-4 py-2 text-xs font-medium text-white rounded-lg"
+        style={{ backgroundColor: colorPrimary }}
+      >
+        Retry
+      </motion.button>
+    </div>
+  );
+
+  const EmptyState = () => (
+    <div className="flex flex-col items-center justify-center py-8 px-4">
+      <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+        <Users size={32} className="text-gray-400" />
+      </div>
+      <p className="text-sm font-medium text-gray-900 mb-1">No Vendors Found</p>
+      <p className="text-xs text-gray-500 text-center">Check back later for trusted vendors</p>
+    </div>
+  );
 
   return (
-    <section className="mb-6" aria-label="Promotional offers">
+    <section className="mb-2" aria-label="Top trusted vendor profiles">
       <div className="flex items-center justify-between px-1 mb-3">
         <h2 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-          <motion.div
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
-            className="w-6 h-6 rounded-lg flex items-center justify-center"
-            style={{ backgroundColor: `${colorPrimary}15` }}
-          >
-            <Tag size={14} style={{ color: colorPrimary }} />
-          </motion.div>
-          Exclusive Deals
-        </h2>
+  <motion.div
+    animate={{ scale: [1, 1.1, 1] }}
+    transition={{ duration: 2, repeat: Infinity, repeatDelay: 3 }}
+    className="w-6 h-6 rounded-lg flex items-center justify-center"
+    style={{ backgroundColor: `${colorPrimary}15` }}
+  >
+    <Award size={14} style={{ color: colorPrimary }} />
+  </motion.div>
+  Most Trusted Vendors
+  {!loading && vendors.length > 0 && (
+    <span className="text-[10px] font-normal text-gray-500 px-2 py-0.5 bg-gray-100 rounded-full">
+      {vendors.length}
+    </span>
+  )}
+  {/* ✅ ADD: Show filter indicator */}
+  {(selectedCategories.length > 0 || selectedLocations.length > 0 || showFeaturedOnly) && (
+    <span className="text-[9px] font-medium px-1.5 py-0.5 rounded-full text-white" style={{ backgroundColor: colorPrimary }}>
+      Filtered
+    </span>
+  )}
+</h2>
 
         <motion.button
           whileTap={{ scale: 0.9 }}
@@ -1078,7 +1179,7 @@ const PromoCarousel = memo(({ colorPrimary, colorSecondary }) => {
             setIsExpanded(!isExpanded);
           }}
           className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors"
-          aria-label={isExpanded ? "Collapse promos" : "Expand promos"}
+          aria-label={isExpanded ? "Collapse vendors" : "Expand vendors"}
         >
           <motion.div animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.3, ease: "easeInOut" }}>
             <ChevronDown size={18} className="text-gray-500" />
@@ -1096,7 +1197,7 @@ const PromoCarousel = memo(({ colorPrimary, colorSecondary }) => {
               transition: {
                 height: {
                   duration: 0.4,
-                  ease: [0.4, 0.0, 0.2, 1], // Custom cubic-bezier for smooth expansion
+                  ease: [0.4, 0.0, 0.2, 1],
                 },
                 opacity: {
                   duration: 0.3,
@@ -1119,85 +1220,160 @@ const PromoCarousel = memo(({ colorPrimary, colorSecondary }) => {
             }}
             className="overflow-hidden"
           >
-            <div
-              ref={scrollRef}
-              onScroll={handleScroll}
-              className="flex gap-3 overflow-x-auto pb-3 snap-x snap-mandatory scrollbar-hide"
-              style={{ scrollbarWidth: "none" }}
-            >
-              {promos.map((promo, index) => {
-                const IconComponent = promo.icon;
-                return (
-                  <motion.div
-                    key={promo.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.3 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="min-w-[82%] h-36 rounded-2xl relative overflow-hidden snap-start cursor-pointer shadow-lg"
-                    style={{ background: promo.gradient }}
-                  >
-                    <div className="absolute right-[-40px] bottom-[-40px] w-40 h-40 bg-white/10 rounded-full" />
-                    <div className="absolute left-[-30px] top-[-30px] w-32 h-32 bg-white/5 rounded-full" />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-10">
-                      <IconComponent size={80} strokeWidth={1} />
-                    </div>
-
-                    <div className="absolute inset-0 p-4 flex flex-col justify-between text-white">
-                      <div className="flex items-start justify-between">
-                        <span className="px-2 py-1 bg-white/25 backdrop-blur-sm rounded-lg text-[10px] font-bold uppercase tracking-wider">
-                          {promo.badge}
-                        </span>
-                        <span className="text-[10px] opacity-80 flex items-center gap-1">
-                          <Clock size={10} />
-                          Until {promo.validUntil}
-                        </span>
-                      </div>
-
-                      <div>
-                        <h3 className="font-bold text-lg leading-tight mb-0.5">{promo.title}</h3>
-                        <p className="text-xs opacity-90 mb-2">{promo.subtitle}</p>
-
-                        <motion.button
-                          whileTap={{ scale: 0.95 }}
-                          onClick={(e) => handleCopyCode(promo.code, e)}
-                          className="flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-lg text-xs font-bold transition-all hover:bg-white/30"
+            {loading ? (
+              <LoadingSkeleton />
+            ) : error ? (
+              <ErrorState />
+            ) : vendors.length === 0 ? (
+              <EmptyState />
+            ) : (
+              <>
+                <div
+                  ref={scrollRef}
+                  onScroll={handleScroll}
+                  className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide"
+                  style={{ scrollbarWidth: "none" }}
+                >
+                  {vendors.map((vendor, index) => (
+                    <motion.div
+                      key={vendor._id}
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: index * 0.05, duration: 0.3 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleVendorClick(vendor)}
+                      className="flex flex-col items-center gap-2 min-w-[100px] snap-start cursor-pointer group"
+                    >
+                      {/* Profile Picture Container */}
+                      <div className="relative">
+                        {/* Trust Badge */}
+                        <div
+                          className={`absolute -top-1 -right-1 w-8 h-8 rounded-full ${getTrustBadgeColor(vendor.trust)} flex items-center justify-center z-10 shadow-lg border-2 border-white`}
                         >
-                          <span className="font-mono tracking-wider">{promo.code}</span>
-                          {copiedCode === promo.code ? (
-                            <Check size={12} className="text-green-300" />
-                          ) : (
-                            <Copy size={12} className="opacity-70" />
-                          )}
-                        </motion.button>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
+                          <span className="text-[10px] font-bold text-white">{vendor.trust}</span>
+                        </div>
 
-            <div className="flex justify-center gap-1.5 mt-3">
-              {promos.map((_, idx) => (
-                <motion.button
-                  key={idx}
-                  onClick={() => scrollToIndex(idx)}
-                  animate={{
-                    width: idx === activeIndex ? 16 : 6,
-                    backgroundColor: idx === activeIndex ? colorPrimary : COLORS.gray[300],
+                        {/* Profile Image */}
+                        <div className="w-[100px] h-[100px] rounded-full overflow-hidden border-3 border-gray-200 shadow-md group-hover:shadow-xl transition-shadow duration-300">
+                          {vendor.vendorAvatar ? (
+                            <img
+                              src={vendor.vendorAvatar}
+                              alt={vendor.vendorBusinessName}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                              loading="lazy"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "/placeholder-avatar.png";
+                              }}
+                            />
+                          ) : (
+                            <div
+                              className="w-full h-full flex items-center justify-center text-white text-2xl font-bold"
+                              style={{ backgroundColor: colorPrimary }}
+                            >
+                              {vendor.vendorBusinessName?.charAt(0).toUpperCase() || "V"}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Verified Badge */}
+                        {vendor.trust >= 70 && (
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            transition={{ delay: 0.2 + index * 0.05 }}
+                            className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-blue-500 rounded-full p-1 shadow-lg border-2 border-white"
+                          >
+                            <BadgeCheck size={14} className="text-white" />
+                          </motion.div>
+                        )}
+                      </div>
+
+                      {/* Vendor Info */}
+                      <div className="flex flex-col items-center gap-0.5 w-full px-1">
+                        <h3 className="text-xs font-semibold text-gray-900 text-center line-clamp-1 w-full group-hover:text-blue-600 transition-colors">
+                          {vendor.vendorBusinessName}
+                        </h3>
+
+                        <div className="flex items-center gap-1">
+                          <span className="text-[10px] text-gray-500 capitalize">
+                            {formatCategory(vendor.category)}
+                          </span>
+                        </div>
+
+                        {vendor.location?.city && (
+                          <div className="flex items-center gap-0.5 text-[9px] text-gray-400">
+                            <MapPin size={8} />
+                            <span className="line-clamp-1">{vendor.location.city}</span>
+                          </div>
+                        )}
+
+                        {/* Stats */}
+                        <div className="flex items-center gap-2 mt-1">
+                          {vendor.likesCount > 0 && (
+                            <div className="flex items-center gap-0.5 text-[9px] text-gray-500">
+                              <Heart size={9} fill="currentColor" />
+                              <span>{vendor.likesCount > 999 ? `${(vendor.likesCount / 1000).toFixed(1)}k` : vendor.likesCount}</span>
+                            </div>
+                          )}
+
+                          {vendor.postsCount > 0 && (
+                            <div className="flex items-center gap-0.5 text-[9px] text-gray-500">
+                              <ImageIcon size={9} />
+                              <span>{vendor.postsCount}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Pagination Dots */}
+                {/* {vendors.length > 5 && (
+                  <div className="flex justify-center gap-1.5">
+                    {vendors.slice(0, 10).map((_, idx) => (
+                      <motion.button
+                        key={idx}
+                        onClick={() => scrollToIndex(idx)}
+                        animate={{
+                          width: idx === activeIndex ? 16 : 6,
+                          backgroundColor: idx === activeIndex ? colorPrimary : COLORS.gray[300],
+                        }}
+                        transition={{ duration: 0.3 }}
+                        className="h-1.5 rounded-full"
+                        aria-label={`Go to vendor ${idx + 1}`}
+                      />
+                    ))}
+                  </div>
+                )} */}
+
+                {/* View All Button */}
+                {/* <motion.button
+                  whileTap={{ scale: 0.98 }}
+                  onClick={() => {
+                    haptic("medium");
+                    router.push("/vendors?sortBy=trust");
                   }}
-                  transition={{ duration: 0.3 }}
-                  className="h-1.5 rounded-full"
-                />
-              ))}
-            </div>
+                  className="w-full mt-4 py-2.5 rounded-xl border-2 text-sm font-semibold transition-all hover:shadow-md"
+                  style={{
+                    borderColor: colorPrimary,
+                    color: colorPrimary,
+                  }}
+                >
+                  View All Trusted Vendors
+                  <ChevronRight size={16} className="inline-block ml-1" />
+                </motion.button> */}
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
     </section>
   );
 });
-PromoCarousel.displayName = "PromoCarousel";
+
+VendorProfilesCarousel.displayName = "VendorProfilesCarousel";
 
 const CategoryChips = memo(({ selectedCategories, onCategoryChange, colorPrimary }) => {
   const haptic = useHapticFeedback();
@@ -4116,7 +4292,18 @@ export default function MarketplacePageWrapper() {
           />
         </AnimatePresence>
 
-        <PromoCarousel colorPrimary={COLORS.primary} colorSecondary={COLORS.secondary} />
+        <VendorProfilesCarousel 
+  colorPrimary={COLORS.primary} 
+  colorSecondary={COLORS.secondary}
+  selectedCategories={selectedCategories}
+  selectedSubcategory={selectedSubcategory}
+  selectedLocations={selectedLocations}
+  priceRange={priceRange}
+  sortBy={sortBy}
+  sortOrder={sortOrder}
+  ratingFilter={ratingFilter}
+  showFeaturedOnly={showFeaturedOnly}
+/>
 
         <CategoryChips
           selectedCategories={selectedCategories}
