@@ -4,8 +4,12 @@ import { useState } from 'react';
 import { User, Lock, Bell, Sun, Moon, Monitor, Upload, Mail } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useClerk, useUser } from '@clerk/nextjs';
 
 export default function SettingsPage() {
+    const { openUserProfile } = useClerk();
+    const { user } = useUser();
+
     return (
         <div className="space-y-8 max-w-4xl mx-auto">
             <div>
@@ -27,32 +31,16 @@ export default function SettingsPage() {
                         </button>
                     </div>
                     <div>
-                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">Admin User</h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">admin@planwab.com</p>
+                        <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">{user?.fullName || "Admin User"}</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{user?.primaryEmailAddress?.emailAddress || "admin@planwab.com"}</p>
                     </div>
                 </div>
-                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-                    <InputField label="Full Name" id="full-name" icon={User} defaultValue="Admin User" />
-                    <InputField label="Email Address" id="email" icon={Mail} defaultValue="admin@planwab.com" disabled />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <InputField label="Full Name" id="full-name" icon={User} defaultValue={user?.fullName || "Admin User"} disabled />
+                    <InputField label="Email Address" id="email" icon={Mail} defaultValue={user?.primaryEmailAddress?.emailAddress || "admin@planwab.com"} disabled />
                 </div>
                 <div className="flex justify-end mt-4">
-                    <button className="bg-indigo-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-indigo-700 text-sm">Update Profile</button>
-                </div>
-            </SettingsCard>
-
-            {/* Security Settings */}
-            <SettingsCard
-                icon={Lock}
-                title="Security"
-                description="Change your password to keep your account secure."
-            >
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <InputField label="Current Password" id="current-password" type="password" />
-                    <InputField label="New Password" id="new-password" type="password" />
-                    <InputField label="Confirm New Password" id="confirm-password" type="password" />
-                </div>
-                 <div className="flex justify-end mt-4">
-                    <button className="bg-indigo-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-indigo-700 text-sm">Change Password</button>
+                    <button onClick={() => openUserProfile()} className="bg-indigo-600 text-white px-5 py-2 rounded-lg font-semibold hover:bg-indigo-700 text-sm">Update Profile</button>
                 </div>
             </SettingsCard>
 
@@ -70,8 +58,8 @@ export default function SettingsPage() {
                 </div>
             </SettingsCard>
 
-             {/* Appearance Card */}
-             <AppearanceCard />
+            {/* Appearance Card */}
+            <AppearanceCard />
         </div>
     );
 }
