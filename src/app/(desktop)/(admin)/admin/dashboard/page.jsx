@@ -6,6 +6,11 @@ import {
   ShoppingCart, SendHorizontal, Cake, CalendarCheck, Megaphone
 } from "lucide-react";
 import { useState, useEffect } from "react";
+import { VendorCategoriesChart } from "@/components/desktop/ui/Charts/VendorCategoriesChart";
+import { OrdersEventsChart } from "@/components/desktop/ui/Charts/OrdersEventsChart";
+import { BirthdayBookingChart } from "@/components/desktop/ui/Charts/BirthdayBookingChart";
+import { LeadsChart } from "@/components/desktop/ui/Charts/LeadsChart";
+import { VendorContactRequestsChart } from "@/components/desktop/ui/Charts/VendorContactRequestsChart";
 
 export default function DashboardPage() {
   const [stats, setStats] = useState({
@@ -19,6 +24,7 @@ export default function DashboardPage() {
     totalBirthdayRequests: 0,
     totalBookingRequests: 0,
     totalLeadsRequests: 0,
+    totalContactRequests: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -104,11 +110,26 @@ export default function DashboardPage() {
           icon={Megaphone}
           loading={loading}
         />
+        <DashboardStatsCard
+          title="Contact Requests"
+          value={stats.totalContactRequests}
+          icon={Megaphone}
+          loading={loading}
+        />
       </div>
 
-      <div className="mt-8 bg-white dark:bg-gray-800/50 p-6 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-        <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-200">Recent Activity</h2>
-        <p className="mt-2 text-gray-500 dark:text-gray-400">Activity feed will be displayed here.</p>
+      <div className="mt-8 mb-6">
+        <OrdersEventsChart />
+      </div>
+
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <VendorCategoriesChart />
+        <LeadsChart />
+      </div>
+
+      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+        <BirthdayBookingChart />
+        <VendorContactRequestsChart />
       </div>
     </div>
   );
