@@ -31,7 +31,7 @@ export const categoryThemes = {
     buttonBg: "bg-violet-600 hover:bg-violet-700",
     buttonGlow: "shadow-violet-500/30",
     dotBg: "bg-violet-500",
-    bgLight: "bg-gradient-to-bl from-[#ffe4e6] to-[#ccfbf1] dark:bg-[#0d1117]",
+    bgLight: "bg-gradient-to-bl from-[#ffe4e680] to-[#1b13651A] dark:bg-[#0d1117]",
   },
   Wedding: {
     glow: "bg-rose-500/10 dark:bg-rose-500/20",
@@ -45,7 +45,7 @@ export const categoryThemes = {
     buttonBg: "bg-rose-600 hover:bg-rose-700",
     buttonGlow: "shadow-rose-500/30",
     dotBg: "bg-rose-500",
-    bgLight: "bg-gradient-to-bl from-[#fef3c7] to-[#d1fae5]",
+    bgLight: "bg-gradient-to-bl from-[#09566f1A] to-[#fef3c780]",
   },
   Anniversary: {
     glow: "bg-amber-500/10 dark:bg-amber-500/20",
@@ -59,7 +59,7 @@ export const categoryThemes = {
     buttonBg: "bg-amber-600 hover:bg-amber-700",
     buttonGlow: "shadow-amber-500/30",
     dotBg: "bg-amber-500",
-    bgLight: "bg-gradient-to-bl from-[#fbcfe8] to-[#a7f3d0]",
+    bgLight: "bg-gradient-to-bl from-[#fbcfe880] to-[#74001d1A]",
   },
   Birthday: {
     glow: "bg-sky-500/10 dark:bg-sky-500/20",
@@ -73,7 +73,7 @@ export const categoryThemes = {
     buttonBg: "bg-sky-600 hover:bg-sky-700",
     buttonGlow: "shadow-sky-500/30",
     dotBg: "bg-sky-500",
-    bgLight: "bg-gradient-to-bl from-[#fff1f2] to-[#ccfbf1]",
+    bgLight: "bg-gradient-to-bl from-[#96730e1A] to-[#fff1f280]",
   },
 };
 
@@ -353,7 +353,7 @@ const CATEGORY_SECTIONS_CONFIG = {
       subtitle: "Capture the joy and excitement",
     },
     venues: {
-      query: "categories=venues&sortBy=rating&limit=12&sortOrder=desc&page=4",
+      query: "categories=venues&sortBy=rating&limit=12&sortOrder=desc&page=2",
       title: "Birthday Party Venues",
       subtitle: "Fun spaces for every age",
     },
@@ -368,7 +368,7 @@ const CATEGORY_SECTIONS_CONFIG = {
     //   subtitle: "Themed decorations that delight",
     // },
     catering: {
-      query: "categories=catering&sortBy=rating&limit=12&sortOrder=desc&page=4",
+      query: "categories=catering&sortBy=rating&limit=12&sortOrder=desc&page=1",
       title: "Party Caterers",
       subtitle: "Delicious food for all ages",
     },

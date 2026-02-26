@@ -14,6 +14,7 @@ import {
 } from "framer-motion";
 import {
   ArrowLeft,
+  ArrowRight,
   Share2,
   MoreVertical,
   Download,
@@ -6931,38 +6932,52 @@ const SocialLinksSection = memo(({ socialLinks }) => {
 });
 SocialLinksSection.displayName = "SocialLinksSection";
 
-const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirmed }) => {
-  const [selectedService, setSelectedService] = useState(null);
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedSlot, setSelectedSlot] = useState("");
-  const [step, setStep] = useState(1);
-  const [isBooking, setIsBooking] = useState(false);
-  const [bookingSuccess, setBookingSuccess] = useState(false);
+const BookingDrawer = ({ isOpen, onClose, vendorName }) => {
+  const router = useRouter();
   useBodyScrollLock(isOpen);
 
-  const handleBook = async () => {
-    if (selectedService && selectedDate && selectedSlot) {
-      setIsBooking(true);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setIsBooking(false);
-      setBookingSuccess(true);
-      onBookingConfirmed?.({
-        service: selectedService,
-        date: selectedDate,
-        slot: selectedSlot,
-      });
-    }
+  const eventTypes = [
+    {
+      id: "wedding",
+      name: "Wedding",
+      icon: "💍",
+      description: "Plan your dream wedding",
+      gradient: "from-pink-500 to-rose-600",
+      route: "/plan-my-event/wedding",
+    },
+    {
+      id: "anniversary",
+      name: "Anniversary",
+      icon: "💝",
+      description: "Celebrate your special day",
+      gradient: "from-purple-500 to-pink-600",
+      route: "/plan-my-event/anniversary",
+    },
+    {
+      id: "birthday",
+      name: "Birthday",
+      icon: "🎂",
+      description: "Make it unforgettable",
+      gradient: "from-blue-500 to-cyan-600",
+      route: "/plan-my-event/birthday",
+    },
+    {
+      id: "corporate",
+      name: "Corporate Event",
+      icon: "🏢",
+      description: "Professional event planning",
+      gradient: "from-indigo-500 to-blue-600",
+      route: "/plan-my-event/corporate",
+    },
+  ];
+
+  const handleEventSelect = (route) => {
+    router.push(route);
+    onClose();
   };
 
   const resetAndClose = () => {
     onClose();
-    setTimeout(() => {
-      setStep(1);
-      setSelectedService(null);
-      setSelectedDate("");
-      setSelectedSlot("");
-      setBookingSuccess(false);
-    }, 300);
   };
 
   if (!isOpen) return null;
@@ -6987,233 +7002,98 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
         onDragEnd={(_, info) => {
           if (info.offset.y > 100) resetAndClose();
         }}
-        className="absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-900 rounded-t-[32px] max-h-[92vh] overflow-hidden shadow-2xl"
+        className="absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-900 rounded-t-[32px] max-h-[85vh] overflow-hidden shadow-2xl"
       >
+        {/* Header */}
         <div className="sticky top-0 bg-white dark:bg-gray-900 px-5 pt-3 pb-4 border-b border-gray-100 dark:border-gray-800">
           <div className="w-10 h-1 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto mb-4" />
-          {bookingSuccess ? (
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Booking Confirmed!</h3>
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                Plan Your Event
+              </h3>
+              <p className="text-sm text-gray-500 mt-1">
+                Choose your event type to get started
+              </p>
             </div>
-          ) : (
-            <>
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">Book {vendorName}</h3>
-                  <p className="text-sm text-gray-500 mt-1">Step {step} of 3</p>
-                </div>
-                <motion.button
-                  whileTap={{ scale: 0.9 }}
-                  onClick={resetAndClose}
-                  className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full"
-                >
-                  <X size={20} className="text-gray-500" />
-                </motion.button>
-              </div>
-              <div className="flex gap-2 mt-4">
-                {[1, 2, 3].map((s) => (
-                  <motion.div
-                    key={s}
-                    animate={{ scaleX: s <= step ? 1 : 0.5 }}
-                    className={`flex-1 h-1.5 rounded-full transition-colors ${
-                      s <= step ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-gray-200 dark:bg-gray-700"
-                    }`}
-                  />
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="overflow-y-auto max-h-[calc(92vh-200px)] p-5">
-          <AnimatePresence mode="wait">
-            {bookingSuccess ? (
-              <motion.div
-                key="success"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="text-center py-8"
-              >
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 300, delay: 0.2 }}
-                  className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-600 flex items-center justify-center shadow-2xl shadow-green-500/30"
-                >
-                  <Check size={48} className="text-white" />
-                </motion.div>
-                <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-2">You're All Set!</h4>
-                <p className="text-gray-500 mb-6">Your booking has been confirmed</p>
-                <div className="p-5 rounded-2xl bg-gray-50 dark:bg-gray-800 text-left space-y-3 mb-6">
-                  {[
-                    { label: "Service", value: selectedService?.name },
-                    { label: "Date", value: selectedDate },
-                    { label: "Time", value: selectedSlot },
-                  ].map((item) => (
-                    <div key={item.label} className="flex justify-between">
-                      <span className="text-gray-500">{item.label}</span>
-                      <span className="font-semibold text-gray-900 dark:text-white">{item.value}</span>
-                    </div>
-                  ))}
-                </div>
-                <motion.button
-                  whileTap={{ scale: 0.95 }}
-                  onClick={resetAndClose}
-                  className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl font-bold text-white"
-                >
-                  Done
-                </motion.button>
-              </motion.div>
-            ) : step === 1 ? (
-              <motion.div
-                key="step1"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-3"
-              >
-                <h4 className="font-bold text-gray-900 dark:text-white mb-4">Select a Service</h4>
-                {services.map((service) => (
-                  <motion.button
-                    key={service.id}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={() => setSelectedService(service)}
-                    className={`w-full p-5 rounded-2xl border-2 transition-all text-left ${
-                      selectedService?.id === service.id
-                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/10"
-                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-gray-900 dark:text-white">{service.name}</span>
-                        {service.popular && (
-                          <span className="px-2 py-0.5 bg-gradient-to-r from-orange-500 to-pink-500 text-white text-[9px] font-bold rounded-full flex items-center gap-1">
-                            <Sparkles size={8} />
-                            POPULAR
-                          </span>
-                        )}
-                      </div>
-                      <span className="font-black text-blue-600 text-lg">{service.price}</span>
-                    </div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{service.description}</p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <Clock size={12} />
-                        {service.duration}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Star size={12} className="text-yellow-500 fill-yellow-500" />
-                        {service.rating}
-                      </span>
-                    </div>
-                  </motion.button>
-                ))}
-              </motion.div>
-            ) : step === 2 ? (
-              <motion.div
-                key="step2"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-5"
-              >
-                <h4 className="font-bold text-gray-900 dark:text-white mb-4">Select Date & Time</h4>
-                {AVAILABILITY_SLOTS.map((day) => (
-                  <div key={day.date} className="space-y-3">
-                    <p className="text-sm font-bold text-gray-700 dark:text-gray-300">{day.date}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {day.slots.map((slot) => (
-                        <motion.button
-                          key={`${day.date}-${slot}`}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => {
-                            setSelectedDate(day.date);
-                            setSelectedSlot(slot);
-                          }}
-                          className={`px-5 py-3 rounded-xl text-sm font-bold transition-all ${
-                            selectedDate === day.date && selectedSlot === slot
-                              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25"
-                              : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
-                          }`}
-                        >
-                          {slot}
-                        </motion.button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </motion.div>
-            ) : (
-              <motion.div
-                key="step3"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                className="space-y-5"
-              >
-                <h4 className="font-bold text-gray-900 dark:text-white mb-4">Confirm Booking</h4>
-                <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-100 dark:border-blue-800 space-y-4">
-                  {[
-                    { label: "Service", value: selectedService?.name },
-                    { label: "Date", value: selectedDate },
-                    { label: "Time", value: selectedSlot },
-                    { label: "Duration", value: selectedService?.duration },
-                  ].map((item) => (
-                    <div key={item.label} className="flex justify-between">
-                      <span className="text-gray-600 dark:text-gray-400">{item.label}</span>
-                      <span className="font-bold text-gray-900 dark:text-white">{item.value}</span>
-                    </div>
-                  ))}
-                  <div className="pt-4 border-t border-blue-200 dark:border-blue-700 flex justify-between items-center">
-                    <span className="font-bold text-gray-900 dark:text-white">Total</span>
-                    <span className="font-black text-2xl text-blue-600">{selectedService?.price}</span>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
-                  <CheckCircle size={20} className="text-green-600 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-green-700 dark:text-green-400">
-                    Free cancellation up to 24 hours before the appointment
-                  </p>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-
-        {!bookingSuccess && (
-          <div className="sticky bottom-0 bg-white dark:bg-gray-900 px-5 py-4 border-t border-gray-100 dark:border-gray-800 flex gap-3">
-            {step > 1 && (
-              <motion.button
-                whileTap={{ scale: 0.95 }}
-                onClick={() => setStep(step - 1)}
-                className="px-6 py-4 bg-gray-100 dark:bg-gray-800 rounded-2xl font-bold text-gray-700 dark:text-gray-300"
-              >
-                Back
-              </motion.button>
-            )}
             <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={() => {
-                if (step < 3) setStep(step + 1);
-                else handleBook();
-              }}
-              disabled={(step === 1 && !selectedService) || (step === 2 && !selectedSlot) || isBooking}
-              className="flex-1 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl font-bold text-white disabled:opacity-50 shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2"
+              whileTap={{ scale: 0.9 }}
+              onClick={resetAndClose}
+              className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full"
             >
-              {isBooking ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Processing...
-                </>
-              ) : step === 3 ? (
-                "Confirm Booking"
-              ) : (
-                "Continue"
-              )}
+              <X size={20} className="text-gray-500" />
             </motion.button>
           </div>
-        )}
+        </div>
+
+        {/* Event Type Buttons */}
+        <div className="overflow-y-auto max-h-[calc(85vh-120px)] p-5">
+          <div className="grid grid-cols-1 gap-4">
+            {eventTypes.map((event, index) => (
+              <motion.button
+                key={event.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleEventSelect(event.route)}
+                className="relative group overflow-hidden rounded-2xl border-2 border-gray-200 dark:border-gray-700 hover:border-transparent transition-all"
+              >
+                {/* Gradient Background on Hover */}
+                <div
+                  className={`absolute inset-0 bg-gradient-to-r ${event.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}
+                />
+                
+                {/* Content */}
+                <div className="relative p-6 flex items-center gap-4 bg-white dark:bg-gray-900 group-hover:bg-transparent transition-colors duration-300">
+                  {/* Icon */}
+                  <div className="text-5xl flex-shrink-0 transform group-hover:scale-110 transition-transform duration-300">
+                    {event.icon}
+                  </div>
+                  
+                  {/* Text Content */}
+                  <div className="flex-1 text-left">
+                    <h4 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-white transition-colors duration-300">
+                      {event.name}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-white/90 transition-colors duration-300 mt-1">
+                      {event.description}
+                    </p>
+                  </div>
+                  
+                  {/* Arrow Icon */}
+                  <motion.div
+                    className="text-gray-400 group-hover:text-white transition-colors duration-300"
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  >
+                    <ArrowRight size={24} />
+                  </motion.div>
+                </div>
+              </motion.button>
+            ))}
+          </div>
+
+          {/* Info Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mt-6 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800"
+          >
+            <div className="flex items-start gap-3">
+              <div className="text-2xl">✨</div>
+              <div>
+                <p className="text-sm font-semibold text-blue-900 dark:text-blue-300 mb-1">
+                  Why choose {vendorName}?
+                </p>
+                <p className="text-xs text-blue-700 dark:text-blue-400 leading-relaxed">
+                  Expert planning, personalized service, and unforgettable experiences tailored just for you.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </motion.div>
     </motion.div>
   );
@@ -8896,6 +8776,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
   const [slideDirection, setSlideDirection] = useState(0);
   const [imageZoom, setImageZoom] = useState(1);
   const [showHeaderTabs, setShowHeaderTabs] = useState(false);
+  const [totalLikes, setTotalLikes] = useState(0);
 
   const [postsInteractionsData, setPostsInteractionsData] = useState({});
   const [reelsInteractionsData, setReelsInteractionsData] = useState({});
@@ -8916,6 +8797,26 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
   const initialFetchDoneRef = useRef(false);
   const onboardingHandledRef = useRef(false);
   const stickyTabsRef = useRef(null);
+
+  useEffect(() => {
+  if (!initialProfile) {
+    setTotalLikes(0);
+    return;
+  }
+
+  const totalPostLikes = initialProfile.posts?.reduce(
+    (total, post) => total + (post.likes?.length || 0),
+    0
+  ) || 0;
+
+  const totalReelLikes = initialProfile.reels?.reduce(
+    (total, reel) => total + (reel.likes?.length || 0),
+    0
+  ) || 0;
+
+  setTotalLikes(totalPostLikes + totalReelLikes);
+}, [initialProfile]);
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -9860,7 +9761,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
       },
       {
         label: "Likes",
-        value: likesCount >= 1000 ? `${(likesCount / 1000).toFixed(1)}K` : likesCount?.toString(),
+        value: totalLikes >= 1000 ? `${(totalLikes / 1000).toFixed(1)}K` : totalLikes?.toString(),
         action: () => handleLikeRef.current?.(),
         active: hasLiked && isSignedIn,
         loading: interactionsLoading,
