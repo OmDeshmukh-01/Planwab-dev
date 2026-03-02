@@ -27,8 +27,8 @@ const LeadCaptureModal = ({ isOpen, onClose, actionType, title, subtitle }) => {
   const [submitStatus, setSubmitStatus] = useState(null);
 
   const { setCanContinue, setAllowedAction } = useAppValuesStore();
-    const { setIsNavbarVisible } = useNavbarVisibilityStore();
-  
+  const { setIsNavbarVisible } = useNavbarVisibilityStore();
+
 
   useEffect(() => {
     if (isOpen) {
@@ -162,7 +162,7 @@ const LeadCaptureModal = ({ isOpen, onClose, actionType, title, subtitle }) => {
               exit={{ scale: 0.8, opacity: 0, y: 50, rotateX: 15 }}
               transition={SPRING_CONFIG}
               onClick={(e) => e.stopPropagation()}
-              className="relative h-[550px] w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
+              className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden"
               style={{
                 transformStyle: "preserve-3d",
                 perspective: "1000px",
@@ -221,11 +221,10 @@ const LeadCaptureModal = ({ isOpen, onClose, actionType, title, subtitle }) => {
                         onChange={(e) => handleInputChange("name", e.target.value)}
                         onBlur={() => handleBlur("name")}
                         placeholder="Enter your full name"
-                        className={`w-full pl-12 pr-4 py-3.5 bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 outline-none transition-all ${
-                          errors.name && touched.name
+                        className={`w-full pl-12 pr-4 py-3.5 bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 outline-none transition-all ${errors.name && touched.name
                             ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-100"
                             : "border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                        }`}
+                          }`}
                       />
                       <AnimatePresence>
                         {touched.name && !errors.name && formData.name && (
@@ -272,11 +271,10 @@ const LeadCaptureModal = ({ isOpen, onClose, actionType, title, subtitle }) => {
                         onChange={(e) => handleInputChange("phone", e.target.value)}
                         onBlur={() => handleBlur("phone")}
                         placeholder="98765-43210"
-                        className={`w-full pl-24 pr-4 py-3.5 bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 outline-none transition-all ${
-                          errors.phone && touched.phone
+                        className={`w-full pl-24 pr-4 py-3.5 bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 outline-none transition-all ${errors.phone && touched.phone
                             ? "border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-100"
                             : "border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                        }`}
+                          }`}
                       />
                       <AnimatePresence>
                         {touched.phone && !errors.phone && formData.phone.length === 10 && (
@@ -312,11 +310,10 @@ const LeadCaptureModal = ({ isOpen, onClose, actionType, title, subtitle }) => {
                         initial={{ opacity: 0, y: -10, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
-                        className={`p-4 rounded-xl flex items-center gap-3 ${
-                          submitStatus === "success"
+                        className={`p-4 rounded-xl flex items-center gap-3 ${submitStatus === "success"
                             ? "bg-green-50 border border-green-200"
                             : "bg-red-50 border border-red-200"
-                        }`}
+                          }`}
                       >
                         {submitStatus === "success" ? (
                           <>

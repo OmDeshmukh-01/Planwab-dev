@@ -148,6 +148,29 @@ import VendorProfileOnboarding from "../VendorProfileCreate";
 import DOMPurify from "dompurify";
 import { SignInButton, useUser } from "@clerk/clerk-react";
 import { QRCodeSVG } from "qrcode.react";
+
+const POST_CONFIGS = {
+  1: {
+    title: "Work Details",
+    icon: Briefcase,
+    color: "from-blue-500 to-cyan-500",
+  },
+  2: {
+    title: "All Service Breakdown",
+    icon: Package,
+    color: "from-purple-500 to-pink-500",
+  },
+  3: {
+    title: "Pricing and Packages",
+    icon: DollarSign,
+    color: "from-green-500 to-emerald-500",
+  },
+  4: {
+    title: "Trust & Real Events",
+    icon: Shield,
+    color: "from-amber-500 to-orange-500",
+  },
+};
 import UpdateProfileDrawer from "../UpdateProfileDrawer";
 import SmartMedia from "@/components/mobile/SmartMediaLoader";
 import { useNavigationState } from "../../../hooks/useNavigationState";
@@ -844,9 +867,8 @@ const PasswordVerificationModal = ({ isOpen, onClose, onSuccess, vendorId, vendo
                     onKeyDown={handleKeyDown}
                     placeholder="Enter your password"
                     disabled={isVerifying}
-                    className={`w-full pl-12 pr-12 py-4 bg-slate-100 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all ${
-                      error ? "border-red-500 focus:border-red-500" : "border-transparent focus:border-blue-500"
-                    } ${isVerifying ? "opacity-60 cursor-not-allowed" : ""}`}
+                    className={`w-full pl-12 pr-12 py-4 bg-slate-100 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all ${error ? "border-red-500 focus:border-red-500" : "border-transparent focus:border-blue-500"
+                      } ${isVerifying ? "opacity-60 cursor-not-allowed" : ""}`}
                   />
                   <motion.button
                     type="button"
@@ -1313,20 +1335,18 @@ const CommentsDrawer = ({ isOpen, onClose, reviews, onAddComment, onDeleteCommen
             className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm"
           />
           <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[121] bg-[#121212] rounded-t-[20px] h-[75vh] flex flex-col border-t border-white/10"
+            className="fixed top-0 right-0 bottom-0 z-[121] bg-[#121212] w-full lg:w-[40%] flex flex-col border-l border-white/10 shadow-2xl"
           >
-            {/* Drawer Handle */}
-            <div className="w-full flex justify-center pt-3 pb-2" onClick={onClose}>
-              <div className="w-10 h-1 bg-gray-600 rounded-full" />
-            </div>
-
             {/* Header */}
-            <div className="px-4 pb-3 border-b border-white/10 text-center relative">
-              <span className="font-bold text-white">Comments</span>
+            <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+              <span className="font-bold text-white text-lg lg:text-xl">Comments</span>
+              <button onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-white">
+                <X size={20} />
+              </button>
             </div>
 
             {/* Comments List */}
@@ -1360,7 +1380,7 @@ const CommentsDrawer = ({ isOpen, onClose, reviews, onAddComment, onDeleteCommen
             </div>
 
             {/* Input Section */}
-            <div className="p-3 border-t border-white/10 bg-[#121212] pb-8">
+            <div className="p-4 border-t border-white/10 bg-[#121212]">
               <div className="flex items-center gap-3 bg-white/10 rounded-full px-4 py-2">
                 {/* Assuming current user avatar is available, else generic */}
                 <div className="w-7 h-7 rounded-full bg-gray-500 overflow-hidden">
@@ -1391,6 +1411,543 @@ const CommentsDrawer = ({ isOpen, onClose, reviews, onAddComment, onDeleteCommen
   );
 };
 
+const NoDataFallback = ({ postNumber, onUpdateClick }) => {
+  const config = POST_CONFIGS[postNumber];
+  if (!config) return null;
+  const IconComponent = config.icon;
+
+  return (
+    <div className="flex flex-col items-center justify-center py-8 px-4 text-center bg-gray-50 border border-gray-200 border-dashed rounded-xl">
+      <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${config.color} flex items-center justify-center mb-4 opacity-80`}>
+        <IconComponent size={24} className="text-white" />
+      </div>
+      <h3 className="text-gray-800 font-medium mb-1">{config.title}</h3>
+      <p className="text-gray-500 text-xs mb-4 max-w-[200px]">
+        No details added for this post category yet.
+      </p>
+      {onUpdateClick && (
+        <button
+          onClick={onUpdateClick}
+          className={`px-4 py-2 bg-gradient-to-r ${config.color} rounded-lg text-white text-xs font-semibold hover:shadow-lg transition-transform active:scale-95`}
+        >
+          Add Details
+        </button>
+      )}
+    </div>
+  );
+};
+
+
+// Validation function
+const validateField = (field, value) => {
+  if (field.required && (!value || (Array.isArray(value) && value.length === 0))) {
+    return `${field.label} is required`;
+  }
+  if (field.type === "number") {
+    const num = parseFloat(value);
+    if (isNaN(num)) return `${field.label} must be a number`;
+    if (field.min !== undefined && num < field.min) return `${field.label} must be at least ${field.min}`;
+    if (field.max !== undefined && num > field.max) return `${field.label} must be at most ${field.max}`;
+  }
+  if (field.key === "googleRating") {
+    const rating = parseFloat(value);
+    if (rating < 0 || rating > 5) return "Rating must be between 0 and 5";
+  }
+  if (field.type === "cta" && Array.isArray(value) && value.length !== 3) {
+    return "Exactly 3 call-to-action items required";
+  }
+  return null;
+};
+
+// Content Form Component
+const PostContentForm = ({ postNumber, initialData, onSubmit, onCancel, isSubmitting }) => {
+  const config = POST_CONFIGS[postNumber];
+  const [formData, setFormData] = useState(() => {
+    const initial = {};
+    config.fields.forEach((field) => {
+      if (field.type === "array" || field.type === "cta") {
+        initial[field.key] = initialData?.[field.key] || [];
+      } else if (field.type === "packages") {
+        initial[field.key] = initialData?.[field.key] || [];
+      } else {
+        initial[field.key] = initialData?.[field.key] || "";
+      }
+    });
+    return initial;
+  });
+  const [errors, setErrors] = useState({});
+  const [arrayInput, setArrayInput] = useState({});
+
+  const handleChange = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: null }));
+  };
+
+  const handleArrayAdd = (key, maxItems) => {
+    const inputValue = arrayInput[key]?.trim();
+    if (!inputValue) return;
+    if (maxItems && formData[key].length >= maxItems) {
+      setErrors((prev) => ({ ...prev, [key]: `Maximum ${maxItems} items allowed` }));
+      return;
+    }
+    setFormData((prev) => ({ ...prev, [key]: [...prev[key], inputValue] }));
+    setArrayInput((prev) => ({ ...prev, [key]: "" }));
+  };
+
+  const handleArrayRemove = (key, index) => {
+    setFormData((prev) => ({ ...prev, [key]: prev[key].filter((_, i) => i !== index) }));
+  };
+
+  const handlePackageAdd = () => {
+    setFormData((prev) => ({
+      ...prev,
+      packages: [...prev.packages, { title: "", priceMin: "", priceMax: "" }],
+    }));
+  };
+
+  const handlePackageChange = (index, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      packages: prev.packages.map((pkg, i) => (i === index ? { ...pkg, [field]: value } : pkg)),
+    }));
+  };
+
+  const handlePackageRemove = (index) => {
+    setFormData((prev) => ({ ...prev, packages: prev.packages.filter((_, i) => i !== index) }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = {};
+    config.fields.forEach((field) => {
+      const error = validateField(field, formData[field.key]);
+      if (error) newErrors[field.key] = error;
+    });
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    onSubmit(formData);
+  };
+
+  const IconComponent = config.icon;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xl max-h-[80vh] flex flex-col"
+    >
+      <div className={`bg-gradient-to-r ${config.color} p-4 flex items-center justify-between`}>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+            <IconComponent size={18} className="text-white" />
+          </div>
+          <div>
+            <h3 className="text-white font-bold text-sm">{config.title}</h3>
+            <p className="text-white/70 text-[10px] uppercase tracking-wider">Post {postNumber} of 4</p>
+          </div>
+        </div>
+        <button
+          onClick={onCancel}
+          className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+        >
+          <X size={14} className="text-white" />
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+        {config.fields.map((field) => (
+          <div key={field.key} className="space-y-1.5">
+            <label className="text-xs font-medium text-gray-500 flex items-center gap-1">
+              {field.label}
+              {field.required && <span className="text-red-500">*</span>}
+            </label>
+
+            {field.type === "textarea" && (
+              <textarea
+                value={formData[field.key]}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                className={`w-full px-3 py-2 bg-gray-50 border text-gray-900 rounded-xl text-sm resize-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all ${errors[field.key] ? "border-red-400" : "border-gray-200"}`}
+                rows={3}
+                placeholder={`Enter ${field.label.toLowerCase()}...`}
+              />
+            )}
+
+            {field.type === "text" && (
+              <input
+                type="text"
+                value={formData[field.key]}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                className={`w-full px-3 py-2 bg-gray-50 border text-gray-900 rounded-xl text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all ${errors[field.key] ? "border-red-400" : "border-gray-200"}`}
+                placeholder={`Enter ${field.label.toLowerCase()}...`}
+              />
+            )}
+
+            {field.type === "number" && (
+              <input
+                type="number"
+                value={formData[field.key]}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                min={field.min}
+                max={field.max}
+                step={field.step || 1}
+                className={`w-full px-3 py-2 bg-gray-50 border text-gray-900 rounded-xl text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all ${errors[field.key] ? "border-red-400" : "border-gray-200"}`}
+                placeholder={`Enter ${field.label.toLowerCase()}...`}
+              />
+            )}
+
+            {(field.type === "array" || field.type === "cta") && (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={arrayInput[field.key] || ""}
+                    onChange={(e) => setArrayInput((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleArrayAdd(field.key, field.maxItems);
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 text-gray-900 rounded-xl text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    placeholder={`Add ${field.label.toLowerCase()}...`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleArrayAdd(field.key, field.maxItems)}
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors border border-gray-200"
+                  >
+                    <Plus size={16} className="text-gray-500" />
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {formData[field.key].map((item, index) => (
+                    <motion.span
+                      key={index}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 border border-gray-200 rounded-full text-xs text-gray-600"
+                    >
+                      {item}
+                      <button
+                        type="button"
+                        onClick={() => handleArrayRemove(field.key, index)}
+                        className="w-4 h-4 rounded-full bg-gray-200 hover:bg-red-100 hover:text-red-500 flex items-center justify-center transition-colors"
+                      >
+                        <X size={10} />
+                      </button>
+                    </motion.span>
+                  ))}
+                </div>
+                {field.maxItems && (
+                  <p className="text-xs text-gray-400">
+                    {formData[field.key].length} / {field.maxItems} items
+                  </p>
+                )}
+              </div>
+            )}
+
+            {field.type === "packages" && (
+              <div className="space-y-3">
+                {formData.packages.map((pkg, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Package {index + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => handlePackageRemove(index)}
+                        className="w-5 h-5 rounded-full hover:bg-red-500/10 flex items-center justify-center transition-colors group"
+                      >
+                        <Trash2 size={12} className="text-gray-400 group-hover:text-red-500" />
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={pkg.title}
+                      onChange={(e) => handlePackageChange(index, "title", e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 text-gray-900 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Package title..."
+                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={pkg.priceMin}
+                        onChange={(e) => handlePackageChange(index, "priceMin", e.target.value)}
+                        className="flex-1 px-3 py-2 bg-white border border-gray-200 text-gray-900 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Min price"
+                        min={0}
+                      />
+                      <input
+                        type="number"
+                        value={pkg.priceMax}
+                        onChange={(e) => handlePackageChange(index, "priceMax", e.target.value)}
+                        className="flex-1 px-3 py-2 bg-white border border-gray-200 text-gray-900 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Max price"
+                        min={0}
+                      />
+                    </div>
+                  </motion.div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handlePackageAdd}
+                  className="w-full py-2 border border-dashed border-gray-300 rounded-xl text-sm text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Plus size={14} />
+                  Add Package
+                </button>
+              </div>
+            )}
+
+            {errors[field.key] && (
+              <motion.p
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-red-500 flex items-center gap-1 mt-1"
+              >
+                <AlertCircle size={10} />
+                {errors[field.key]}
+              </motion.p>
+            )}
+          </div>
+        ))}
+      </form>
+
+      <div className="p-4 border-t border-gray-100 bg-white flex gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className={`flex-1 py-2 bg-gradient-to-r ${config.color} rounded-xl text-sm font-medium text-white flex items-center justify-center gap-2 transition-all ${isSubmitting ? "opacity-70" : "hover:brightness-110"}`}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Check size={14} />
+              Save Details
+            </>
+          )}
+        </button>
+      </div>
+    </motion.div>
+  );
+};
+
+
+const WorkDetailsContent = ({ data }) => (
+  <div className="space-y-4">
+    {data.caption && <p className="text-gray-600 text-sm leading-relaxed">{data.caption}</p>}
+    <div className="grid grid-cols-2 gap-3">
+      {data.googleRating !== undefined && (
+        <div className="bg-amber-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Star size={16} className="text-amber-500 fill-amber-500" />
+            <span className="text-xs text-amber-600 font-medium">Google Rating</span>
+          </div>
+          <p className="text-2xl font-bold text-amber-700">{data.googleRating}</p>
+        </div>
+      )}
+      {data.teamSize && (
+        <div className="bg-blue-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Users size={16} className="text-blue-500" />
+            <span className="text-xs text-blue-600 font-medium">Team Size</span>
+          </div>
+          <p className="text-2xl font-bold text-blue-700">{data.teamSize}</p>
+        </div>
+      )}
+      {data.servicesDone !== undefined && (
+        <div className="bg-green-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Briefcase size={16} className="text-green-500" />
+            <span className="text-xs text-green-600 font-medium">Services Done</span>
+          </div>
+          <p className="text-2xl font-bold text-green-700">{data.servicesDone?.toLocaleString()}</p>
+        </div>
+      )}
+      {data.yearsOfExperience !== undefined && (
+        <div className="bg-purple-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Calendar size={16} className="text-purple-500" />
+            <span className="text-xs text-purple-600 font-medium">Experience</span>
+          </div>
+          <p className="text-2xl font-bold text-purple-700">{data.yearsOfExperience} yrs</p>
+        </div>
+      )}
+    </div>
+
+    {data.location && (
+      <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-3 border border-gray-100 mt-2">
+        <MapPin size={18} className="text-gray-400" />
+        <span className="text-sm font-medium text-gray-600">{data.location}</span>
+      </div>
+    )}
+  </div>
+);
+
+const ServiceBreakdownContent = ({ data }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="space-y-4">
+      {data.caption && <p className="text-gray-600 text-sm leading-relaxed">{data.caption}</p>}
+      {data.eventIncludes?.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+            <Package size={16} className="text-purple-500" />
+            Event Includes
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {data.eventIncludes.map((item, index) => (
+              <span key={index} className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      {data.subCategories?.length > 0 && (
+        <div className="space-y-2">
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+          >
+            <span className="text-sm font-semibold text-gray-800">Sub Categories</span>
+            <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronDown size={18} className="text-gray-500" />
+            </motion.div>
+          </button>
+          <AnimatePresence>
+            {expanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {data.subCategories.map((item, index) => (
+                    <span key={index} className="px-3 py-1.5 bg-pink-100 text-pink-700 rounded-full text-sm">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PricingContent = ({ data }) => (
+  <div className="space-y-4">
+    {(data.basePriceMin || data.basePriceMax) && (
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <DollarSign size={18} className="text-green-500" />
+          <span className="text-sm font-medium text-green-700">Base Price Range</span>
+        </div>
+        <p className="text-2xl font-bold text-green-800">
+          ₹{data.basePriceMin?.toLocaleString()} - ₹{data.basePriceMax?.toLocaleString()}
+        </p>
+      </div>
+    )}
+    {data.packages?.length > 0 && (
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <Package size={16} className="text-green-500" />
+          Packages
+        </h4>
+        {data.packages.map((pkg, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm"
+          >
+            <h5 className="font-semibold text-gray-800 mb-1">{pkg.title}</h5>
+            <p className="text-green-600 font-bold">
+              ₹{pkg.priceMin?.toLocaleString()} - ₹{pkg.priceMax?.toLocaleString()}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+const TrustContent = ({ data }) => (
+  <div className="space-y-4">
+    {data.usp?.length > 0 && (
+      <div className="space-y-2">
+        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <Sparkles size={16} className="text-amber-500" />
+          Unique Selling Points
+        </h4>
+        <div className="space-y-2">
+          {data.usp.map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="flex items-start gap-3 p-3 bg-amber-50 rounded-xl"
+            >
+              <div className="w-6 h-6 bg-amber-200 rounded-full flex items-center justify-center flex-shrink-0">
+                <Check size={14} className="text-amber-700" />
+              </div>
+              <span className="text-sm text-amber-800">{item}</span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    )}
+    {data.callToAction?.length > 0 && (
+      <div className="space-y-2">
+        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <Phone size={16} className="text-orange-500" />
+          Call to Action
+        </h4>
+        <div className="grid gap-2">
+          {data.callToAction.map((item, index) => (
+            <motion.button
+              key={index}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-medium rounded-xl shadow-sm hover:shadow-md transition-shadow"
+            >
+              {item}
+            </motion.button>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+
 const PostDetailModal = ({
   post,
   posts = [],
@@ -1403,6 +1960,8 @@ const PostDetailModal = ({
   onArchive,
   vendorId,
   allInteractions = {},
+  isVerified = false,
+  profileId,
 }) => {
   const { user, isSignedIn } = useUser();
 
@@ -1435,6 +1994,14 @@ const PostDetailModal = ({
   const [reviews, setReviews] = useState([]);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [isLoadingInteractions, setIsLoadingInteractions] = useState(true);
+
+  // Content Category Detail States
+  const isOwner = user?.id === vendorId;
+  const postNumber = (currentIndex % 4) + 1;
+  const [contentData, setContentData] = useState(currentPost?.content || null);
+  const [showContentForm, setShowContentForm] = useState(false);
+  const [isContentSubmitting, setIsContentSubmitting] = useState(false);
+  const [contentSubmitError, setContentSubmitError] = useState(null);
 
   // Media states
   const [isPlaying, setIsPlaying] = useState(true);
@@ -1486,10 +2053,11 @@ const PostDetailModal = ({
     setProgress(0);
     setCurrentTime(0);
     setDuration(0);
-    setIsPlaying(true);
-    setIsLoadingInteractions(true);
-    setShowPlayPauseIndicator(false);
-  }, [currentIndex]);
+    // Reset Content State
+    setContentData(currentPost?.content || null);
+    setShowContentForm(false);
+    setContentSubmitError(null);
+  }, [currentIndex, currentPost]);
 
   // Fetch interaction status
   useEffect(() => {
@@ -1540,6 +2108,72 @@ const PostDetailModal = ({
     fetchInteractionStatus();
   }, [currentPost?._id, user?.id, vendorId, allInteractions]);
 
+  // ===== CONTENT FORM SUBMIT =====
+  const handleContentFormSubmit = useCallback(
+    async (formData) => {
+      setIsContentSubmitting(true);
+      setContentSubmitError(null);
+
+      const previousData = contentData;
+      setContentData(formData);
+      setShowContentForm(false);
+
+      try {
+        const response = await fetch(`/api/vendor/profile/post-content`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            profileId: profileId,
+            postId: currentPost?._id,
+            postNumber,
+            content: formData,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.error || "Failed to update");
+        }
+
+        if (result.data?.content) {
+          setContentData(result.data.content);
+        }
+      } catch (error) {
+        setContentData(previousData);
+        setContentSubmitError(error.message);
+        setShowContentForm(true);
+        console.error(error);
+      } finally {
+        setIsContentSubmitting(false);
+      }
+    },
+    [contentData, profileId, currentPost?._id, postNumber],
+  );
+
+  // ===== RENDER POST CONTENT =====
+  const renderPostContent = useCallback(() => {
+    const hasContent = contentData && Object.values(contentData).some(val =>
+      Array.isArray(val) ? val.length > 0 : (val !== undefined && val !== null && val !== "")
+    );
+    if (!hasContent) {
+      return <NoDataFallback postNumber={postNumber} onUpdateClick={isVerified ? (() => setShowContentForm(true)) : null} />;
+    }
+
+    switch (postNumber) {
+      case 1:
+        return <WorkDetailsContent data={contentData} />;
+      case 2:
+        return <ServiceBreakdownContent data={contentData} />;
+      case 3:
+        return <PricingContent data={contentData} />;
+      case 4:
+        return <TrustContent data={contentData} />;
+      default:
+        return null;
+    }
+  }, [contentData, postNumber, isVerified]);
+
   // Video event handlers with optimized updates
   useEffect(() => {
     if (!isVideo || !videoRef.current) return;
@@ -1585,7 +2219,7 @@ const PostDetailModal = ({
 
     const handleEnded = () => {
       video.currentTime = 0;
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     };
 
     const handleError = () => {
@@ -1662,7 +2296,7 @@ const PostDetailModal = ({
     } else {
       // Resume video only if it was playing before drag started
       if (videoRef.current && isVideo && wasDragPlayingRef.current) {
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch(() => { });
       }
     }
 
@@ -2489,15 +3123,60 @@ const PostDetailModal = ({
                   <span className="text-gray-400 text-xs">Works</span>
                 </div>
               </div>
-              {posts.length > 1 && (
-                <span className="text-gray-400 text-xs font-mono bg-gray-800 px-3 py-1.5 rounded-full">
-                  {currentIndex + 1} / {posts.length}
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {isVerified && (
+                  <button
+                    onClick={() => setShowContentForm(!showContentForm)}
+                    className="p-2 rounded-full bg-gray-900 border border-gray-800 hover:bg-gray-800 text-gray-400 transition-colors"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                )}
+                {posts.length > 1 && (
+                  <span className="text-gray-400 text-xs font-mono bg-gray-800 px-3 py-1.5 rounded-full">
+                    {currentIndex + 1} / {posts.length}
+                  </span>
+                )}
+              </div>
             </div>
 
+            <AnimatePresence>
+              {showContentForm && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="px-6 py-4 border-b border-gray-800/50 bg-gray-900/50 block"
+                >
+                  <PostContentForm
+                    postNumber={postNumber}
+                    initialData={contentData}
+                    onSubmit={handleContentFormSubmit}
+                    onCancel={() => setShowContentForm(false)}
+                    isSubmitting={isContentSubmitting}
+                  />
+                  {contentSubmitError && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-4 p-3 bg-red-900/20 border border-red-900/50 text-red-400 text-sm rounded-xl flex items-center gap-2"
+                    >
+                      <AlertCircle size={16} />
+                      {contentSubmitError}
+                    </motion.p>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
             {/* Caption & Details */}
-            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 no-scrollbar">
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 no-scrollbar">
+              {!showContentForm && (
+                <div className="mb-6">
+                  {renderPostContent()}
+                </div>
+              )}
+
               {/* Date */}
               {currentPost.date && <p className="text-gray-500 text-xs">{currentPost.date}</p>}
 
@@ -2532,22 +3211,6 @@ const PostDetailModal = ({
                   <p className="text-gray-400 text-xs">Original Audio</p>
                 </div>
               )}
-
-              {/* Divider */}
-              <div className="border-t border-gray-800/50 pt-4">
-                <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3">Engagement</p>
-                <div className="flex items-center gap-6">
-                  <span className="text-gray-300 text-sm flex items-center gap-1.5">
-                    <Heart size={14} className={isLiked ? "text-red-500 fill-red-500" : "text-gray-400"} />
-                    {likes.toLocaleString()} likes
-                  </span>
-                  <span className="text-gray-300 text-sm flex items-center gap-1.5">
-                    <MessageCircle size={14} className="text-gray-400" />
-                    {reviews.length} comments
-                  </span>
-                </div>
-              </div>
-
               {/* Desktop navigation hint */}
               {posts.length > 1 && (
                 <div className="pt-2">
@@ -2576,8 +3239,11 @@ const PostDetailModal = ({
                         className="p-2.5 rounded-xl hover:bg-gray-800 transition-colors"
                         disabled={isInteracting}
                       >
-                        <motion.div animate={isLiked ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }}>
-                          <Heart size={24} className={isLiked ? "text-red-500 fill-red-500" : "text-white"} />
+                        <motion.div animate={isLiked ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }} className="flex items-center gap-1.5">
+                          <Heart size={24} className={isLiked ? "text-red-500 fill-red-500" : "text-gray-700"} />
+                          {likes > 0 && (
+                            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{likes}</span>
+                          )}
                         </motion.div>
                       </motion.button>
                       <motion.button
@@ -2653,11 +3319,10 @@ const PostDetailModal = ({
                       }
                     }}
                     disabled={currentIndex === 0}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      currentIndex === 0
-                        ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
-                        : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex === 0
+                      ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
+                      : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
+                      }`}
                   >
                     <ChevronUp size={16} />
                     Previous
@@ -2669,11 +3334,10 @@ const PostDetailModal = ({
                       }
                     }}
                     disabled={currentIndex >= posts.length - 1}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      currentIndex >= posts.length - 1
-                        ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
-                        : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex >= posts.length - 1
+                      ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
+                      : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
+                      }`}
                   >
                     Next
                     <ChevronDown size={16} />
@@ -2986,7 +3650,7 @@ const ReelsViewer = ({
     const video = videoRef.current;
     if (video) {
       video.currentTime = 0;
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     }
   };
 
@@ -3181,7 +3845,7 @@ const ReelsViewer = ({
       goToReel("down");
     } else {
       if (videoRef.current && isPlaying) {
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch(() => { });
       }
     }
 
@@ -3655,11 +4319,10 @@ const ReelsViewer = ({
                       }
                     }}
                     disabled={currentIndex === 0}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      currentIndex === 0
-                        ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
-                        : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex === 0
+                      ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
+                      : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
+                      }`}
                   >
                     <ChevronUp size={16} />
                     Previous
@@ -3674,11 +4337,10 @@ const ReelsViewer = ({
                       }
                     }}
                     disabled={currentIndex >= reels.length - 1}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      currentIndex >= reels.length - 1
-                        ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
-                        : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex >= reels.length - 1
+                      ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
+                      : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
+                      }`}
                   >
                     Next
                     <ChevronDown size={16} />
@@ -3818,9 +4480,8 @@ const PortfolioViewer = ({ portfolio, onClose, onBookService }) => {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsSaved(!isSaved)}
-            className={`py-3.5 px-5 rounded-2xl border transition-all ${
-              isSaved ? "bg-red-500/20 border-red-500/50" : "bg-white/10 backdrop-blur-xl border-white/20"
-            }`}
+            className={`py-3.5 px-5 rounded-2xl border transition-all ${isSaved ? "bg-red-500/20 border-red-500/50" : "bg-white/10 backdrop-blur-xl border-white/20"
+              }`}
           >
             <Heart size={20} className={isSaved ? "text-red-500 fill-red-500" : "text-white"} />
           </motion.button>
@@ -4677,16 +5338,14 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                     whileTap={{ scale: isPostsFull ? 1 : 0.98 }}
                     onClick={() => !isPostsFull && setUploadType("post")}
                     disabled={isPostsFull}
-                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${
-                      isPostsFull
-                        ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
-                        : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-100 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:shadow-blue-500/10"
-                    }`}
+                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${isPostsFull
+                      ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
+                      : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-100 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:shadow-blue-500/10"
+                      }`}
                   >
                     <div
-                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${
-                        isPostsFull ? "bg-gray-400" : "bg-gradient-to-br from-blue-500 to-purple-600"
-                      }`}
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${isPostsFull ? "bg-gray-400" : "bg-gradient-to-br from-blue-500 to-purple-600"
+                        }`}
                     >
                       <Image size={28} className="text-white" />
                     </div>
@@ -4707,16 +5366,14 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                     whileTap={{ scale: isReelsFull ? 1 : 0.98 }}
                     onClick={() => !isReelsFull && setUploadType("reel")}
                     disabled={isReelsFull}
-                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${
-                      isReelsFull
-                        ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
-                        : "bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-900/20 dark:to-orange-900/20 border-pink-100 dark:border-pink-800 hover:border-pink-300 dark:hover:border-pink-600 hover:shadow-lg hover:shadow-pink-500/10"
-                    }`}
+                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${isReelsFull
+                      ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
+                      : "bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-900/20 dark:to-orange-900/20 border-pink-100 dark:border-pink-800 hover:border-pink-300 dark:hover:border-pink-600 hover:shadow-lg hover:shadow-pink-500/10"
+                      }`}
                   >
                     <div
-                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${
-                        isReelsFull ? "bg-gray-400" : "bg-gradient-to-br from-pink-500 to-orange-500"
-                      }`}
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${isReelsFull ? "bg-gray-400" : "bg-gradient-to-br from-pink-500 to-orange-500"
+                        }`}
                     >
                       <Video size={28} className="text-white" />
                     </div>
@@ -4774,11 +5431,10 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                       whileTap={{ scale: isUploading ? 1 : 0.98 }}
                       onClick={handleFileSelect}
                       disabled={isUploading}
-                      className={`w-full ${uploadType === "reel" ? "aspect-[9/16] lg:aspect-[9/14]" : "aspect-square"} rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-4 overflow-hidden ${
-                        selectedFile
-                          ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                          : "border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
-                      } ${isUploading ? "pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
+                      className={`w-full ${uploadType === "reel" ? "aspect-[9/16] lg:aspect-[9/14]" : "aspect-square"} rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-4 overflow-hidden ${selectedFile
+                        ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                        : "border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
+                        } ${isUploading ? "pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
                     >
                       {selectedFile ? (
                         <div className="relative w-full h-full">
@@ -5157,14 +5813,12 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
 
 const InfoChip = memo(({ icon: Icon, label, value, color = "blue", size = "normal" }) => (
   <div
-    className={`flex items-center gap-2 p-2.5 bg-${color}-50 dark:bg-${color}-900/20 rounded-xl ${
-      size === "small" ? "p-2" : ""
-    }`}
+    className={`flex items-center gap-2 p-2.5 bg-${color}-50 dark:bg-${color}-900/20 rounded-xl ${size === "small" ? "p-2" : ""
+      }`}
   >
     <div
-      className={`w-8 h-8 rounded-lg bg-${color}-100 dark:bg-${color}-800/30 flex items-center justify-center ${
-        size === "small" ? "w-7 h-7" : ""
-      }`}
+      className={`w-8 h-8 rounded-lg bg-${color}-100 dark:bg-${color}-800/30 flex items-center justify-center ${size === "small" ? "w-7 h-7" : ""
+        }`}
     >
       <Icon size={size === "small" ? 14 : 16} className={`text-${color}-600 dark:text-${color}-400`} />
     </div>
@@ -5182,10 +5836,9 @@ const QuickStatCard = memo(({ icon: Icon, label, value, subtext, color = "blue",
   <motion.div
     whileHover={{ scale: 1.02, y: -2 }}
     whileTap={{ scale: 0.98 }}
-    className={`relative overflow-hidden p-3 rounded-2xl ${
-      gradient ||
+    className={`relative overflow-hidden p-3 rounded-2xl ${gradient ||
       `bg-gradient-to-br from-${color}-50 to-${color}-100/50 dark:from-${color}-900/30 dark:to-${color}-800/20`
-    } border border-${color}-100 dark:border-${color}-800/30`}
+      } border border-${color}-100 dark:border-${color}-800/30`}
   >
     <div className="flex items-start justify-between">
       <div>
@@ -5208,9 +5861,8 @@ const PackageCard = memo(({ pkg, isSelected, onSelect }) => (
     layout
     whileTap={{ scale: 0.98 }}
     onClick={() => onSelect(pkg.id || pkg._id)}
-    className={`bg-white dark:bg-gray-900 p-4 rounded-2xl border-2 transition-all shadow-sm ${
-      isSelected ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-gray-100 dark:border-gray-800"
-    } ${pkg.isPopular ? "ring-2 ring-amber-400 ring-offset-2 dark:ring-offset-black" : ""}`}
+    className={`bg-white dark:bg-gray-900 p-4 rounded-2xl border-2 transition-all shadow-sm ${isSelected ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-gray-100 dark:border-gray-800"
+      } ${pkg.isPopular ? "ring-2 ring-amber-400 ring-offset-2 dark:ring-offset-black" : ""}`}
   >
     {pkg.isPopular && (
       <div className="flex justify-center -mt-7 mb-3">
@@ -5269,11 +5921,10 @@ const PackageCard = memo(({ pkg, isSelected, onSelect }) => (
     )}
     <motion.button
       whileTap={{ scale: 0.97 }}
-      className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${
-        isSelected
-          ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
-          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-      }`}
+      className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${isSelected
+        ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
+        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+        }`}
     >
       {isSelected ? "✓ Selected" : "Select Package"}
     </motion.button>
@@ -5608,11 +6259,10 @@ const CategorySpecificSection = memo(({ vendor, formatPrice }) => {
             )}
             {vendor.destinationWeddings !== undefined && (
               <div
-                className={`p-3 rounded-xl flex items-center gap-3 ${
-                  vendor.destinationWeddings
-                    ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
-                    : "bg-gray-50 dark:bg-gray-800"
-                }`}
+                className={`p-3 rounded-xl flex items-center gap-3 ${vendor.destinationWeddings
+                  ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
+                  : "bg-gray-50 dark:bg-gray-800"
+                  }`}
               >
                 {vendor.destinationWeddings ? (
                   <CheckCircle size={18} className="text-green-500" />
@@ -5891,9 +6541,8 @@ const CollapsibleSection = memo(
           <div className="flex items-center gap-3">
             {Icon && (
               <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                  iconBg || "bg-blue-50 dark:bg-blue-900/20"
-                }`}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconBg || "bg-blue-50 dark:bg-blue-900/20"
+                  }`}
               >
                 <Icon className={iconColor || "text-blue-500"} size={18} />
               </div>
@@ -6268,9 +6917,8 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                   <motion.div
                     key={s}
                     animate={{ scaleX: s <= step ? 1 : 0.5 }}
-                    className={`flex-1 h-1.5 rounded-full transition-colors ${
-                      s <= step ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-gray-200 dark:bg-gray-700"
-                    }`}
+                    className={`flex-1 h-1.5 rounded-full transition-colors ${s <= step ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-gray-200 dark:bg-gray-700"
+                      }`}
                   />
                 ))}
               </div>
@@ -6337,11 +6985,10 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                       key={service.id}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setSelectedService(service)}
-                      className={`w-full p-5 rounded-2xl border-2 transition-all text-left cursor-pointer ${
-                        selectedService?.id === service.id
-                          ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/10"
-                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                      }`}
+                      className={`w-full p-5 rounded-2xl border-2 transition-all text-left cursor-pointer ${selectedService?.id === service.id
+                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/10"
+                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                        }`}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -6392,11 +7039,10 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                               setSelectedDate(day.date);
                               setSelectedSlot(slot);
                             }}
-                            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
-                              selectedDate === day.date && selectedSlot === slot
-                                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25"
-                                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                            }`}
+                            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${selectedDate === day.date && selectedSlot === slot
+                              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25"
+                              : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                              }`}
                           >
                             {slot}
                           </motion.button>
@@ -6708,16 +7354,16 @@ const MoreOptionsDrawer = ({
     },
     ...(isVerified
       ? [
-          {
-            id: "updateProfile",
-            label: "Update Profile",
-            icon: Edit3,
-            action: () => {
-              setShowUpdateProfileDrawer(true);
-              onClose();
-            },
+        {
+          id: "updateProfile",
+          label: "Update Profile",
+          icon: Edit3,
+          action: () => {
+            setShowUpdateProfileDrawer(true);
+            onClose();
           },
-        ]
+        },
+      ]
       : []),
     {
       id: "notify",
@@ -6883,13 +7529,12 @@ const MoreOptionsDrawer = ({
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${
-                      option.danger
-                        ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        : option.verified
-                          ? "text-green-600 dark:text-green-400 active:bg-green-50 dark:active:bg-green-900/20 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-default"
-                          : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    }`}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${option.danger
+                      ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      : option.verified
+                        ? "text-green-600 dark:text-green-400 active:bg-green-50 dark:active:bg-green-900/20 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-default"
+                        : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -7676,11 +8321,10 @@ const PostOptionsDrawer = ({ isOpen, onClose, post, onDelete, onShare, onEdit, o
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${
-                      option.danger
-                        ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    }`}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${option.danger
+                      ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -7944,11 +8588,10 @@ const ReelOptionsDrawer = ({ isOpen, onClose, reel, onDelete, onShare, onEdit })
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${
-                      option.danger
-                        ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    }`}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${option.danger
+                      ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -8198,10 +8841,10 @@ const RightSidebar = ({
 
   useEffect(() => {
     if (isSignedIn && isVerified) {
-    QUICK_SETTINGS.push({ id: 2, label: "Update Profile", icon: Pencil, action: "update" });
-    QUICK_SETTINGS.push({ id: 3, label: "Upload Media", icon: Upload, action: "upload" });
-  }
-  },[isSignedIn, isVerified]);
+      QUICK_SETTINGS.push({ id: 2, label: "Update Profile", icon: Pencil, action: "update" });
+      QUICK_SETTINGS.push({ id: 3, label: "Upload Media", icon: Upload, action: "upload" });
+    }
+  }, [isSignedIn, isVerified]);
 
   useEffect(() => {
     if (vendorProfileId) {
@@ -9361,15 +10004,16 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
   const handleEditPost = useCallback(
     async (postId, newCaption) => {
       try {
-        const formData = new FormData();
-        formData.append("description", newCaption);
         const response = await fetch(`/api/vendor/${id}/profile/posts?postId=${postId}`, {
           method: "PUT",
-          body: formData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ description: newCaption }),
         });
         const result = await response.json();
         if (!result.success) throw new Error(result.error || "Update failed");
-        setPosts((prev) => prev.map((p) => (p.id === postId ? { ...p, caption: newCaption } : p)));
+        setPosts((prev) => prev.map((p) => (p._id === postId ? { ...p, caption: newCaption } : p)));
         showUIConfirmation("Caption updated", "success", Check);
       } catch (error) {
         console.error("Edit post error:", error);
@@ -9874,10 +10518,13 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
               <EmptyPostsState />
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-[8px] mx-[15px]">
+                <div className="grid grid-cols-3 gap-[15px] mx-[15px]">
                   {posts.map((post, index) => {
                     const posterUrl = post.thumbnailUrl || videoThumbnails[post._id] || null;
                     const thumb = videoThumbnails[post._id];
+                    const postNum = (index % 4) + 1;
+                    const config = POST_CONFIGS[postNum];
+                    const HeadingIcon = config?.icon;
                     return (
                       <motion.div
                         key={post?._id || `post-${index}`}
@@ -9969,83 +10616,100 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
                             setIsLongPressing(false);
                           }
                         }}
-                        className="aspect-[1/1.2] bg-gray-100 dark:bg-gray-800 overflow-hidden relative cursor-pointer select-none rounded-[10px] group"
+                        className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden cursor-pointer select-none shadow-sm border border-gray-100 dark:border-slate-800 group"
                       >
-                        {post.mediaType === "video" ? (
-                          <div className="relative w-full h-full">
-                            {thumb && thumb !== "FALLBACK" ? (
-                              <img src={thumb} className="w-full h-full object-cover" />
-                            ) : (
-                              <video
-                                ref={(el) => {
-                                  if (el) videoRefs.current[post._id] = el;
-                                }}
-                                src={post.mediaUrl}
-                                poster={posterUrl || undefined}
-                                className="w-full h-full object-cover"
-                                muted
-                                playsInline
-                                loop
-                                preload="metadata"
-                              />
-                            )}
-                            <AnimatePresence>
-                              {playingVideoId !== post._id && (
-                                <motion.div
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  exit={{ opacity: 0 }}
-                                  className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
-                                >
-                                  <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-full p-1.5 shadow-lg">
-                                    <Play size={12} className="text-white fill-white" />
-                                  </div>
-                                </motion.div>
+                        {/* Post Category Heading */}
+                        {config && (
+                          <div className="px-2 pt-2 pb-3">
+                            <div className="flex items-center justify-center gap-2 py-2 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700/50 rounded-xl">
+                              {HeadingIcon && (
+                                <HeadingIcon size={16} className="text-slate-600 dark:text-slate-400 flex-shrink-0" />
                               )}
-                            </AnimatePresence>
-                            <AnimatePresence>
-                              {playingVideoId === post._id && (
-                                <motion.div
-                                  initial={{ opacity: 0, scale: 0.8 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  exit={{ opacity: 0, scale: 0.8 }}
-                                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                                >
-                                  <div className="absolute inset-0 bg-black/10" />
+                              <span className="text-sm  font-bold text-slate-800 dark:text-slate-200 truncate">
+                                {config.title}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Media */}
+                        <div className="aspect-[1/1.05] bg-gray-100 dark:bg-gray-800 overflow-hidden relative rounded-xl mx-2 mb-2">
+                          {post.mediaType === "video" ? (
+                            <div className="relative w-full h-full">
+                              {thumb && thumb !== "FALLBACK" ? (
+                                <img src={thumb} className="w-full h-full object-cover" />
+                              ) : (
+                                <video
+                                  ref={(el) => {
+                                    if (el) videoRefs.current[post._id] = el;
+                                  }}
+                                  src={post.mediaUrl}
+                                  poster={posterUrl || undefined}
+                                  className="w-full h-full object-cover"
+                                  muted
+                                  playsInline
+                                  loop
+                                  preload="metadata"
+                                />
+                              )}
+                              <AnimatePresence>
+                                {playingVideoId !== post._id && (
                                   <motion.div
-                                    animate={{ scale: [1, 1.2, 1] }}
-                                    transition={{ duration: 1.5, repeat: Infinity }}
-                                    className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
                                   >
-                                    <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
-                                      <Pause size={16} className="text-gray-900" />
+                                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-full p-1.5 shadow-lg">
+                                      <Play size={12} className="text-white fill-white" />
                                     </div>
                                   </motion.div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        ) : (
-                          <SmartMedia
-                            key={`media-${post._id}`}
-                            src={post?.mediaUrl}
-                            type="image"
-                            className="w-full h-full object-cover"
-                            loaderImage="/GlowLoadingGif.gif"
-                          />
-                        )}
-                        {(post?.mediaType !== "video" || playingVideoId !== post._id) && (
-                          <div className="absolute inset-0 bg-black/0 group-active:bg-black/40 transition-colors flex items-center justify-center gap-3 text-white text-xs font-bold opacity-0 group-active:opacity-100">
-                            <span className="flex items-center gap-1">
-                              <Heart size={14} className="fill-white" />
-                              {post?.likes?.length}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MessageCircle size={14} className="fill-white" />
-                              {post?.reviews?.length}
-                            </span>
-                          </div>
-                        )}
+                                )}
+                              </AnimatePresence>
+                              <AnimatePresence>
+                                {playingVideoId === post._id && (
+                                  <motion.div
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                                  >
+                                    <div className="absolute inset-0 bg-black/10" />
+                                    <motion.div
+                                      animate={{ scale: [1, 1.2, 1] }}
+                                      transition={{ duration: 1.5, repeat: Infinity }}
+                                      className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
+                                    >
+                                      <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                                        <Pause size={16} className="text-gray-900" />
+                                      </div>
+                                    </motion.div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          ) : (
+                            <SmartMedia
+                              key={`media-${post._id}`}
+                              src={post?.mediaUrl}
+                              type="image"
+                              className="w-full h-full object-cover"
+                              loaderImage="/GlowLoadingGif.gif"
+                            />
+                          )}
+                          {(post?.mediaType !== "video" || playingVideoId !== post._id) && (
+                            <div className="absolute inset-0 bg-black/0 group-active:bg-black/40 transition-colors flex items-center justify-center gap-3 text-white text-xs font-bold opacity-0 group-active:opacity-100">
+                              <span className="flex items-center gap-1">
+                                <Heart size={14} className="fill-white" />
+                                {post?.likes?.length}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <MessageCircle size={14} className="fill-white" />
+                                {post?.reviews?.length}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </motion.div>
                     );
                   })}
@@ -11248,467 +11912,460 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
 
   // Default UI (First UI - Enhanced and Fixed)
   return (
-      <div className="relative min-h-screen bg-slate-100 dark:bg-slate-950 overflow-x-hidden">
-        {/* Onboarding Drawer */}
-        <VendorProfileOnboarding
-          vendor={vendor}
-          id={id}
-          onProfileCreated={handleProfileCreated}
-          isOpen={openOnboardingDrawer}
-          onClose={() => {
-            setOpenOnboardingDrawer(false);
-            updateURLParams({ onboarding: null });
-          }}
-        />
-  
-        <ThumbsUpAnimation show={showThumbsUpAnimation} />
-        <FloatingConfirmation
-          show={showConfirmation.show}
-          icon={showConfirmation.icon}
-          message={showConfirmation.message}
-          type={showConfirmation.type}
-        />
-  
-        {/* ============ FIXED HEADER ============ */}
-        <div
-          className={`fixed top-[82px] max-w-[800px] mx-auto left-0 right-0 z-[40] transition-all duration-500 ease-out rounded-xl ${
-            isScrolledHeader
-              ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-slate-200/50 dark:border-slate-800/50"
-              : "bg-transparent"
+    <div className="relative min-h-screen bg-slate-100 dark:bg-slate-950 overflow-x-hidden">
+      {/* Onboarding Drawer */}
+      <VendorProfileOnboarding
+        vendor={vendor}
+        id={id}
+        onProfileCreated={handleProfileCreated}
+        isOpen={openOnboardingDrawer}
+        onClose={() => {
+          setOpenOnboardingDrawer(false);
+          updateURLParams({ onboarding: null });
+        }}
+      />
+
+      <ThumbsUpAnimation show={showThumbsUpAnimation} />
+      <FloatingConfirmation
+        show={showConfirmation.show}
+        icon={showConfirmation.icon}
+        message={showConfirmation.message}
+        type={showConfirmation.type}
+      />
+
+      {/* ============ FIXED HEADER ============ */}
+      <div
+        className={`fixed top-[82px] max-w-[800px] mx-auto left-0 right-0 z-[40] transition-all duration-500 ease-out rounded-xl ${isScrolledHeader
+          ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-slate-200/50 dark:border-slate-800/50"
+          : "bg-transparent"
           }`}
-        >
-          <div className="px-4 lg:px-6">
-            {/* Row 1: Navigation Controls */}
-            <div
-              className="hidden items-center justify-between py-3 pb-0"
-              style={{ paddingBottom: showHeaderTabs ? 0 : "8px", display: isScrolledHeader ? "flex" : "none" }}
+      >
+        <div className="px-4 lg:px-6">
+          {/* Row 1: Navigation Controls */}
+          <div
+            className="hidden items-center justify-between py-3 pb-0"
+            style={{ paddingBottom: showHeaderTabs ? 0 : "8px", display: isScrolledHeader ? "flex" : "none" }}
+          >
+            <motion.button
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              whileTap={{ scale: 0.92 }}
+              whileHover={{ scale: 1.05 }}
+              onClick={handleBack}
+              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
+                ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
+                : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
+                }`}
+            >
+              <ArrowLeft
+                size={20}
+                className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                  }`}
+              />
+            </motion.button>
+
+            {profile.username && isScrolledHeader && (
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.15, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                className="flex items-center gap-2 flex-1 min-w-0 ml-3"
+              >
+                <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-white dark:ring-slate-800">
+                  <SmartMedia
+                    src={
+                      profile?.vendorAvatar ||
+                      (Array.isArray(vendor?.vendorProfile)
+                        ? vendor.vendorProfile[0]?.profilePicture
+                        : vendor?.vendorProfile?.profilePicture) ||
+                      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
+                    }
+                    type="image"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="text-sm font-bold truncate text-slate-900 dark:text-white">{vendor?.name}</span>
+                {vendor?.isVerified && (
+                  <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
+                    <Check size={10} className="text-white" strokeWidth={3} />
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {/* Right: Action Buttons */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+              className="flex items-center gap-2 flex-shrink-0"
             >
               <motion.button
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                 whileTap={{ scale: 0.92 }}
                 whileHover={{ scale: 1.05 }}
-                onClick={handleBack}
-                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                  isScrolledHeader
-                    ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
-                    : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
-                }`}
-              >
-                <ArrowLeft
-                  size={20}
-                  className={`transition-colors duration-500 ease-out ${
-                    isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                onClick={handleShare}
+                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
+                  ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
+                  : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
                   }`}
+              >
+                <Share2
+                  size={18}
+                  className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                    }`}
                 />
               </motion.button>
-  
-              {profile.username && isScrolledHeader && (
-                <motion.div
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                  className="flex items-center gap-2 flex-1 min-w-0 ml-3"
-                >
-                  <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-white dark:ring-slate-800">
-                    <SmartMedia
-                      src={
-                        profile?.vendorAvatar ||
-                        (Array.isArray(vendor?.vendorProfile)
-                          ? vendor.vendorProfile[0]?.profilePicture
-                          : vendor?.vendorProfile?.profilePicture) ||
-                        "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
-                      }
-                      type="image"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <span className="text-sm font-bold truncate text-slate-900 dark:text-white">{vendor?.name}</span>
-                  {vendor?.isVerified && (
-                    <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
-                      <Check size={10} className="text-white" strokeWidth={3} />
-                    </div>
-                  )}
-                </motion.div>
-              )}
-  
-              {/* Right: Action Buttons */}
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.2, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                className="flex items-center gap-2 flex-shrink-0"
+              <motion.button
+                whileTap={{ scale: 0.92 }}
+                whileHover={{ scale: 1.05 }}
+                onClick={() => setShowMoreOptions(true)}
+                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
+                  ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
+                  : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
+                  }`}
               >
-                <motion.button
-                  whileTap={{ scale: 0.92 }}
-                  whileHover={{ scale: 1.05 }}
-                  onClick={handleShare}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                    isScrolledHeader
-                      ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
-                      : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
-                  }`}
-                >
-                  <Share2
-                    size={18}
-                    className={`transition-colors duration-500 ease-out ${
-                      isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                <MoreVertical
+                  size={18}
+                  className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
                     }`}
-                  />
-                </motion.button>
-                <motion.button
-                  whileTap={{ scale: 0.92 }}
-                  whileHover={{ scale: 1.05 }}
-                  onClick={() => setShowMoreOptions(true)}
-                  className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                    isScrolledHeader
-                      ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
-                      : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
-                  }`}
-                >
-                  <MoreVertical
-                    size={18}
-                    className={`transition-colors duration-500 ease-out ${
-                      isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
-                    }`}
-                  />
-                </motion.button>
-              </motion.div>
-            </div>
-  
-            {/* Row 2: Tab Navigation (appears on scroll) */}
-            <AnimatePresence mode="wait">
-              {showHeaderTabs && !isCoverExpanded && isScrolledHeader && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{
-                    height: "auto",
-                    opacity: 1,
-                    transition: {
-                      height: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
-                      opacity: { duration: 0.3, delay: 0.1 },
-                    },
-                  }}
-                  exit={{
-                    height: 0,
-                    opacity: 0,
-                    transition: { height: { duration: 0.3, ease: [0.22, 1, 0.36, 1] }, opacity: { duration: 0.2 } },
-                  }}
-                  className="overflow-hidden border-t border-slate-200/50 dark:border-slate-800/50"
-                >
-                  <div className="relative">
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0, transition: { delay: 0.15, duration: 0.4, ease: [0.22, 1, 0.36, 1] } }}
-                      className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-b border-slate-200/50 dark:border-slate-800/50 mt-2 transition-all duration-500 ease-out rounded-t-xl"
-                    >
-                      <LayoutGroup id="header-tabs">
-                        <div className="flex overflow-x-auto no-scrollbar">
-                          {TABS.map((tab, index) => (
-                            <motion.button
-                              key={tab.id}
-                              initial={{ opacity: 0, y: 12 }}
+                />
+              </motion.button>
+            </motion.div>
+          </div>
+
+          {/* Row 2: Tab Navigation (appears on scroll) */}
+          <AnimatePresence mode="wait">
+            {showHeaderTabs && !isCoverExpanded && isScrolledHeader && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{
+                  height: "auto",
+                  opacity: 1,
+                  transition: {
+                    height: { duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+                    opacity: { duration: 0.3, delay: 0.1 },
+                  },
+                }}
+                exit={{
+                  height: 0,
+                  opacity: 0,
+                  transition: { height: { duration: 0.3, ease: [0.22, 1, 0.36, 1] }, opacity: { duration: 0.2 } },
+                }}
+                className="overflow-hidden border-t border-slate-200/50 dark:border-slate-800/50"
+              >
+                <div className="relative">
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0, transition: { delay: 0.15, duration: 0.4, ease: [0.22, 1, 0.36, 1] } }}
+                    className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl border-b border-slate-200/50 dark:border-slate-800/50 mt-2 transition-all duration-500 ease-out rounded-t-xl"
+                  >
+                    <LayoutGroup id="header-tabs">
+                      <div className="flex overflow-x-auto no-scrollbar">
+                        {TABS.map((tab, index) => (
+                          <motion.button
+                            key={tab.id}
+                            initial={{ opacity: 0, y: 12 }}
+                            animate={{
+                              opacity: 1,
+                              y: 0,
+                              transition: { delay: 0.2 + index * 0.04, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
+                            }}
+                            whileTap={{ scale: 0.96 }}
+                            whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
+                            onClick={() => {
+                              setActiveTab(tab.id);
+                              const url = new URL(window.location.href);
+                              url.searchParams.set("tab", tab.id);
+                              if (tab.id !== "services") url.searchParams.delete("details");
+                              window.history.pushState({}, "", url.toString());
+                            }}
+                            className="flex-1 min-w-[82px] py-4 flex items-center justify-center gap-2 text-[12px] font-bold capitalize relative cursor-pointer"
+                            style={{
+                              color: activeTab === tab.id ? categoryColor.primary : "rgb(107, 114, 128)",
+                              transition: "color 0.3s cubic-bezier(0.22, 1, 0.36, 1)",
+                            }}
+                          >
+                            <motion.div
                               animate={{
-                                opacity: 1,
-                                y: 0,
-                                transition: { delay: 0.2 + index * 0.04, duration: 0.4, ease: [0.22, 1, 0.36, 1] },
-                              }}
-                              whileTap={{ scale: 0.96 }}
-                              whileHover={{ scale: 1.02, transition: { duration: 0.2 } }}
-                              onClick={() => {
-                                setActiveTab(tab.id);
-                                const url = new URL(window.location.href);
-                                url.searchParams.set("tab", tab.id);
-                                if (tab.id !== "services") url.searchParams.delete("details");
-                                window.history.pushState({}, "", url.toString());
-                              }}
-                              className="flex-1 min-w-[82px] py-4 flex items-center justify-center gap-2 text-[12px] font-bold capitalize relative cursor-pointer"
-                              style={{
-                                color: activeTab === tab.id ? categoryColor.primary : "rgb(107, 114, 128)",
-                                transition: "color 0.3s cubic-bezier(0.22, 1, 0.36, 1)",
+                                scale: activeTab === tab.id ? 1 : 1,
+                                transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
                               }}
                             >
+                              <tab.icon size={19} />
+                            </motion.div>
+                            {activeTab === tab.id && (
                               <motion.div
-                                animate={{
-                                  scale: activeTab === tab.id ? 1 : 1,
-                                  transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+                                layoutId="header-tab-indicator"
+                                className="absolute bottom-0 left-3 right-3 h-[3px] rounded-full"
+                                style={{
+                                  background: `linear-gradient(90deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
                                 }}
-                              >
-                                <tab.icon size={19} />
-                              </motion.div>
-                              {activeTab === tab.id && (
-                                <motion.div
-                                  layoutId="header-tab-indicator"
-                                  className="absolute bottom-0 left-3 right-3 h-[3px] rounded-full"
-                                  style={{
-                                    background: `linear-gradient(90deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-                                  }}
-                                  transition={{ type: "spring", stiffness: 500, damping: 40, mass: 0.8 }}
-                                />
-                              )}
-                            </motion.button>
-                          ))}
-                        </div>
-                      </LayoutGroup>
-                    </motion.div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-  
-        {/* Main Content - 2 Column Layout */}
-        <main className="pb-10 !pt-[100px] lg:pt-24 max-w-[1400px] mx-auto px-4 lg:px-6">
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
-            {/* Left Column - Main Content */}
-            <div className="min-w-0">
-              {/* ============ LINKEDIN-STYLE HERO CARD ============ */}
-              <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, ease: smoothEase }}
-                className="bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm"
-              >
-                {/* Cover Image */}
-                <motion.div
-                  layout
-                  initial={false}
-                  animate={{ height: isCoverExpanded ? "20rem" : "12rem" }}
-                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  onClick={() => setIsCoverExpanded(!isCoverExpanded)}
-                  className="relative overflow-hidden cursor-pointer group"
-                >
-                  {vendorLoading ? (
-                    <div className="absolute inset-0 bg-slate-200 dark:bg-slate-800">
-                      <motion.div
-                        animate={{ x: ["-100%", "100%"] }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-                      />
-                    </div>
-                  ) : profile?.vendorCoverImage ? (
-                    <SmartMedia
-                      src={profile.vendorCoverImage}
-                      type="image"
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loaderImage="/GlowLoadingGif.gif"
-                      onLoad={() => setCoverImageLoaded(true)}
-                    />
-                  ) : vendor?.images?.[0] ? (
-                    <SmartMedia
-                      src={vendor.images[4] || vendor.images[0]}
-                      type="image"
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      loaderImage="/GlowLoadingGif.gif"
-                      onLoad={() => setCoverImageLoaded(true)}
-                    />
-                  ) : (
-                    <div className={`w-full h-full bg-gradient-to-br ${categoryColor.gradient}`} />
-                  )}
-  
-                  {/* Subtle gradient overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-  
-                  {/* Expand hint */}
-                  <motion.div
-                    animate={{ opacity: isCoverExpanded ? 0 : 1 }}
-                    className="absolute bottom-3 right-3 text-white/70 text-[10px] bg-black/30 px-2.5 py-1 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-                  >
-                    {isCoverExpanded ? "Click to collapse" : "Click to expand"}
+                                transition={{ type: "spring", stiffness: 500, damping: 40, mass: 0.8 }}
+                              />
+                            )}
+                          </motion.button>
+                        ))}
+                      </div>
+                    </LayoutGroup>
                   </motion.div>
-                </motion.div>
-  
-                {/* Profile Section */}
-                <div className="relative px-6 pb-6">
-                  {/* Profile Picture - LinkedIn Style Overlap */}
-                  <div className="flex items-end justify-between" style={{ marginTop: "-105px" }}>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+
+      {/* Main Content - 2 Column Layout */}
+      <main className="pb-10 !pt-[100px] lg:pt-24 max-w-[1400px] mx-auto px-4 lg:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+          {/* Left Column - Main Content */}
+          <div className="min-w-0">
+            {/* ============ LINKEDIN-STYLE HERO CARD ============ */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: smoothEase }}
+              className="bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm"
+            >
+              {/* Cover Image */}
+              <motion.div
+                layout
+                initial={false}
+                animate={{ height: isCoverExpanded ? "20rem" : "12rem" }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                onClick={() => setIsCoverExpanded(!isCoverExpanded)}
+                className="relative overflow-hidden cursor-pointer group"
+              >
+                {vendorLoading ? (
+                  <div className="absolute inset-0 bg-slate-200 dark:bg-slate-800">
                     <motion.div
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.2, duration: 0.5, ease: smoothEase }}
-                      whileTap={{ scale: 0.96 }}
-                      onClick={() => setShowProfilePicture(true)}
-                      className="relative cursor-pointer group z-10"
+                      animate={{ x: ["-100%", "100%"] }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
+                    />
+                  </div>
+                ) : profile?.vendorCoverImage ? (
+                  <SmartMedia
+                    src={profile.vendorCoverImage}
+                    type="image"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loaderImage="/GlowLoadingGif.gif"
+                    onLoad={() => setCoverImageLoaded(true)}
+                  />
+                ) : vendor?.images?.[0] ? (
+                  <SmartMedia
+                    src={vendor.images[4] || vendor.images[0]}
+                    type="image"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    loaderImage="/GlowLoadingGif.gif"
+                    onLoad={() => setCoverImageLoaded(true)}
+                  />
+                ) : (
+                  <div className={`w-full h-full bg-gradient-to-br ${categoryColor.gradient}`} />
+                )}
+
+                {/* Subtle gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                {/* Expand hint */}
+                <motion.div
+                  animate={{ opacity: isCoverExpanded ? 0 : 1 }}
+                  className="absolute bottom-3 right-3 text-white/70 text-[10px] bg-black/30 px-2.5 py-1 rounded-full backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                >
+                  {isCoverExpanded ? "Click to collapse" : "Click to expand"}
+                </motion.div>
+              </motion.div>
+
+              {/* Profile Section */}
+              <div className="relative px-6 pb-6">
+                {/* Profile Picture - LinkedIn Style Overlap */}
+                <div className="flex items-end justify-between" style={{ marginTop: "-105px" }}>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.2, duration: 0.5, ease: smoothEase }}
+                    whileTap={{ scale: 0.96 }}
+                    onClick={() => setShowProfilePicture(true)}
+                    className="relative cursor-pointer group z-10"
+                  >
+                    {vendorLoading ? (
+                      <div className="w-[180px] h-[180px] rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse ring-4 ring-white dark:ring-slate-900" />
+                    ) : (
+                      <div
+                        className="w-[180px] h-[180px] rounded-full overflow-hidden ring-4 ring-white dark:ring-slate-900 transition-all duration-300 group-hover:ring-offset-2 group-hover:ring-offset-white dark:group-hover:ring-offset-slate-900"
+                        style={{ boxShadow: `0 8px 32px -8px rgba(${categoryColor.rgb}, 0.3)` }}
+                      >
+                        <SmartMedia
+                          src={
+                            profile?.vendorAvatar ||
+                            (Array.isArray(vendor?.vendorProfile)
+                              ? vendor.vendorProfile[0]?.profilePicture
+                              : vendor?.vendorProfile?.profilePicture) ||
+                            "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
+                          }
+                          type="image"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                          loaderImage="/GlowLoadingGif.gif"
+                        />
+                      </div>
+                    )}
+                    {vendor?.isVerified && (
+                      <motion.div
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        transition={{ delay: 0.4, type: "spring", stiffness: 500, damping: 20 }}
+                        className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center ring-3 ring-white dark:ring-slate-900 shadow-lg"
+                      >
+                        <BadgeCheck size={18} className="text-white" />
+                      </motion.div>
+                    )}
+                  </motion.div>
+
+                  {/* Action Buttons - Top Right */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3, duration: 0.4 }}
+                    className="flex items-center gap-2 mb-4"
+                  >
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.02 }}
+                      onClick={() => setShowContactDrawer(true)}
+                      className="px-5 py-2.5 rounded-full font-semibold text-[13px] text-white flex items-center gap-2 transition-all duration-300 cursor-pointer"
+                      style={{
+                        background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                        boxShadow: `0 4px 16px -4px rgba(${categoryColor.rgb}, 0.4)`,
+                      }}
                     >
-                      {vendorLoading ? (
-                        <div className="w-[180px] h-[180px] rounded-full bg-slate-200 dark:bg-slate-700 animate-pulse ring-4 ring-white dark:ring-slate-900" />
-                      ) : (
-                        <div
-                          className="w-[180px] h-[180px] rounded-full overflow-hidden ring-4 ring-white dark:ring-slate-900 transition-all duration-300 group-hover:ring-offset-2 group-hover:ring-offset-white dark:group-hover:ring-offset-slate-900"
-                          style={{ boxShadow: `0 8px 32px -8px rgba(${categoryColor.rgb}, 0.3)` }}
-                        >
-                          <SmartMedia
-                            src={
-                              profile?.vendorAvatar ||
-                              (Array.isArray(vendor?.vendorProfile)
-                                ? vendor.vendorProfile[0]?.profilePicture
-                                : vendor?.vendorProfile?.profilePicture) ||
-                              "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
-                            }
-                            type="image"
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                            loaderImage="/GlowLoadingGif.gif"
-                          />
-                        </div>
-                      )}
-                      {vendor?.isVerified && (
-                        <motion.div
-                          initial={{ scale: 0, rotate: -180 }}
-                          animate={{ scale: 1, rotate: 0 }}
-                          transition={{ delay: 0.4, type: "spring", stiffness: 500, damping: 20 }}
-                          className="absolute bottom-2 right-2 w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center ring-3 ring-white dark:ring-slate-900 shadow-lg"
-                        >
-                          <BadgeCheck size={18} className="text-white" />
-                        </motion.div>
-                      )}
-                    </motion.div>
-  
-                    {/* Action Buttons - Top Right */}
+                      <MessageCircle size={16} />
+                      Contact
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.95 }}
+                      whileHover={{ scale: 1.02 }}
+                      onClick={() => setShowMoreOptions(true)}
+                      className="w-10 h-10 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+                    >
+                      <MoreHorizontal size={18} className="text-slate-600 dark:text-slate-400" />
+                    </motion.button>
+                  </motion.div>
+                </div>
+
+                {/* Profile Info */}
+                <div className="mt-4">
+                  {vendorLoading ? (
+                    <div className="space-y-3">
+                      <div className="h-7 w-64 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse" />
+                      <div className="h-5 w-48 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse" />
+                      <div className="h-4 w-40 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse" />
+                    </div>
+                  ) : (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.3, duration: 0.4 }}
-                      className="flex items-center gap-2 mb-4"
+                      transition={{ delay: 0.25, duration: 0.5 }}
                     >
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        whileHover={{ scale: 1.02 }}
-                        onClick={() => setShowContactDrawer(true)}
-                        className="px-5 py-2.5 rounded-full font-semibold text-[13px] text-white flex items-center gap-2 transition-all duration-300 cursor-pointer"
-                        style={{
-                          background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-                          boxShadow: `0 4px 16px -4px rgba(${categoryColor.rgb}, 0.4)`,
-                        }}
-                      >
-                        <MessageCircle size={16} />
-                        Contact
-                      </motion.button>
-                      <motion.button
-                        whileTap={{ scale: 0.95 }}
-                        whileHover={{ scale: 1.02 }}
-                        onClick={() => setShowMoreOptions(true)}
-                        className="w-10 h-10 rounded-full border-2 border-slate-300 dark:border-slate-600 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
-                      >
-                        <MoreHorizontal size={18} className="text-slate-600 dark:text-slate-400" />
-                      </motion.button>
-                    </motion.div>
-                  </div>
-  
-                  {/* Profile Info */}
-                  <div className="mt-4">
-                    {vendorLoading ? (
-                      <div className="space-y-3">
-                        <div className="h-7 w-64 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse" />
-                        <div className="h-5 w-48 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse" />
-                        <div className="h-4 w-40 bg-slate-200 dark:bg-slate-700 rounded-lg animate-pulse" />
+                      {/* Name & Premium Badge */}
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <h1 className="text-[24px] lg:text-[28px] font-bold text-slate-900 dark:text-white leading-tight">
+                          {vendor?.name}
+                        </h1>
+                        {vendor?.isPremium && (
+                          <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold rounded-full flex items-center gap-1 shadow-md shadow-amber-500/30">
+                            <Crown size={12} />
+                            PREMIUM
+                          </span>
+                        )}
                       </div>
-                    ) : (
+
+                      {/* Title/Category */}
+                      <p className="text-[15px] lg:text-[17px] text-slate-700 dark:text-slate-300 mt-1.5 font-medium">
+                        {vendor?.category || "Photography"} Professional
+                      </p>
+
+                      {/* Company Info Row */}
+                      <div className="flex items-center gap-2 mt-2 text-[13px] text-slate-500 dark:text-slate-400">
+                        <div
+                          className="w-5 h-5 rounded flex items-center justify-center"
+                          style={{ backgroundColor: `rgba(${categoryColor.rgb}, 0.1)` }}
+                        >
+                          <Building2 size={12} style={{ color: categoryColor.primary }} />
+                        </div>
+                        <span className="font-medium" style={{ color: categoryColor.primary }}>
+                          {vendor?.category || "Photography"} Services
+                        </span>
+                      </div>
+
+                      {/* Location & Contact */}
+                      <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-2 text-[13px] text-slate-500 dark:text-slate-400">
+                        <span className="flex items-center gap-1.5">
+                          <MapPin size={14} />
+                          {vendor?.address?.city || "Mumbai"}, {vendor?.address?.state || "India"}
+                        </span>
+                        <span
+                          className="flex items-center gap-1.5 hover:text-blue-600 hover:underline cursor-pointer"
+                          onClick={() => setShowContactDrawer(true)}
+                        >
+                          Contact info
+                        </span>
+                      </div>
+
+                      {/* Stats Row */}
                       <motion.div
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.25, duration: 0.5 }}
+                        transition={{ delay: 0.4, duration: 0.5, ease: smoothEase }}
+                        className="flex items-center justify-around lg:justify-center lg:gap-12 py-1.5 lg:py-3 border-y border-gray-100 dark:border-gray-800/80 mx-1 mt-2 lg:mt-4"
                       >
-                        {/* Name & Premium Badge */}
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <h1 className="text-[24px] lg:text-[28px] font-bold text-slate-900 dark:text-white leading-tight">
-                            {vendor?.name}
-                          </h1>
-                          {vendor?.isPremium && (
-                            <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold rounded-full flex items-center gap-1 shadow-md shadow-amber-500/30">
-                              <Crown size={12} />
-                              PREMIUM
-                            </span>
-                          )}
-                        </div>
-  
-                        {/* Title/Category */}
-                        <p className="text-[15px] lg:text-[17px] text-slate-700 dark:text-slate-300 mt-1.5 font-medium">
-                          {vendor?.category || "Photography"} Professional
-                        </p>
-  
-                        {/* Company Info Row */}
-                        <div className="flex items-center gap-2 mt-2 text-[13px] text-slate-500 dark:text-slate-400">
-                          <div
-                            className="w-5 h-5 rounded flex items-center justify-center"
-                            style={{ backgroundColor: `rgba(${categoryColor.rgb}, 0.1)` }}
-                          >
-                            <Building2 size={12} style={{ color: categoryColor.primary }} />
-                          </div>
-                          <span className="font-medium" style={{ color: categoryColor.primary }}>
-                            {vendor?.category || "Photography"} Services
-                          </span>
-                        </div>
-  
-                        {/* Location & Contact */}
-                        <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-2 text-[13px] text-slate-500 dark:text-slate-400">
-                          <span className="flex items-center gap-1.5">
-                            <MapPin size={14} />
-                            {vendor?.address?.city || "Mumbai"}, {vendor?.address?.state || "India"}
-                          </span>
-                          <span
-                            className="flex items-center gap-1.5 hover:text-blue-600 hover:underline cursor-pointer"
-                            onClick={() => setShowContactDrawer(true)}
-                          >
-                            Contact info
-                          </span>
-                        </div>
-  
-                        {/* Stats Row */}
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.4, duration: 0.5, ease: smoothEase }}
-                          className="flex items-center justify-around lg:justify-center lg:gap-12 py-1.5 lg:py-3 border-y border-gray-100 dark:border-gray-800/80 mx-1 mt-2 lg:mt-4"
-                        >
-                          {stats.map((stat, idx) => (
-                            <React.Fragment key={idx}>
-                              {stat.showSkeleton ? (
-                                <StatSkeleton />
-                              ) : (
-                                <motion.button
-                                  whileTap={{ scale: stat.loading ? 1 : 0.94 }}
-                                  transition={smoothSpring}
-                                  onClick={
-                                    stat.label === "Trust"
-                                      ? handleTrustWithBounce
-                                      : stat.label === "Likes"
-                                        ? handleLikeWithBounce
-                                        : stat.action
-                                  }
-                                  disabled={stat.loading}
-                                  className="flex flex-col items-center px-5 lg:px-8 py-2 rounded-2xl transition-all duration-300 cursor-pointer"
+                        {stats.map((stat, idx) => (
+                          <React.Fragment key={idx}>
+                            {stat.showSkeleton ? (
+                              <StatSkeleton />
+                            ) : (
+                              <motion.button
+                                whileTap={{ scale: stat.loading ? 1 : 0.94 }}
+                                transition={smoothSpring}
+                                onClick={
+                                  stat.label === "Trust"
+                                    ? handleTrustWithBounce
+                                    : stat.label === "Likes"
+                                      ? handleLikeWithBounce
+                                      : stat.action
+                                }
+                                disabled={stat.loading}
+                                className="flex flex-col items-center px-5 lg:px-8 py-2 rounded-2xl transition-all duration-300 cursor-pointer"
+                                style={{
+                                  backgroundColor: stat.active ? `rgba(${categoryColor.rgb}, 0.1)` : "transparent",
+                                }}
+                              >
+                                <motion.span
+                                  animate={stat.loading ? { opacity: [1, 0.4, 1] } : {}}
+                                  transition={{
+                                    duration: 1.2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut",
+                                  }}
+                                  className="text-[18px] lg:text-[22px] font-black transition-colors duration-300"
                                   style={{
-                                    backgroundColor: stat.active ? `rgba(${categoryColor.rgb}, 0.1)` : "transparent",
+                                    color: stat.active ? categoryColor.primary : undefined,
                                   }}
                                 >
-                                  <motion.span
-                                    animate={stat.loading ? { opacity: [1, 0.4, 1] } : {}}
-                                    transition={{
-                                      duration: 1.2,
-                                      repeat: Infinity,
-                                      ease: "easeInOut",
-                                    }}
-                                    className="text-[18px] lg:text-[22px] font-black transition-colors duration-300"
-                                    style={{
-                                      color: stat.active ? categoryColor.primary : undefined,
-                                    }}
-                                  >
-                                    {stat.value}
-                                  </motion.span>
-                                  <span className="text-[10px] lg:text-[12px] text-gray-500 dark:text-gray-400 font-semibold tracking-wide">
-                                    {stat.label}
-                                  </span>
-                                </motion.button>
-                              )}
-                              {idx < stats.length - 1 && <div className="w-px h-9 bg-gray-200 dark:bg-gray-700/80" />}
-                            </React.Fragment>
-                          ))}
-                        </motion.div>
-  
-                        {/* Connection Count */}
-                        {/* <div className="flex items-center gap-3 mt-3">
+                                  {stat.value}
+                                </motion.span>
+                                <span className="text-[10px] lg:text-[12px] text-gray-500 dark:text-gray-400 font-semibold tracking-wide">
+                                  {stat.label}
+                                </span>
+                              </motion.button>
+                            )}
+                            {idx < stats.length - 1 && <div className="w-px h-9 bg-gray-200 dark:bg-gray-700/80" />}
+                          </React.Fragment>
+                        ))}
+                      </motion.div>
+
+                      {/* Connection Count */}
+                      {/* <div className="flex items-center gap-3 mt-3">
                           <span className="text-[13px] font-semibold" style={{ color: categoryColor.primary }}>
                             {vendor?.trustedBy?.length || 0}+ connections
                           </span>
@@ -11725,9 +12382,9 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
                             </>
                           )}
                         </div> */}
-  
-                        {/* Mutual Connections Preview */}
-                        {/* <div className="flex items-center gap-2 mt-3">
+
+                      {/* Mutual Connections Preview */}
+                      {/* <div className="flex items-center gap-2 mt-3">
                           <div className="flex -space-x-2">
                             {[1, 2, 3].map((i) => (
                               <div
@@ -11746,709 +12403,709 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
                             <span className="font-medium text-slate-700 dark:text-slate-300">12 mutual connections</span>
                           </span>
                         </div> */}
-                      </motion.div>
-                    )}
-                  </div>
-  
-                  {/* Action Buttons Row */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.35, duration: 0.4 }}
-                    className="flex items-center justify-end gap-2 mt-5 flex-wrap min-w-full"
-                  >
-                    <motion.button
-                      whileTap={{ scale: 0.96 }}
-                      whileHover={{ scale: 1.02 }}
-                      onClick={handleTrustWithBounce}
-                      className="px-16 py-3 rounded-full font-semibold text-[13px] flex items-center gap-2 transition-all duration-300 cursor-pointer"
-                      style={{
-                        background: hasTrusted
-                          ? "linear-gradient(135deg, #22c55e 0%, #10b981 100%)"
-                          : `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-                        color: "white",
-                        boxShadow: hasTrusted
-                          ? "0 4px 16px -4px rgba(34, 197, 94, 0.4)"
-                          : `0 4px 16px -4px rgba(${categoryColor.rgb}, 0.4)`,
-                      }}
-                    >
-                      <motion.div
-                        animate={hasTrusted ? { rotate: [0, -15, 15, -10, 10, 0], scale: [1, 1.15, 1.1, 1.05, 1] } : {}}
-                        transition={{ duration: 0.5, ease: smoothEase }}
-                      >
-                        <ThumbsUp size={16} className={hasTrusted ? "fill-white" : ""} />
-                      </motion.div>
-                      {hasTrusted ? "Trusted" : "Trust"}
-                    </motion.button>
-  
-                    <motion.button
-                      whileTap={{ scale: 0.96 }}
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => setShowBookingDrawer(true)}
-                      className="px-6 py-2.5 rounded-full font-semibold text-[13px] border-2 flex items-center gap-2 transition-all duration-300 cursor-pointer"
-                      style={{
-                        borderColor: categoryColor.primary,
-                        color: categoryColor.primary,
-                      }}
-                    >
-                      <Calendar size={16} />
-                      Book Now
-                    </motion.button>
-  
-                    <motion.button
-                      whileTap={{ scale: 0.96 }}
-                      whileHover={{ scale: 1.02, backgroundColor: "rgba(0,0,0,0.05)" }}
-                      onClick={handleSaveProfile}
-                      className="px-5 py-2.5 rounded-full font-semibold text-[13px] border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 flex items-center gap-2 transition-all duration-300 cursor-pointer"
-                    >
-                      <Bookmark size={16} className={isSaved ? "fill-current" : ""} />
-                      {isSaved ? "Saved" : "Save"}
-                    </motion.button>
-                  </motion.div>
-                </div>
-              </motion.section>
-  
-              {/* ============ BIO & ABOUT SECTION ============ */}
-              <motion.section
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2, duration: 0.6, ease: smoothEase }}
-                className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mt-4 overflow-hidden"
-              >
-                <div className="p-6">
-                  <h2 className="text-[18px] font-bold text-slate-900 dark:text-white mb-4">About</h2>
-  
-                  {profileLoading ? (
-                    <BioSkeleton />
-                  ) : (
-                    <>
-                      <motion.div
-                        initial={false}
-                        animate={{ height: isBioExpanded ? "auto" : "4.5rem" }}
-                        transition={{ duration: 0.5, ease: smoothEase }}
-                        className="relative overflow-hidden"
-                      >
-                        <div
-                          className="text-[14px] lg:text-[15px] text-slate-600 dark:text-slate-300 leading-[1.7]"
-                          dangerouslySetInnerHTML={{ __html: sanitizeHtml(profile?.bio || defaultBio) }}
-                        />
-                        {!isBioExpanded && (
-                          <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none" />
-                        )}
-                      </motion.div>
-  
-                      {getPlainTextLength(profile?.bio || defaultBio) > 120 && (
-                        <motion.button
-                          whileTap={{ scale: 0.97 }}
-                          onClick={() => setIsBioExpanded(!isBioExpanded)}
-                          className="text-[13px] font-semibold mt-3 transition-colors duration-300 flex items-center gap-1 cursor-pointer"
-                          style={{ color: categoryColor.primary }}
-                        >
-                          {isBioExpanded ? "Show less" : "...see more"}
-                        </motion.button>
-                      )}
-                    </>
+                    </motion.div>
                   )}
-  
-                  {/* Links Section */}
-                  <AnimatePresence>
-                    {(profile?.website || profile?.socialLinks?.instagram) && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1, duration: 0.4 }}
-                        className="flex items-center gap-2 mt-5 pt-5 border-t border-slate-100 dark:border-slate-800 overflow-x-auto no-scrollbar"
-                      >
-                        {profile.website && (
-                          <motion.a
-                            whileTap={{ scale: 0.96 }}
-                            href={profile.website}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-300 text-[12px] font-semibold flex-shrink-0 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
-                          >
-                            <Globe size={14} />
-                            Website
-                            <ExternalLink size={10} />
-                          </motion.a>
-                        )}
-                        {profile.socialLinks?.instagram && (
-                          <motion.a
-                            whileTap={{ scale: 0.96 }}
-                            href={profile.socialLinks.instagram}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12px] font-semibold flex-shrink-0 transition-all"
-                            style={{ backgroundColor: `rgba(${categoryColor.rgb}, 0.1)`, color: categoryColor.primary }}
-                          >
-                            <Instagram size={14} />
-                            Instagram
-                          </motion.a>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
                 </div>
-              </motion.section>
-  
-              {/* ============ HIGHLIGHTS SECTION ============ */}
-              <motion.section
+
+                {/* Action Buttons Row */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35, duration: 0.4 }}
+                  className="flex items-center justify-end gap-2 mt-5 flex-wrap min-w-full"
+                >
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    whileHover={{ scale: 1.02 }}
+                    onClick={handleTrustWithBounce}
+                    className="px-16 py-3 rounded-full font-semibold text-[13px] flex items-center gap-2 transition-all duration-300 cursor-pointer"
+                    style={{
+                      background: hasTrusted
+                        ? "linear-gradient(135deg, #22c55e 0%, #10b981 100%)"
+                        : `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                      color: "white",
+                      boxShadow: hasTrusted
+                        ? "0 4px 16px -4px rgba(34, 197, 94, 0.4)"
+                        : `0 4px 16px -4px rgba(${categoryColor.rgb}, 0.4)`,
+                    }}
+                  >
+                    <motion.div
+                      animate={hasTrusted ? { rotate: [0, -15, 15, -10, 10, 0], scale: [1, 1.15, 1.1, 1.05, 1] } : {}}
+                      transition={{ duration: 0.5, ease: smoothEase }}
+                    >
+                      <ThumbsUp size={16} className={hasTrusted ? "fill-white" : ""} />
+                    </motion.div>
+                    {hasTrusted ? "Trusted" : "Trust"}
+                  </motion.button>
+
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    whileHover={{ scale: 1.02 }}
+                    onClick={() => setShowBookingDrawer(true)}
+                    className="px-6 py-2.5 rounded-full font-semibold text-[13px] border-2 flex items-center gap-2 transition-all duration-300 cursor-pointer"
+                    style={{
+                      borderColor: categoryColor.primary,
+                      color: categoryColor.primary,
+                    }}
+                  >
+                    <Calendar size={16} />
+                    Book Now
+                  </motion.button>
+
+                  <motion.button
+                    whileTap={{ scale: 0.96 }}
+                    whileHover={{ scale: 1.02, backgroundColor: "rgba(0,0,0,0.05)" }}
+                    onClick={handleSaveProfile}
+                    className="px-5 py-2.5 rounded-full font-semibold text-[13px] border-2 border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 flex items-center gap-2 transition-all duration-300 cursor-pointer"
+                  >
+                    <Bookmark size={16} className={isSaved ? "fill-current" : ""} />
+                    {isSaved ? "Saved" : "Save"}
+                  </motion.button>
+                </motion.div>
+              </div>
+            </motion.section>
+
+            {/* ============ BIO & ABOUT SECTION ============ */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.6, ease: smoothEase }}
+              className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mt-4 overflow-hidden"
+            >
+              <div className="p-6">
+                <h2 className="text-[18px] font-bold text-slate-900 dark:text-white mb-4">About</h2>
+
+                {profileLoading ? (
+                  <BioSkeleton />
+                ) : (
+                  <>
+                    <motion.div
+                      initial={false}
+                      animate={{ height: isBioExpanded ? "auto" : "4.5rem" }}
+                      transition={{ duration: 0.5, ease: smoothEase }}
+                      className="relative overflow-hidden"
+                    >
+                      <div
+                        className="text-[14px] lg:text-[15px] text-slate-600 dark:text-slate-300 leading-[1.7]"
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(profile?.bio || defaultBio) }}
+                      />
+                      {!isBioExpanded && (
+                        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-white dark:from-slate-900 to-transparent pointer-events-none" />
+                      )}
+                    </motion.div>
+
+                    {getPlainTextLength(profile?.bio || defaultBio) > 120 && (
+                      <motion.button
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => setIsBioExpanded(!isBioExpanded)}
+                        className="text-[13px] font-semibold mt-3 transition-colors duration-300 flex items-center gap-1 cursor-pointer"
+                        style={{ color: categoryColor.primary }}
+                      >
+                        {isBioExpanded ? "Show less" : "...see more"}
+                      </motion.button>
+                    )}
+                  </>
+                )}
+
+                {/* Links Section */}
+                <AnimatePresence>
+                  {(profile?.website || profile?.socialLinks?.instagram) && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1, duration: 0.4 }}
+                      className="flex items-center gap-2 mt-5 pt-5 border-t border-slate-100 dark:border-slate-800 overflow-x-auto no-scrollbar"
+                    >
+                      {profile.website && (
+                        <motion.a
+                          whileTap={{ scale: 0.96 }}
+                          href={profile.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-4 py-2.5 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-700 dark:text-slate-300 text-[12px] font-semibold flex-shrink-0 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+                        >
+                          <Globe size={14} />
+                          Website
+                          <ExternalLink size={10} />
+                        </motion.a>
+                      )}
+                      {profile.socialLinks?.instagram && (
+                        <motion.a
+                          whileTap={{ scale: 0.96 }}
+                          href={profile.socialLinks.instagram}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-2 px-4 py-2.5 rounded-lg text-[12px] font-semibold flex-shrink-0 transition-all"
+                          style={{ backgroundColor: `rgba(${categoryColor.rgb}, 0.1)`, color: categoryColor.primary }}
+                        >
+                          <Instagram size={14} />
+                          Instagram
+                        </motion.a>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </motion.section>
+
+            {/* ============ HIGHLIGHTS SECTION ============ */}
+            <motion.section
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.6, ease: smoothEase }}
+              className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mt-4 min-w-full flex items-center justify-center overflow-hidden"
+            >
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-[18px] font-bold text-slate-900 dark:text-white">Highlights</h2>
+                  <div className="flex items-center gap-2">
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={handleHighlightPrev}
+                      disabled={currentHighlightIndex === 0}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${currentHighlightIndex === 0
+                        ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
+                        : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                        }`}
+                    >
+                      <ChevronLeft size={16} className="text-slate-600 dark:text-slate-400" />
+                    </motion.button>
+                    <motion.button
+                      whileTap={{ scale: 0.9 }}
+                      onClick={handleHighlightNext}
+                      disabled={currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1
+                        ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
+                        : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                        }`}
+                    >
+                      <ChevronRight size={16} className="text-slate-600 dark:text-slate-400" />
+                    </motion.button>
+                  </div>
+                </div>
+
+                <div ref={highlightsContainerRef} className="overflow-x-auto no-scrollbar">
+                  {profileLoading ? (
+                    <HighlightsSkeleton />
+                  ) : (
+                    <motion.div className="flex gap-4 pb-2" style={{ minWidth: "max-content" }}>
+                      {MOCK_HIGHLIGHTS.map((highlight, index) => (
+                        <motion.button
+                          key={highlight.id}
+                          initial={{ opacity: 0, y: 15, scale: 0.9 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          transition={{ delay: 0.1 + index * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                          whileTap={{ scale: 0.94 }}
+                          onClick={() => setSelectedHighlight(highlight)}
+                          className="flex flex-col items-center gap-2.5 shrink-0 group cursor-pointer"
+                        >
+                          <div
+                            className="w-[72px] h-[72px] lg:w-[80px] lg:h-[80px] rounded-full overflow-hidden p-[3px] transition-transform duration-300 group-hover:scale-105"
+                            style={{
+                              background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                            }}
+                          >
+                            <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-slate-900 p-[2px]">
+                              <SmartMedia
+                                src={highlight.image}
+                                type="image"
+                                className="w-full h-full object-cover rounded-full"
+                                loaderImage="/GlowLoadingGif.gif"
+                              />
+                            </div>
+                          </div>
+                          <span className="text-[11px] lg:text-[12px] font-medium text-slate-600 dark:text-slate-400 truncate max-w-[80px]">
+                            {highlight.title}
+                          </span>
+                        </motion.button>
+                      ))}
+                    </motion.div>
+                  )}
+                </div>
+              </div>
+            </motion.section>
+
+            {/* ============ TAB NAVIGATION ============ */}
+            <motion.div
+              ref={stickyTabsRef}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.35, duration: 0.4, ease: smoothEase }}
+              className="bg-white dark:bg-slate-900 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 mt-4 transition-all duration-300 sticky top-[56px] lg:top-[60px] z-[35] rounded-xl shadow-sm min-w-full flex items-center justify-center"
+            >
+              <LayoutGroup id="sticky-tabs">
+                <div className="flex overflow-x-auto no-scrollbar">
+                  {TABS.map((tab, index) => (
+                    <motion.button
+                      key={tab.id}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.4 + index * 0.05, duration: 0.3 }}
+                      whileTap={{ scale: 0.96 }}
+                      onClick={() => {
+                        setActiveTab(tab.id);
+                        const url = new URL(window.location.href);
+                        url.searchParams.set("tab", tab.id);
+                        if (tab.id !== "services") url.searchParams.delete("details");
+                        window.history.pushState({}, "", url.toString());
+                      }}
+                      className="flex-1 min-w-[82px] lg:min-w-[120px] lg:flex-none lg:px-8 py-4 flex items-center justify-center gap-2 text-[12px] lg:text-[14px] font-bold capitalize transition-all duration-300 relative cursor-pointer"
+                      style={{ color: activeTab === tab.id ? categoryColor.primary : "rgb(107, 114, 128)" }}
+                    >
+                      <tab.icon size={19} />
+                      <span className="hidden md:inline">{tab.id}</span>
+                      {activeTab === tab.id && (
+                        <motion.div
+                          layoutId="sticky-tab-indicator"
+                          className="absolute bottom-0 left-3 right-3 h-[3px] rounded-full"
+                          style={{
+                            background: `linear-gradient(90deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                          }}
+                          transition={{ type: "spring", stiffness: 500, damping: 40, mass: 0.8 }}
+                        />
+                      )}
+                    </motion.button>
+                  ))}
+                </div>
+              </LayoutGroup>
+            </motion.div>
+
+            {/* ============ TAB CONTENT ============ */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.6, ease: smoothEase }}
-                className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mt-4 min-w-full flex items-center justify-center overflow-hidden"
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.4, ease: smoothEase }}
+                className="bg-white dark:bg-slate-900 min-h-[50vh] relative z-[1] rounded-xl border border-slate-200 dark:border-slate-800 mt-4 shadow-sm overflow-hidden"
               >
-                <div className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-[18px] font-bold text-slate-900 dark:text-white">Highlights</h2>
-                    <div className="flex items-center gap-2">
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={handleHighlightPrev}
-                        disabled={currentHighlightIndex === 0}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
-                          currentHighlightIndex === 0
-                            ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
-                            : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                        }`}
-                      >
-                        <ChevronLeft size={16} className="text-slate-600 dark:text-slate-400" />
-                      </motion.button>
-                      <motion.button
-                        whileTap={{ scale: 0.9 }}
-                        onClick={handleHighlightNext}
-                        disabled={currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1}
-                        className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
-                          currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1
-                            ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
-                            : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                        }`}
-                      >
-                        <ChevronRight size={16} className="text-slate-600 dark:text-slate-400" />
-                      </motion.button>
-                    </div>
-                  </div>
-  
-                  <div ref={highlightsContainerRef} className="overflow-x-auto no-scrollbar">
-                    {profileLoading ? (
-                      <HighlightsSkeleton />
-                    ) : (
-                      <motion.div className="flex gap-4 pb-2" style={{ minWidth: "max-content" }}>
-                        {MOCK_HIGHLIGHTS.map((highlight, index) => (
-                          <motion.button
-                            key={highlight.id}
-                            initial={{ opacity: 0, y: 15, scale: 0.9 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            transition={{ delay: 0.1 + index * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                            whileTap={{ scale: 0.94 }}
-                            onClick={() => setSelectedHighlight(highlight)}
-                            className="flex flex-col items-center gap-2.5 shrink-0 group cursor-pointer"
-                          >
-                            <div
-                              className="w-[72px] h-[72px] lg:w-[80px] lg:h-[80px] rounded-full overflow-hidden p-[3px] transition-transform duration-300 group-hover:scale-105"
-                              style={{
-                                background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-                              }}
-                            >
-                              <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-slate-900 p-[2px]">
-                                <SmartMedia
-                                  src={highlight.image}
-                                  type="image"
-                                  className="w-full h-full object-cover rounded-full"
-                                  loaderImage="/GlowLoadingGif.gif"
-                                />
-                              </div>
-                            </div>
-                            <span className="text-[11px] lg:text-[12px] font-medium text-slate-600 dark:text-slate-400 truncate max-w-[80px]">
-                              {highlight.title}
-                            </span>
-                          </motion.button>
-                        ))}
-                      </motion.div>
-                    )}
-                  </div>
-                </div>
-              </motion.section>
-  
-              {/* ============ TAB NAVIGATION ============ */}
-              <motion.div
-                ref={stickyTabsRef}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35, duration: 0.4, ease: smoothEase }}
-                className="bg-white dark:bg-slate-900 backdrop-blur-2xl border border-slate-200 dark:border-slate-800 mt-4 transition-all duration-300 sticky top-[56px] lg:top-[60px] z-[35] rounded-xl shadow-sm min-w-full flex items-center justify-center"
-              >
-                <LayoutGroup id="sticky-tabs">
-                  <div className="flex overflow-x-auto no-scrollbar">
-                    {TABS.map((tab, index) => (
-                      <motion.button
-                        key={tab.id}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 + index * 0.05, duration: 0.3 }}
-                        whileTap={{ scale: 0.96 }}
-                        onClick={() => {
-                          setActiveTab(tab.id);
-                          const url = new URL(window.location.href);
-                          url.searchParams.set("tab", tab.id);
-                          if (tab.id !== "services") url.searchParams.delete("details");
-                          window.history.pushState({}, "", url.toString());
-                        }}
-                        className="flex-1 min-w-[82px] lg:min-w-[120px] lg:flex-none lg:px-8 py-4 flex items-center justify-center gap-2 text-[12px] lg:text-[14px] font-bold capitalize transition-all duration-300 relative cursor-pointer"
-                        style={{ color: activeTab === tab.id ? categoryColor.primary : "rgb(107, 114, 128)" }}
-                      >
-                        <tab.icon size={19} />
-                        <span className="hidden md:inline">{tab.id}</span>
-                        {activeTab === tab.id && (
-                          <motion.div
-                            layoutId="sticky-tab-indicator"
-                            className="absolute bottom-0 left-3 right-3 h-[3px] rounded-full"
-                            style={{
-                              background: `linear-gradient(90deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-                            }}
-                            transition={{ type: "spring", stiffness: 500, damping: 40, mass: 0.8 }}
-                          />
-                        )}
-                      </motion.button>
-                    ))}
-                  </div>
-                </LayoutGroup>
+                {renderContent()}
               </motion.div>
-  
-              {/* ============ TAB CONTENT ============ */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.4, ease: smoothEase }}
-                  className="bg-white dark:bg-slate-900 min-h-[50vh] relative z-[1] rounded-xl border border-slate-200 dark:border-slate-800 mt-4 shadow-sm overflow-hidden"
+            </AnimatePresence>
+          </div>
+          {/* End Left Column */}
+
+          {/* Right Column - Sidebar */}
+          {/* Right Column - Sidebar */}
+          <div className="hidden lg:block">
+            <RightSidebar
+              categoryColor={categoryColor}
+              router={router}
+              vendorProfileId={profile?._id}
+              setShowBookingDrawer={setShowBookingDrawer}
+              setShowUpdateProfileDrawer={setShowUpdateProfileDrawer}
+              setShowUploadModal={setShowUploadModal}
+              setShowMoreOptions={setShowMoreOptions}
+              setShowQRModal={setShowQRModal}
+              isVerified={isVerified}
+            />
+          </div>
+        </div>
+      </main>
+
+      {/* ============ FLOATING ACTION BUTTONS ============ */}
+      <motion.div
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.8, duration: 0.5, ease: smoothEase }}
+        className="fixed bottom-7 right-4 lg:right-6 xl:right-8 flex flex-col gap-3 z-[45]"
+      >
+        {/* Edit Profile Button */}
+        {isVerified && (
+          <motion.button
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.05 }}
+            onClick={() => {
+              if (!isSignedIn) {
+                requireSignIn("Please sign in to edit profile");
+                return;
+              }
+              setShowUpdateProfileDrawer(true);
+              updateURLParams({ update: "true" });
+            }}
+            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full shadow-xl flex items-center justify-center cursor-pointer"
+            style={{
+              background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+              boxShadow: `0 8px 24px -4px rgba(${categoryColor.rgb}, 0.5)`,
+            }}
+          >
+            <Edit2Icon size={21} className="text-white" />
+          </motion.button>
+        )}
+
+        {/* Upload Content Button */}
+        {isVerified && (
+          <motion.button
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            whileHover={{ scale: 1.08 }}
+            whileTap={{ scale: 0.9 }}
+            transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.1 }}
+            onClick={() => {
+              if (!isSignedIn) {
+                requireSignIn("Please sign in to upload content");
+                return;
+              }
+              setShowUploadModal(true);
+              updateURLParams({ upload: "true" });
+            }}
+            className="w-12 h-12 lg:w-14 lg:h-14 rounded-full text-white shadow-xl flex items-center justify-center cursor-pointer"
+            style={{
+              background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+              boxShadow: `0 8px 24px -4px rgba(${categoryColor.rgb}, 0.5)`,
+            }}
+          >
+            <Plus size={24} strokeWidth={2.5} />
+          </motion.button>
+        )}
+      </motion.div>
+
+      {/* ============ ALL MODALS & DRAWERS ============ */}
+      <AnimatePresence>
+        {showProfilePicture && (
+          <ProfilePictureModal
+            isOpen={showProfilePicture}
+            onClose={() => setShowProfilePicture(false)}
+            image={
+              profile?.vendorAvatar ||
+              (Array.isArray(vendor?.vendorProfile)
+                ? vendor.vendorProfile[0]?.profilePicture
+                : vendor?.vendorProfile?.profilePicture) ||
+              "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
+            }
+            name={vendor?.name}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedHighlight && <StoryViewer highlight={selectedHighlight} onClose={() => setSelectedHighlight(null)} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedPost && (
+          <PostDetailModal
+            post={selectedPost}
+            posts={posts}
+            initialIndex={posts.findIndex((p) => p._id === selectedPost._id)}
+            onClose={() => setSelectedPost(null)}
+            vendorName={vendor?.name}
+            vendorImage={
+              profile?.vendorAvatar ||
+              (Array.isArray(vendor?.vendorProfile)
+                ? vendor.vendorProfile[0]?.profilePicture
+                : vendor?.vendorProfile?.profilePicture) ||
+              "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
+            }
+            onDelete={() => handleDeletePost(selectedPost._id)}
+            onEdit={(newCaption) => handleEditPost(selectedPost._id, newCaption)}
+            onArchive={() => handleArchivePost(selectedPost._id)}
+            vendorId={id}
+            allInteractions={postsInteractionsData}
+            isVerified={isVerified}
+            profileId={profile?._id}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedReelIndex !== null && (
+          <ReelsViewer
+            reels={reels}
+            initialIndex={selectedReelIndex}
+            onClose={() => setSelectedReelIndex(null)}
+            vendorName={vendor?.name}
+            vendorImage={
+              profile?.vendorAvatar ||
+              (Array.isArray(vendor?.vendorProfile)
+                ? vendor.vendorProfile[0]?.profilePicture
+                : vendor?.vendorProfile?.profilePicture) ||
+              "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
+            }
+            onDeleteReel={() => handleDeleteReel(reels[selectedReelIndex]._id)}
+            onEditReel={(newCaption) => handleEditReel(reels[selectedReelIndex]._id, newCaption)}
+            vendorId={id}
+            allInteractions={reelsInteractionsData}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {selectedPortfolio && (
+          <PortfolioViewer
+            portfolio={selectedPortfolio}
+            onClose={() => setSelectedPortfolio(null)}
+            onBookService={() => setShowBookingDrawer(true)}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showUploadModal && (
+          <UploadModal
+            isOpen={showUploadModal}
+            onClose={() => {
+              setShowUploadModal(false);
+              updateURLParams({ upload: null });
+            }}
+            onUploadPost={handleUploadPost}
+            onUploadReel={handleUploadReel}
+            postsCount={posts.length}
+            reelsCount={reels.length}
+            vendorId={id}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showBookingDrawer && (
+          <BookingDrawer
+            isOpen={showBookingDrawer}
+            onClose={() => setShowBookingDrawer(false)}
+            services={MOCK_SERVICES}
+            vendorName={vendor?.name}
+            onBookingConfirmed={handleBookingConfirmed}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showReviewsDrawer && (
+          <ReviewsDrawer
+            isOpen={showReviewsDrawer}
+            onClose={() => setShowReviewsDrawer(false)}
+            reviewsData={reviews}
+            vendorId={id}
+            vendorName={vendor?.name}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showContactDrawer && (
+          <ContactDrawer isOpen={showContactDrawer} onClose={() => setShowContactDrawer(false)} vendor={vendor} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showMoreOptions && (
+          <MoreOptionsDrawer
+            isOpen={showMoreOptions}
+            onClose={() => setShowMoreOptions(false)}
+            onReport={handleReport}
+            onBlock={handleBlock}
+            isSaved={isSaved}
+            onSave={handleSaveProfile}
+            isNotifying={isNotifying}
+            onNotify={handleNotify}
+            onShare={handleShare}
+            onShowQR={() => setShowQRModal(true)}
+            onShowAbout={() => setShowAboutModal(true)}
+            onCopyLink={handleCopyLink}
+            setShowUpdateProfileDrawer={setShowUpdateProfileDrawer}
+            onVerifyIdentity={handleVerifyIdentity}
+            isVerified={isVerified}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showShareModal && (
+          <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} vendorName={vendor?.name} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showQRModal && (
+          <QRCodeModal isOpen={showQRModal} onClose={() => setShowQRModal(false)} vendorName={vendor?.name} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showAboutModal && (
+          <AboutAccountModal isOpen={showAboutModal} onClose={() => setShowAboutModal(false)} vendor={vendor} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {previewPost && <PostPreviewModal post={previewPost} onClose={() => setPreviewPost(null)} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showSignInPrompt && <SignInPrompt message={signInPromptMessage} onClose={() => setShowSignInPrompt(false)} />}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showVerifyModal && (
+          <PasswordVerificationModal
+            isOpen={showVerifyModal}
+            onClose={() => {
+              setShowVerifyModal(false);
+              updateURLParams({ upload: null });
+            }}
+            onSuccess={() => setIsVerified(true)}
+            vendorId={id}
+            vendorName={vendor?.name}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showUpdateProfileDrawer && (
+          <UpdateProfileDrawer
+            vendor={vendor}
+            profile={profile}
+            id={id}
+            onProfileUpdated={handleProfileUpdated}
+            isOpen={showUpdateProfileDrawer}
+            onClose={() => {
+              setShowUpdateProfileDrawer(false);
+              updateURLParams({ update: null });
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Image Gallery Modal */}
+      <AnimatePresence>
+        {showImageModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.35, ease: smoothEase }}
+            className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col"
+          >
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.4 }}
+              className="flex justify-between items-center p-4 lg:px-8 relative z-20"
+            >
+              <span className="text-white/90 font-mono text-[11px] lg:text-sm bg-white/10 px-3.5 py-2 rounded-full backdrop-blur-xl border border-white/10">
+                {modalImageIndex + 1} / {images.length}
+              </span>
+              <div className="flex gap-2.5">
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setImageZoom((z) => Math.min(z + 0.5, 3))}
+                  className="p-2.5 text-white/80 bg-white/10 rounded-full backdrop-blur-xl border border-white/10 transition-all duration-300 hover:bg-white/20 cursor-pointer"
                 >
-                  {renderContent()}
+                  <ZoomIn size={18} />
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setImageZoom(1)}
+                  className="p-2.5 text-white/80 bg-white/10 rounded-full backdrop-blur-xl border border-white/10 transition-all duration-300 hover:bg-white/20 cursor-pointer"
+                >
+                  <RotateCcw size={18} />
+                </motion.button>
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => setShowImageModal(false)}
+                  className="p-2.5 text-white/80 bg-white/10 rounded-full backdrop-blur-xl border border-white/10 transition-all duration-300 hover:bg-white/20 cursor-pointer"
+                >
+                  <X size={18} />
+                </motion.button>
+              </div>
+            </motion.div>
+
+            {/* Main Image */}
+            <div className="flex-1 relative flex items-center justify-center overflow-hidden">
+              <button
+                onClick={() => {
+                  setSlideDirection(-1);
+                  setModalImageIndex((i) => (i - 1 + images.length) % images.length);
+                }}
+                className="hidden lg:flex absolute left-4 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl items-center justify-center border border-white/10 transition-all cursor-pointer"
+              >
+                <ChevronLeft size={24} className="text-white" />
+              </button>
+              <button
+                onClick={() => {
+                  setSlideDirection(1);
+                  setModalImageIndex((i) => (i + 1) % images.length);
+                }}
+                className="hidden lg:flex absolute right-4 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl items-center justify-center border border-white/10 transition-all cursor-pointer"
+              >
+                <ChevronRight size={24} className="text-white" />
+              </button>
+
+              <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
+                <motion.div
+                  key={modalImageIndex}
+                  custom={slideDirection}
+                  initial={{ opacity: 0, x: slideDirection * 100, scale: 0.95 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: slideDirection * -100, scale: 0.95 }}
+                  transition={{ duration: 0.4, ease: smoothEase }}
+                  className="absolute w-full h-full flex items-center justify-center p-4 lg:px-20"
+                  onTouchStart={handleTouchStart}
+                  onTouchEnd={(e) => {
+                    if (!isDragging.current) return;
+                    const diff = dragStartX.current - e.changedTouches[0].clientX;
+                    if (Math.abs(diff) > 50) {
+                      if (diff > 0) {
+                        setSlideDirection(1);
+                        setModalImageIndex((i) => (i + 1) % images.length);
+                      } else {
+                        setSlideDirection(-1);
+                        setModalImageIndex((i) => (i - 1 + images.length) % images.length);
+                      }
+                    }
+                    isDragging.current = false;
+                  }}
+                >
+                  <motion.img
+                    src={images[modalImageIndex]}
+                    alt="Gallery image"
+                    className="max-w-full max-h-full object-contain rounded-lg lg:rounded-2xl"
+                    animate={{ scale: imageZoom }}
+                    transition={smoothSpring}
+                    loading="eager"
+                    draggable={false}
+                  />
                 </motion.div>
               </AnimatePresence>
             </div>
-            {/* End Left Column */}
-  
-            {/* Right Column - Sidebar */}
-            {/* Right Column - Sidebar */}
-            <div className="hidden lg:block">
-              <RightSidebar
-                categoryColor={categoryColor}
-                router={router}
-                vendorProfileId={profile?._id}
-                setShowBookingDrawer={setShowBookingDrawer}
-                setShowUpdateProfileDrawer={setShowUpdateProfileDrawer}
-                setShowUploadModal={setShowUploadModal}
-                setShowMoreOptions={setShowMoreOptions}
-                setShowQRModal={setShowQRModal}
-                isVerified={isVerified}
-              />
-            </div>
-          </div>
-        </main>
-  
-        {/* ============ FLOATING ACTION BUTTONS ============ */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.8, duration: 0.5, ease: smoothEase }}
-          className="fixed bottom-7 right-4 lg:right-6 xl:right-8 flex flex-col gap-3 z-[45]"
-        >
-          {/* Edit Profile Button */}
-          {isVerified && (
-            <motion.button
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.05 }}
-              onClick={() => {
-                if (!isSignedIn) {
-                  requireSignIn("Please sign in to edit profile");
-                  return;
-                }
-                setShowUpdateProfileDrawer(true);
-                updateURLParams({ update: "true" });
-              }}
-              className="w-12 h-12 lg:w-14 lg:h-14 rounded-full shadow-xl flex items-center justify-center cursor-pointer"
-              style={{
-                background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-                boxShadow: `0 8px 24px -4px rgba(${categoryColor.rgb}, 0.5)`,
-              }}
-            >
-              <Edit2Icon size={21} className="text-white" />
-            </motion.button>
-          )}
-  
-          {/* Upload Content Button */}
-          {isVerified && (
-            <motion.button
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.9 }}
-              transition={{ type: "spring", stiffness: 400, damping: 20, delay: 0.1 }}
-              onClick={() => {
-                if (!isSignedIn) {
-                  requireSignIn("Please sign in to upload content");
-                  return;
-                }
-                setShowUploadModal(true);
-                updateURLParams({ upload: "true" });
-              }}
-              className="w-12 h-12 lg:w-14 lg:h-14 rounded-full text-white shadow-xl flex items-center justify-center cursor-pointer"
-              style={{
-                background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-                boxShadow: `0 8px 24px -4px rgba(${categoryColor.rgb}, 0.5)`,
-              }}
-            >
-              <Plus size={24} strokeWidth={2.5} />
-            </motion.button>
-          )}
-        </motion.div>
-  
-        {/* ============ ALL MODALS & DRAWERS ============ */}
-        <AnimatePresence>
-          {showProfilePicture && (
-            <ProfilePictureModal
-              isOpen={showProfilePicture}
-              onClose={() => setShowProfilePicture(false)}
-              image={
-                profile?.vendorAvatar ||
-                (Array.isArray(vendor?.vendorProfile)
-                  ? vendor.vendorProfile[0]?.profilePicture
-                  : vendor?.vendorProfile?.profilePicture) ||
-                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
-              }
-              name={vendor?.name}
-            />
-          )}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {selectedHighlight && <StoryViewer highlight={selectedHighlight} onClose={() => setSelectedHighlight(null)} />}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {selectedPost && (
-            <PostDetailModal
-              post={selectedPost}
-              posts={posts}
-              initialIndex={posts.findIndex((p) => p._id === selectedPost._id)}
-              onClose={() => setSelectedPost(null)}
-              vendorName={vendor?.name}
-              vendorImage={
-                profile?.vendorAvatar ||
-                (Array.isArray(vendor?.vendorProfile)
-                  ? vendor.vendorProfile[0]?.profilePicture
-                  : vendor?.vendorProfile?.profilePicture) ||
-                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
-              }
-              onDelete={() => handleDeletePost(selectedPost._id)}
-              onEdit={(newCaption) => handleEditPost(selectedPost._id, newCaption)}
-              onArchive={() => handleArchivePost(selectedPost._id)}
-              vendorId={id}
-              allInteractions={postsInteractionsData}
-            />
-          )}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {selectedReelIndex !== null && (
-            <ReelsViewer
-              reels={reels}
-              initialIndex={selectedReelIndex}
-              onClose={() => setSelectedReelIndex(null)}
-              vendorName={vendor?.name}
-              vendorImage={
-                profile?.vendorAvatar ||
-                (Array.isArray(vendor?.vendorProfile)
-                  ? vendor.vendorProfile[0]?.profilePicture
-                  : vendor?.vendorProfile?.profilePicture) ||
-                "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&h=200&fit=crop"
-              }
-              onDeleteReel={() => handleDeleteReel(reels[selectedReelIndex]._id)}
-              onEditReel={(newCaption) => handleEditReel(reels[selectedReelIndex]._id, newCaption)}
-              vendorId={id}
-              allInteractions={reelsInteractionsData}
-            />
-          )}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {selectedPortfolio && (
-            <PortfolioViewer
-              portfolio={selectedPortfolio}
-              onClose={() => setSelectedPortfolio(null)}
-              onBookService={() => setShowBookingDrawer(true)}
-            />
-          )}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {showUploadModal && (
-            <UploadModal
-              isOpen={showUploadModal}
-              onClose={() => {
-                setShowUploadModal(false);
-                updateURLParams({ upload: null });
-              }}
-              onUploadPost={handleUploadPost}
-              onUploadReel={handleUploadReel}
-              postsCount={posts.length}
-              reelsCount={reels.length}
-              vendorId={id}
-            />
-          )}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {showBookingDrawer && (
-            <BookingDrawer
-              isOpen={showBookingDrawer}
-              onClose={() => setShowBookingDrawer(false)}
-              services={MOCK_SERVICES}
-              vendorName={vendor?.name}
-              onBookingConfirmed={handleBookingConfirmed}
-            />
-          )}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {showReviewsDrawer && (
-            <ReviewsDrawer
-              isOpen={showReviewsDrawer}
-              onClose={() => setShowReviewsDrawer(false)}
-              reviewsData={reviews}
-              vendorId={id}
-              vendorName={vendor?.name}
-            />
-          )}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {showContactDrawer && (
-            <ContactDrawer isOpen={showContactDrawer} onClose={() => setShowContactDrawer(false)} vendor={vendor} />
-          )}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {showMoreOptions && (
-            <MoreOptionsDrawer
-              isOpen={showMoreOptions}
-              onClose={() => setShowMoreOptions(false)}
-              onReport={handleReport}
-              onBlock={handleBlock}
-              isSaved={isSaved}
-              onSave={handleSaveProfile}
-              isNotifying={isNotifying}
-              onNotify={handleNotify}
-              onShare={handleShare}
-              onShowQR={() => setShowQRModal(true)}
-              onShowAbout={() => setShowAboutModal(true)}
-              onCopyLink={handleCopyLink}
-              setShowUpdateProfileDrawer={setShowUpdateProfileDrawer}
-              onVerifyIdentity={handleVerifyIdentity}
-              isVerified={isVerified}
-            />
-          )}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {showShareModal && (
-            <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} vendorName={vendor?.name} />
-          )}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {showQRModal && (
-            <QRCodeModal isOpen={showQRModal} onClose={() => setShowQRModal(false)} vendorName={vendor?.name} />
-          )}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {showAboutModal && (
-            <AboutAccountModal isOpen={showAboutModal} onClose={() => setShowAboutModal(false)} vendor={vendor} />
-          )}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {previewPost && <PostPreviewModal post={previewPost} onClose={() => setPreviewPost(null)} />}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {showSignInPrompt && <SignInPrompt message={signInPromptMessage} onClose={() => setShowSignInPrompt(false)} />}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {showVerifyModal && (
-            <PasswordVerificationModal
-              isOpen={showVerifyModal}
-              onClose={() => {
-                setShowVerifyModal(false);
-                updateURLParams({ upload: null });
-              }}
-              onSuccess={() => setIsVerified(true)}
-              vendorId={id}
-              vendorName={vendor?.name}
-            />
-          )}
-        </AnimatePresence>
-  
-        <AnimatePresence>
-          {showUpdateProfileDrawer && (
-            <UpdateProfileDrawer
-              vendor={vendor}
-              profile={profile}
-              id={id}
-              onProfileUpdated={handleProfileUpdated}
-              isOpen={showUpdateProfileDrawer}
-              onClose={() => {
-                setShowUpdateProfileDrawer(false);
-                updateURLParams({ update: null });
-              }}
-            />
-          )}
-        </AnimatePresence>
-  
-        {/* Image Gallery Modal */}
-        <AnimatePresence>
-          {showImageModal && (
+
+            {/* Thumbnails */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.35, ease: smoothEase }}
-              className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex flex-col"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15, duration: 0.4 }}
+              className="h-24 flex items-center justify-center gap-2.5 lg:gap-3 overflow-x-auto px-4 pb-6 pt-2 no-scrollbar"
             >
-              {/* Header */}
-              <motion.div
-                initial={{ opacity: 0, y: -20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1, duration: 0.4 }}
-                className="flex justify-between items-center p-4 lg:px-8 relative z-20"
-              >
-                <span className="text-white/90 font-mono text-[11px] lg:text-sm bg-white/10 px-3.5 py-2 rounded-full backdrop-blur-xl border border-white/10">
-                  {modalImageIndex + 1} / {images.length}
-                </span>
-                <div className="flex gap-2.5">
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setImageZoom((z) => Math.min(z + 0.5, 3))}
-                    className="p-2.5 text-white/80 bg-white/10 rounded-full backdrop-blur-xl border border-white/10 transition-all duration-300 hover:bg-white/20 cursor-pointer"
-                  >
-                    <ZoomIn size={18} />
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setImageZoom(1)}
-                    className="p-2.5 text-white/80 bg-white/10 rounded-full backdrop-blur-xl border border-white/10 transition-all duration-300 hover:bg-white/20 cursor-pointer"
-                  >
-                    <RotateCcw size={18} />
-                  </motion.button>
-                  <motion.button
-                    whileTap={{ scale: 0.9 }}
-                    onClick={() => setShowImageModal(false)}
-                    className="p-2.5 text-white/80 bg-white/10 rounded-full backdrop-blur-xl border border-white/10 transition-all duration-300 hover:bg-white/20 cursor-pointer"
-                  >
-                    <X size={18} />
-                  </motion.button>
-                </div>
-              </motion.div>
-  
-              {/* Main Image */}
-              <div className="flex-1 relative flex items-center justify-center overflow-hidden">
-                <button
+              {images.map((img, i) => (
+                <motion.button
+                  key={i}
+                  whileTap={{ scale: 0.92 }}
                   onClick={() => {
-                    setSlideDirection(-1);
-                    setModalImageIndex((i) => (i - 1 + images.length) % images.length);
+                    setSlideDirection(i > modalImageIndex ? 1 : -1);
+                    setModalImageIndex(i);
                   }}
-                  className="hidden lg:flex absolute left-4 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl items-center justify-center border border-white/10 transition-all cursor-pointer"
-                >
-                  <ChevronLeft size={24} className="text-white" />
-                </button>
-                <button
-                  onClick={() => {
-                    setSlideDirection(1);
-                    setModalImageIndex((i) => (i + 1) % images.length);
+                  className="relative flex-shrink-0 w-14 h-14 lg:w-16 lg:h-16 rounded-xl overflow-hidden transition-all duration-300 cursor-pointer"
+                  style={{
+                    border: i === modalImageIndex ? `2px solid ${categoryColor.primary}` : "2px solid transparent",
+                    opacity: i === modalImageIndex ? 1 : 0.5,
+                    transform: i === modalImageIndex ? "scale(1.1)" : "scale(1)",
                   }}
-                  className="hidden lg:flex absolute right-4 z-20 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-xl items-center justify-center border border-white/10 transition-all cursor-pointer"
                 >
-                  <ChevronRight size={24} className="text-white" />
-                </button>
-  
-                <AnimatePresence initial={false} custom={slideDirection} mode="popLayout">
-                  <motion.div
-                    key={modalImageIndex}
-                    custom={slideDirection}
-                    initial={{ opacity: 0, x: slideDirection * 100, scale: 0.95 }}
-                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                    exit={{ opacity: 0, x: slideDirection * -100, scale: 0.95 }}
-                    transition={{ duration: 0.4, ease: smoothEase }}
-                    className="absolute w-full h-full flex items-center justify-center p-4 lg:px-20"
-                    onTouchStart={handleTouchStart}
-                    onTouchEnd={(e) => {
-                      if (!isDragging.current) return;
-                      const diff = dragStartX.current - e.changedTouches[0].clientX;
-                      if (Math.abs(diff) > 50) {
-                        if (diff > 0) {
-                          setSlideDirection(1);
-                          setModalImageIndex((i) => (i + 1) % images.length);
-                        } else {
-                          setSlideDirection(-1);
-                          setModalImageIndex((i) => (i - 1 + images.length) % images.length);
-                        }
-                      }
-                      isDragging.current = false;
-                    }}
-                  >
-                    <motion.img
-                      src={images[modalImageIndex]}
-                      alt="Gallery image"
-                      className="max-w-full max-h-full object-contain rounded-lg lg:rounded-2xl"
-                      animate={{ scale: imageZoom }}
-                      transition={smoothSpring}
-                      loading="eager"
-                      draggable={false}
-                    />
-                  </motion.div>
-                </AnimatePresence>
-              </div>
-  
-              {/* Thumbnails */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.15, duration: 0.4 }}
-                className="h-24 flex items-center justify-center gap-2.5 lg:gap-3 overflow-x-auto px-4 pb-6 pt-2 no-scrollbar"
-              >
-                {images.map((img, i) => (
-                  <motion.button
-                    key={i}
-                    whileTap={{ scale: 0.92 }}
-                    onClick={() => {
-                      setSlideDirection(i > modalImageIndex ? 1 : -1);
-                      setModalImageIndex(i);
-                    }}
-                    className="relative flex-shrink-0 w-14 h-14 lg:w-16 lg:h-16 rounded-xl overflow-hidden transition-all duration-300 cursor-pointer"
-                    style={{
-                      border: i === modalImageIndex ? `2px solid ${categoryColor.primary}` : "2px solid transparent",
-                      opacity: i === modalImageIndex ? 1 : 0.5,
-                      transform: i === modalImageIndex ? "scale(1.1)" : "scale(1)",
-                    }}
-                  >
-                    <img src={img} className="w-full h-full object-cover" alt={`Thumbnail ${i + 1}`} loading="lazy" />
-                  </motion.button>
-                ))}
-              </motion.div>
+                  <img src={img} className="w-full h-full object-cover" alt={`Thumbnail ${i + 1}`} loading="lazy" />
+                </motion.button>
+              ))}
             </motion.div>
-          )}
-        </AnimatePresence>
-  
-        {/* Global Styles */}
-        <style jsx global>{`
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Global Styles */}
+      <style jsx global>{`
           .bio-content p {
             margin-bottom: 0.5rem;
           }
@@ -12459,8 +13116,8 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
             -webkit-tap-highlight-color: transparent;
           }
         `}</style>
-      </div>
-    );
+    </div>
+  );
 };
 
 export default VendorProfileNewPageWrapper;
