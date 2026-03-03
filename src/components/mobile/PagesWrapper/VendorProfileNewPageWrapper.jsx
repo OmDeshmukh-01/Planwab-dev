@@ -6,6 +6,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence, useScroll, useTransform, LayoutGroup } from "framer-motion";
 import {
   ArrowLeft,
+  Tag,
   Share2,
   MoreVertical,
   Download,
@@ -839,9 +840,8 @@ const PasswordVerificationModal = ({ isOpen, onClose, onSuccess, vendorId, vendo
                     onKeyDown={handleKeyDown}
                     placeholder="Enter your password"
                     disabled={isVerifying}
-                    className={`w-full pl-12 pr-12 py-4 bg-slate-100 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all ${
-                      error ? "border-red-500 focus:border-red-500" : "border-transparent focus:border-blue-500"
-                    } ${isVerifying ? "opacity-60 cursor-not-allowed" : ""}`}
+                    className={`w-full pl-12 pr-12 py-4 bg-slate-100 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all ${error ? "border-red-500 focus:border-red-500" : "border-transparent focus:border-blue-500"
+                      } ${isVerifying ? "opacity-60 cursor-not-allowed" : ""}`}
                   />
                   <motion.button
                     type="button"
@@ -1386,6 +1386,621 @@ const CommentsDrawer = ({ isOpen, onClose, reviews, onAddComment, onDeleteCommen
   );
 };
 
+const POST_CONFIGS = {
+  1: {
+    title: "Work Details",
+    icon: Briefcase,
+    color: "from-blue-500 to-cyan-500",
+    fields: [
+      { key: "caption", label: "Caption", type: "textarea", required: true },
+      { key: "googleRating", label: "Google Rating", type: "number", min: 0, max: 5, step: 0.1, required: true },
+      { key: "teamSize", label: "Team Size", type: "number", min: 1, required: true },
+      { key: "servicesDone", label: "Services Completed", type: "number", min: 0, required: true },
+      { key: "yearsOfExperience", label: "Years of Experience", type: "number", min: 0, required: true },
+      { key: "location", label: "Location", type: "text", required: true },
+    ],
+  },
+  2: {
+    title: "All Service Breakdown",
+    icon: Package,
+    color: "from-purple-500 to-pink-500",
+    fields: [
+      { key: "caption", label: "Caption", type: "textarea", required: true },
+      { key: "eventIncludes", label: "Event Includes (Categories)", type: "array", required: true },
+      { key: "subCategories", label: "Sub Categories", type: "array", required: false },
+    ],
+  },
+  3: {
+    title: "Pricing and Packages",
+    icon: DollarSign,
+    color: "from-green-500 to-emerald-500",
+    fields: [
+      { key: "basePriceMin", label: "Base Price (Min)", type: "number", min: 0, required: true },
+      { key: "basePriceMax", label: "Base Price (Max)", type: "number", min: 0, required: true },
+      { key: "packages", label: "Packages", type: "packages", required: false },
+    ],
+  },
+  4: {
+    title: "Trust & Real Events",
+    icon: Shield,
+    color: "from-amber-500 to-orange-500",
+    fields: [
+      { key: "usp", label: "Unique Selling Points", type: "array", required: true },
+      { key: "callToAction", label: "Call to Action (3 items)", type: "cta", maxItems: 3, required: true },
+    ],
+  },
+};
+
+// Validation function
+const validateField = (field, value) => {
+  if (field.required && (!value || (Array.isArray(value) && value.length === 0))) {
+    return `${field.label} is required`;
+  }
+  if (field.type === "number") {
+    const num = parseFloat(value);
+    if (isNaN(num)) return `${field.label} must be a number`;
+    if (field.min !== undefined && num < field.min) return `${field.label} must be at least ${field.min}`;
+    if (field.max !== undefined && num > field.max) return `${field.label} must be at most ${field.max}`;
+  }
+  if (field.key === "googleRating") {
+    const rating = parseFloat(value);
+    if (rating < 0 || rating > 5) return "Rating must be between 0 and 5";
+  }
+  if (field.type === "cta" && Array.isArray(value) && value.length !== 3) {
+    return "Exactly 3 call-to-action items required";
+  }
+  return null;
+};
+
+// Content Form Component
+const PostContentForm = ({ postNumber, initialData, onSubmit, onCancel, isSubmitting }) => {
+  const config = POST_CONFIGS[postNumber];
+  const [formData, setFormData] = useState(() => {
+    const initial = {};
+    config.fields.forEach((field) => {
+      if (field.type === "array" || field.type === "cta") {
+        initial[field.key] = initialData?.[field.key] || [];
+      } else if (field.type === "packages") {
+        initial[field.key] = initialData?.[field.key] || [];
+      } else {
+        initial[field.key] = initialData?.[field.key] || "";
+      }
+    });
+    return initial;
+  });
+  const [errors, setErrors] = useState({});
+  const [arrayInput, setArrayInput] = useState({});
+
+  const handleChange = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: null }));
+  };
+
+  const handleArrayAdd = (key, maxItems) => {
+    const inputValue = arrayInput[key]?.trim();
+    if (!inputValue) return;
+    if (maxItems && formData[key].length >= maxItems) {
+      setErrors((prev) => ({ ...prev, [key]: `Maximum ${maxItems} items allowed` }));
+      return;
+    }
+    setFormData((prev) => ({ ...prev, [key]: [...prev[key], inputValue] }));
+    setArrayInput((prev) => ({ ...prev, [key]: "" }));
+  };
+
+  const handleArrayRemove = (key, index) => {
+    setFormData((prev) => ({ ...prev, [key]: prev[key].filter((_, i) => i !== index) }));
+  };
+
+  const handlePackageAdd = () => {
+    setFormData((prev) => ({
+      ...prev,
+      packages: [...prev.packages, { title: "", priceMin: "", priceMax: "" }],
+    }));
+  };
+
+  const handlePackageChange = (index, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      packages: prev.packages.map((pkg, i) => (i === index ? { ...pkg, [field]: value } : pkg)),
+    }));
+  };
+
+  const handlePackageRemove = (index) => {
+    setFormData((prev) => ({ ...prev, packages: prev.packages.filter((_, i) => i !== index) }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = {};
+    config.fields.forEach((field) => {
+      const error = validateField(field, formData[field.key]);
+      if (error) newErrors[field.key] = error;
+    });
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    onSubmit(formData);
+  };
+
+  const IconComponent = config.icon;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="bg-white rounded-2xl overflow-hidden shadow-xl max-h-[80vh] flex flex-col"
+    >
+      <div className={`bg-gradient-to-r ${config.color} p-4 flex items-center justify-between`}>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+            <IconComponent size={20} className="text-white" />
+          </div>
+          <div>
+            <h3 className="text-white font-bold text-lg">{config.title}</h3>
+            <p className="text-white/70 text-xs">Post {postNumber} of 4</p>
+          </div>
+        </div>
+        <button
+          onClick={onCancel}
+          className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+        >
+          <X size={18} className="text-white" />
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-4">
+        {config.fields.map((field) => (
+          <div key={field.key} className="space-y-1.5">
+            <label className="text-sm font-medium text-gray-700 flex items-center gap-1">
+              {field.label}
+              {field.required && <span className="text-red-500">*</span>}
+            </label>
+
+            {field.type === "textarea" && (
+              <textarea
+                value={formData[field.key]}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                className={`w-full px-3 py-2 border rounded-xl text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors[field.key] ? "border-red-500" : "border-gray-200"}`}
+                rows={3}
+                placeholder={`Enter ${field.label.toLowerCase()}...`}
+              />
+            )}
+
+            {field.type === "text" && (
+              <input
+                type="text"
+                value={formData[field.key]}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                className={`w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors[field.key] ? "border-red-500" : "border-gray-200"}`}
+                placeholder={`Enter ${field.label.toLowerCase()}...`}
+              />
+            )}
+
+            {field.type === "number" && (
+              <input
+                type="number"
+                value={formData[field.key]}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                min={field.min}
+                max={field.max}
+                step={field.step || 1}
+                className={`w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${errors[field.key] ? "border-red-500" : "border-gray-200"}`}
+                placeholder={`Enter ${field.label.toLowerCase()}...`}
+              />
+            )}
+
+            {(field.type === "array" || field.type === "cta") && (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={arrayInput[field.key] || ""}
+                    onChange={(e) => setArrayInput((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleArrayAdd(field.key, field.maxItems);
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder={`Add ${field.label.toLowerCase()}...`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleArrayAdd(field.key, field.maxItems)}
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                  >
+                    <Plus size={18} className="text-gray-600" />
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {formData[field.key].map((item, index) => (
+                    <motion.span
+                      key={index}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-sm"
+                    >
+                      {item}
+                      <button
+                        type="button"
+                        onClick={() => handleArrayRemove(field.key, index)}
+                        className="w-4 h-4 rounded-full bg-gray-300 hover:bg-red-400 flex items-center justify-center transition-colors"
+                      >
+                        <X size={10} className="text-white" />
+                      </button>
+                    </motion.span>
+                  ))}
+                </div>
+                {field.maxItems && (
+                  <p className="text-xs text-gray-500">
+                    {formData[field.key].length} / {field.maxItems} items
+                  </p>
+                )}
+              </div>
+            )}
+
+            {field.type === "packages" && (
+              <div className="space-y-3">
+                {formData.packages.map((pkg, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 bg-gray-50 rounded-xl space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-500">Package {index + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => handlePackageRemove(index)}
+                        className="w-6 h-6 rounded-full bg-red-100 hover:bg-red-200 flex items-center justify-center transition-colors"
+                      >
+                        <Trash2 size={12} className="text-red-500" />
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={pkg.title}
+                      onChange={(e) => handlePackageChange(index, "title", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                      placeholder="Package title..."
+                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={pkg.priceMin}
+                        onChange={(e) => handlePackageChange(index, "priceMin", e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                        placeholder="Min price"
+                        min={0}
+                      />
+                      <input
+                        type="number"
+                        value={pkg.priceMax}
+                        onChange={(e) => handlePackageChange(index, "priceMax", e.target.value)}
+                        className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                        placeholder="Max price"
+                        min={0}
+                      />
+                    </div>
+                  </motion.div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handlePackageAdd}
+                  className="w-full py-2 border-2 border-dashed border-gray-200 rounded-xl text-sm text-gray-500 hover:border-gray-300 hover:text-gray-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Plus size={16} />
+                  Add Package
+                </button>
+              </div>
+            )}
+
+            {errors[field.key] && (
+              <motion.p
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-red-500 flex items-center gap-1"
+              >
+                <AlertCircle size={12} />
+                {errors[field.key]}
+              </motion.p>
+            )}
+          </div>
+        ))}
+      </form>
+
+      <div className="p-4 border-t border-gray-100 flex gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className={`flex-1 py-2.5 bg-gradient-to-r ${config.color} rounded-xl text-sm font-medium text-white flex items-center justify-center gap-2 transition-all ${isSubmitting ? "opacity-70" : "hover:shadow-lg"}`}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 size={16} className="animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Check size={16} />
+              Save Details
+            </>
+          )}
+        </button>
+      </div>
+    </motion.div>
+  );
+};
+
+// Content Display Components
+const WorkDetailsContent = ({ data }) => (
+  <div className="space-y-4">
+    {data.caption && <p className="text-gray-600 text-sm leading-relaxed">{data.caption}</p>}
+    <div className="grid grid-cols-2 gap-3">
+      {data.googleRating !== undefined && (
+        <div className="bg-amber-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Star size={16} className="text-amber-500 fill-amber-500" />
+            <span className="text-xs text-amber-600 font-medium">Google Rating</span>
+          </div>
+          <p className="text-2xl font-bold text-amber-700">{data.googleRating}</p>
+        </div>
+      )}
+      {data.teamSize && (
+        <div className="bg-blue-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Users size={16} className="text-blue-500" />
+            <span className="text-xs text-blue-600 font-medium">Team Size</span>
+          </div>
+          <p className="text-2xl font-bold text-blue-700">{data.teamSize}</p>
+        </div>
+      )}
+      {data.servicesDone !== undefined && (
+        <div className="bg-green-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Briefcase size={16} className="text-green-500" />
+            <span className="text-xs text-green-600 font-medium">Services Done</span>
+          </div>
+          <p className="text-2xl font-bold text-green-700">{data.servicesDone?.toLocaleString()}</p>
+        </div>
+      )}
+      {data.yearsOfExperience !== undefined && (
+        <div className="bg-purple-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Calendar size={16} className="text-purple-500" />
+            <span className="text-xs text-purple-600 font-medium">Experience</span>
+          </div>
+          <p className="text-2xl font-bold text-purple-700">{data.yearsOfExperience} yrs</p>
+        </div>
+      )}
+    </div>
+    {data.location && (
+      <div className="flex items-center gap-2 text-gray-500 bg-gray-50 rounded-xl p-3">
+        <MapPin size={18} className="text-gray-400" />
+        <span className="text-sm">{data.location}</span>
+      </div>
+    )}
+  </div>
+);
+
+const ServiceBreakdownContent = ({ data }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="space-y-4">
+      {data.caption && <p className="text-gray-600 text-sm leading-relaxed">{data.caption}</p>}
+      {data.eventIncludes?.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+            <Package size={16} className="text-purple-500" />
+            Event Includes
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {data.eventIncludes.map((item, index) => (
+              <span key={index} className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      {data.subCategories?.length > 0 && (
+        <div className="space-y-2">
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+          >
+            <span className="text-sm font-semibold text-gray-800">Sub Categories</span>
+            <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronDown size={18} className="text-gray-500" />
+            </motion.div>
+          </button>
+          <AnimatePresence>
+            {expanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {data.subCategories.map((item, index) => (
+                    <span key={index} className="px-3 py-1.5 bg-pink-100 text-pink-700 rounded-full text-sm">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PricingContent = ({ data }) => (
+  <div className="space-y-4">
+    {(data.basePriceMin || data.basePriceMax) && (
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <DollarSign size={18} className="text-green-500" />
+          <span className="text-sm font-medium text-green-700">Base Price Range</span>
+        </div>
+        <p className="text-2xl font-bold text-green-800">
+          ₹{data.basePriceMin?.toLocaleString()} - ₹{data.basePriceMax?.toLocaleString()}
+        </p>
+      </div>
+    )}
+    {data.packages?.length > 0 && (
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <Package size={16} className="text-green-500" />
+          Packages
+        </h4>
+        {data.packages.map((pkg, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm"
+          >
+            <h5 className="font-semibold text-gray-800 mb-1">{pkg.title}</h5>
+            <p className="text-green-600 font-bold">
+              ₹{pkg.priceMin?.toLocaleString()} - ₹{pkg.priceMax?.toLocaleString()}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+const TrustContent = ({ data }) => (
+  <div className="space-y-4">
+    {data.usp?.length > 0 && (
+      <div className="space-y-2">
+        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <Sparkles size={16} className="text-amber-500" />
+          Unique Selling Points
+        </h4>
+        <div className="space-y-2">
+          {data.usp.map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="flex items-start gap-3 p-3 bg-amber-50 rounded-xl"
+            >
+              <div className="w-6 h-6 bg-amber-200 rounded-full flex items-center justify-center flex-shrink-0">
+                <Check size={14} className="text-amber-700" />
+              </div>
+              <span className="text-sm text-amber-800">{item}</span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    )}
+    {data.callToAction?.length > 0 && (
+      <div className="space-y-2">
+        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <Phone size={16} className="text-orange-500" />
+          Call to Action
+        </h4>
+        <div className="grid gap-2">
+          {data.callToAction.map((item, index) => (
+            <motion.button
+              key={index}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-medium rounded-xl shadow-sm hover:shadow-md transition-shadow"
+            >
+              {item}
+            </motion.button>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+const NoDataFallback = ({ postNumber, onUpdateClick }) => {
+  const config = POST_CONFIGS[postNumber];
+  const IconComponent = config?.icon || Briefcase;
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="flex flex-col items-center justify-center py-6 px-4"
+    >
+      <div
+        className={`w-14 h-14 bg-gradient-to-r ${config?.color || "from-gray-400 to-gray-500"} rounded-2xl flex items-center justify-center mb-3 opacity-50`}
+      >
+        <IconComponent size={24} className="text-white" />
+      </div>
+      <h4 className="text-gray-400 font-medium mb-1">No Data Available</h4>
+      <p className="text-gray-400 text-sm text-center mb-4">Add details to showcase your {config?.title || "work"}</p>
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={onUpdateClick}
+        className={`px-5 py-2 bg-gradient-to-r ${config?.color || "from-blue-500 to-cyan-500"} text-white font-medium rounded-xl flex items-center gap-2 text-sm`}
+      >
+        <Edit3 size={14} />
+        Update Details
+      </motion.button>
+    </motion.div>
+  );
+};
+
+const ActionsSkeleton = () => {
+  return (
+    <div className="flex flex-col items-center gap-3 animate-pulse">
+      {/* Like skeleton */}
+      <div className="flex flex-col items-center gap-0.5">
+        <div className="w-10 h-10 rounded-full bg-white/20" />
+        <div className="w-6 h-2 rounded bg-white/20 mt-1" />
+      </div>
+
+      {/* Comment skeleton */}
+      <div className="flex flex-col items-center gap-0.5">
+        <div className="w-10 h-10 rounded-full bg-white/20" />
+        <div className="w-4 h-2 rounded bg-white/20 mt-1" />
+      </div>
+
+      {/* Share skeleton */}
+      <div className="flex flex-col items-center gap-0.5">
+        <div className="w-10 h-10 rounded-full bg-white/20" />
+      </div>
+
+      {/* Save skeleton */}
+      <div className="flex flex-col items-center gap-0.5">
+        <div className="w-10 h-10 rounded-full bg-white/20" />
+      </div>
+
+      {/* Mute skeleton */}
+      <div className="flex flex-col items-center gap-0.5">
+        <div className="w-10 h-10 rounded-full bg-white/20" />
+      </div>
+    </div>
+  );
+};
+
 const PostDetailModal = ({
   post,
   posts = [],
@@ -1397,6 +2012,7 @@ const PostDetailModal = ({
   onEdit,
   onArchive,
   vendorId,
+  profileId,
   allInteractions = {},
 }) => {
   const { user, isSignedIn } = useUser();
@@ -1415,6 +2031,79 @@ const PostDetailModal = ({
 
   // Current post
   const currentPost = posts.length > 0 ? posts[currentIndex] : post;
+
+  // ===== DERIVED VALUES =====
+  const postNumber = (currentIndex % 4) + 1;
+
+  // ===== CONTENT STATES =====
+  const [contentData, setContentData] = useState(currentPost?.content || null);
+  const [isContentSubmitting, setIsContentSubmitting] = useState(false);
+  const [contentSubmitError, setContentSubmitError] = useState(null);
+  const [showContentForm, setShowContentForm] = useState(false);
+
+  const hasContent = !!contentData && Object.keys(contentData).length > 0;
+
+  const handleContentFormSubmit = useCallback(
+    async (formData) => {
+      setIsContentSubmitting(true);
+      setContentSubmitError(null);
+
+      const previousData = contentData;
+      setContentData(formData);
+      setShowContentForm(false);
+
+      try {
+        const response = await fetch(`/api/vendor/profile/post-content`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            postId: currentPost?._id,
+            postNumber,
+            content: formData,
+            profileId: profileId,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.message || "Failed to update");
+        }
+
+        if (result.data?.content) {
+          setContentData(result.data.content);
+        }
+      } catch (error) {
+        setContentData(previousData);
+        setContentSubmitError(error.message);
+        setShowContentForm(true);
+      } finally {
+        setIsContentSubmitting(false);
+      }
+    },
+    [contentData, profileId, currentPost?._id, postNumber],
+  );
+
+  const renderPostContent = useCallback(() => {
+    if (!hasContent) {
+      return <NoDataFallback postNumber={postNumber} onUpdateClick={() => setShowContentForm(true)} />;
+    }
+
+    switch (postNumber) {
+      case 1:
+        return <WorkDetailsContent data={contentData} />;
+      case 2:
+        return <ServiceBreakdownContent data={contentData} />;
+      case 3:
+        return <PricingContent data={contentData} />;
+      case 4:
+        return <TrustContent data={contentData} />;
+      default:
+        return null;
+    }
+  }, [hasContent, postNumber, contentData]);
+
+
 
   // Interaction states
   const [isLiked, setIsLiked] = useState(false);
@@ -1579,7 +2268,7 @@ const PostDetailModal = ({
 
     const handleEnded = () => {
       video.currentTime = 0;
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     };
 
     const handleError = () => {
@@ -1655,7 +2344,7 @@ const PostDetailModal = ({
     } else {
       // Resume video if not navigating
       if (videoRef.current && isVideo && isPlaying) {
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch(() => { });
       }
     }
 
@@ -2521,6 +3210,7 @@ const ReelsViewer = ({
   onDeleteReel,
   onEditReel,
   vendorId,
+  profileId,
   allInteractions = {},
 }) => {
   const { user, isSignedIn } = useUser();
@@ -2758,7 +3448,7 @@ const ReelsViewer = ({
     const video = videoRef.current;
     if (video) {
       video.currentTime = 0;
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     }
   };
 
@@ -2953,7 +3643,7 @@ const ReelsViewer = ({
       goToReel("down");
     } else {
       if (videoRef.current && isPlaying) {
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch(() => { });
       }
     }
 
@@ -3388,9 +4078,8 @@ const PortfolioViewer = ({ portfolio, onClose, onBookService }) => {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsSaved(!isSaved)}
-            className={`py-3.5 px-5 rounded-2xl border transition-all ${
-              isSaved ? "bg-red-500/20 border-red-500/50" : "bg-white/10 backdrop-blur-xl border-white/20"
-            }`}
+            className={`py-3.5 px-5 rounded-2xl border transition-all ${isSaved ? "bg-red-500/20 border-red-500/50" : "bg-white/10 backdrop-blur-xl border-white/20"
+              }`}
           >
             <Heart size={20} className={isSaved ? "text-red-500 fill-red-500" : "text-white"} />
           </motion.button>
@@ -4242,16 +4931,14 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                   whileTap={{ scale: isPostsFull ? 1 : 0.98 }}
                   onClick={() => !isPostsFull && setUploadType("post")}
                   disabled={isPostsFull}
-                  className={`w-full p-6 rounded-2xl border flex items-center gap-4 transition-all ${
-                    isPostsFull
-                      ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
-                      : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-100 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-600"
-                  }`}
+                  className={`w-full p-6 rounded-2xl border flex items-center gap-4 transition-all ${isPostsFull
+                    ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
+                    : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-100 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-600"
+                    }`}
                 >
                   <div
-                    className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ${
-                      isPostsFull ? "bg-gray-400" : "bg-gradient-to-br from-blue-500 to-purple-600"
-                    }`}
+                    className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ${isPostsFull ? "bg-gray-400" : "bg-gradient-to-br from-blue-500 to-purple-600"
+                      }`}
                   >
                     <Image size={28} className="text-white" />
                   </div>
@@ -4272,16 +4959,14 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                   whileTap={{ scale: isReelsFull ? 1 : 0.98 }}
                   onClick={() => !isReelsFull && setUploadType("reel")}
                   disabled={isReelsFull}
-                  className={`w-full p-6 rounded-2xl border flex items-center gap-4 transition-all ${
-                    isReelsFull
-                      ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
-                      : "bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-900/20 dark:to-orange-900/20 border-pink-100 dark:border-pink-800 hover:border-pink-300 dark:hover:border-pink-600"
-                  }`}
+                  className={`w-full p-6 rounded-2xl border flex items-center gap-4 transition-all ${isReelsFull
+                    ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
+                    : "bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-900/20 dark:to-orange-900/20 border-pink-100 dark:border-pink-800 hover:border-pink-300 dark:hover:border-pink-600"
+                    }`}
                 >
                   <div
-                    className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ${
-                      isReelsFull ? "bg-gray-400" : "bg-gradient-to-br from-pink-500 to-orange-500"
-                    }`}
+                    className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ${isReelsFull ? "bg-gray-400" : "bg-gradient-to-br from-pink-500 to-orange-500"
+                      }`}
                   >
                     <Video size={28} className="text-white" />
                   </div>
@@ -4335,11 +5020,10 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                   whileTap={{ scale: isUploading ? 1 : 0.98 }}
                   onClick={handleFileSelect}
                   disabled={isUploading}
-                  className={`w-full ${uploadType === "reel" ? "aspect-[9/16]" : "aspect-square"} rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-4 overflow-hidden ${
-                    selectedFile
-                      ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                      : "border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-gray-400 dark:hover:border-gray-600"
-                  } ${isUploading ? "pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
+                  className={`w-full ${uploadType === "reel" ? "aspect-[9/16]" : "aspect-square"} rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-4 overflow-hidden ${selectedFile
+                    ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                    : "border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-gray-400 dark:hover:border-gray-600"
+                    } ${isUploading ? "pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
                 >
                   {selectedFile ? (
                     <div className="relative w-full h-full">
@@ -4696,14 +5380,12 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
 
 const InfoChip = memo(({ icon: Icon, label, value, color = "blue", size = "normal" }) => (
   <div
-    className={`flex items-center gap-2 p-2.5 bg-${color}-50 dark:bg-${color}-900/20 rounded-xl ${
-      size === "small" ? "p-2" : ""
-    }`}
+    className={`flex items-center gap-2 p-2.5 bg-${color}-50 dark:bg-${color}-900/20 rounded-xl ${size === "small" ? "p-2" : ""
+      }`}
   >
     <div
-      className={`w-8 h-8 rounded-lg bg-${color}-100 dark:bg-${color}-800/30 flex items-center justify-center ${
-        size === "small" ? "w-7 h-7" : ""
-      }`}
+      className={`w-8 h-8 rounded-lg bg-${color}-100 dark:bg-${color}-800/30 flex items-center justify-center ${size === "small" ? "w-7 h-7" : ""
+        }`}
     >
       <Icon size={size === "small" ? 14 : 16} className={`text-${color}-600 dark:text-${color}-400`} />
     </div>
@@ -4721,10 +5403,9 @@ const QuickStatCard = memo(({ icon: Icon, label, value, subtext, color = "blue",
   <motion.div
     whileHover={{ scale: 1.02, y: -2 }}
     whileTap={{ scale: 0.98 }}
-    className={`relative overflow-hidden p-3 rounded-2xl ${
-      gradient ||
+    className={`relative overflow-hidden p-3 rounded-2xl ${gradient ||
       `bg-gradient-to-br from-${color}-50 to-${color}-100/50 dark:from-${color}-900/30 dark:to-${color}-800/20`
-    } border border-${color}-100 dark:border-${color}-800/30`}
+      } border border-${color}-100 dark:border-${color}-800/30`}
   >
     <div className="flex items-start justify-between">
       <div>
@@ -4747,9 +5428,8 @@ const PackageCard = memo(({ pkg, isSelected, onSelect }) => (
     layout
     whileTap={{ scale: 0.98 }}
     onClick={() => onSelect(pkg.id || pkg._id)}
-    className={`bg-white dark:bg-gray-900 p-4 rounded-2xl border-2 transition-all shadow-sm ${
-      isSelected ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-gray-100 dark:border-gray-800"
-    } ${pkg.isPopular ? "ring-2 ring-amber-400 ring-offset-2 dark:ring-offset-black" : ""}`}
+    className={`bg-white dark:bg-gray-900 p-4 rounded-2xl border-2 transition-all shadow-sm ${isSelected ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-gray-100 dark:border-gray-800"
+      } ${pkg.isPopular ? "ring-2 ring-amber-400 ring-offset-2 dark:ring-offset-black" : ""}`}
   >
     {pkg.isPopular && (
       <div className="flex justify-center -mt-7 mb-3">
@@ -4808,11 +5488,10 @@ const PackageCard = memo(({ pkg, isSelected, onSelect }) => (
     )}
     <motion.button
       whileTap={{ scale: 0.97 }}
-      className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${
-        isSelected
-          ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
-          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-      }`}
+      className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${isSelected
+        ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
+        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+        }`}
     >
       {isSelected ? "✓ Selected" : "Select Package"}
     </motion.button>
@@ -5147,11 +5826,10 @@ const CategorySpecificSection = memo(({ vendor, formatPrice }) => {
             )}
             {vendor.destinationWeddings !== undefined && (
               <div
-                className={`p-3 rounded-xl flex items-center gap-3 ${
-                  vendor.destinationWeddings
-                    ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
-                    : "bg-gray-50 dark:bg-gray-800"
-                }`}
+                className={`p-3 rounded-xl flex items-center gap-3 ${vendor.destinationWeddings
+                  ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
+                  : "bg-gray-50 dark:bg-gray-800"
+                  }`}
               >
                 {vendor.destinationWeddings ? (
                   <CheckCircle size={18} className="text-green-500" />
@@ -5430,9 +6108,8 @@ const CollapsibleSection = memo(
           <div className="flex items-center gap-3">
             {Icon && (
               <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                  iconBg || "bg-blue-50 dark:bg-blue-900/20"
-                }`}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconBg || "bg-blue-50 dark:bg-blue-900/20"
+                  }`}
               >
                 <Icon className={iconColor || "text-blue-500"} size={18} />
               </div>
@@ -5804,9 +6481,8 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                   <motion.div
                     key={s}
                     animate={{ scaleX: s <= step ? 1 : 0.5 }}
-                    className={`flex-1 h-1.5 rounded-full transition-colors ${
-                      s <= step ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-gray-200 dark:bg-gray-700"
-                    }`}
+                    className={`flex-1 h-1.5 rounded-full transition-colors ${s <= step ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-gray-200 dark:bg-gray-700"
+                      }`}
                   />
                 ))}
               </div>
@@ -5867,11 +6543,10 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                     key={service.id}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setSelectedService(service)}
-                    className={`w-full p-5 rounded-2xl border-2 transition-all text-left ${
-                      selectedService?.id === service.id
-                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/10"
-                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
-                    }`}
+                    className={`w-full p-5 rounded-2xl border-2 transition-all text-left ${selectedService?.id === service.id
+                      ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/10"
+                      : "border-gray-200 dark:border-gray-700 hover:border-gray-300"
+                      }`}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex items-center gap-2">
@@ -5920,11 +6595,10 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                             setSelectedDate(day.date);
                             setSelectedSlot(slot);
                           }}
-                          className={`px-5 py-3 rounded-xl text-sm font-bold transition-all ${
-                            selectedDate === day.date && selectedSlot === slot
-                              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25"
-                              : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
-                          }`}
+                          className={`px-5 py-3 rounded-xl text-sm font-bold transition-all ${selectedDate === day.date && selectedSlot === slot
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25"
+                            : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200"
+                            }`}
                         >
                           {slot}
                         </motion.button>
@@ -6225,16 +6899,16 @@ const MoreOptionsDrawer = ({
     },
     ...(isVerified
       ? [
-          {
-            id: "updateProfile",
-            label: "Update Profile",
-            icon: Edit3,
-            action: () => {
-              setShowUpdateProfileDrawer(true);
-              onClose();
-            },
+        {
+          id: "updateProfile",
+          label: "Update Profile",
+          icon: Edit3,
+          action: () => {
+            setShowUpdateProfileDrawer(true);
+            onClose();
           },
-        ]
+        },
+      ]
       : []),
     {
       id: "notify",
@@ -6388,11 +7062,10 @@ const MoreOptionsDrawer = ({
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors ${
-                      option.danger
-                        ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20"
-                        : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800"
-                    }`}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors ${option.danger
+                      ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20"
+                      : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800"
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -7145,11 +7818,10 @@ const PostOptionsDrawer = ({ isOpen, onClose, post, onDelete, onShare, onEdit, o
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors ${
-                      option.danger
-                        ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20"
-                        : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800"
-                    }`}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors ${option.danger
+                      ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20"
+                      : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800"
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -7397,11 +8069,10 @@ const ReelOptionsDrawer = ({ isOpen, onClose, reel, onDelete, onShare, onEdit })
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors ${
-                      option.danger
-                        ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20"
-                        : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800"
-                    }`}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors ${option.danger
+                      ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20"
+                      : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800"
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -7596,14 +8267,15 @@ const formatBio = (bio) => {
   });
 };
 
-const VendorProfileNewPageWrapper = ({ initialProfile }) => {
-  const { id, category } = useParams();
+const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initialReviews = [], vendorId: initialVendorId }) => {
+  const { id: routeId, category, username } = useParams();
+  const id = routeId || initialVendorId || initialVendor?._id || initialProfile?.vendorId;
   const router = useRouter();
   const { user, isLoaded: isUserLoaded, isSignedIn } = useUser();
 
-  const [vendor, setVendor] = useState({});
+  const [vendor, setVendor] = useState(initialVendor);
   const [profile, setProfile] = useState(initialProfile || {});
-  const [reviews, setReviews] = useState([]);
+  const [reviews, setReviews] = useState(initialReviews);
   const [vendorLoading, setVendorLoading] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -7823,6 +8495,22 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
       setIsLoadingAllInteractions(false);
     }
   }, [posts, reels, user?.id, id, profileLoading]);
+
+  useEffect(() => {
+    if (!initialProfile) {
+      setLikesCount(0);
+      return;
+    }
+    const totalPostLikes = initialProfile.posts?.reduce(
+      (total, post) => total + (post.likes?.length || 0),
+      0
+    ) || 0;
+    const totalReelLikes = initialProfile.reels?.reduce(
+      (total, reel) => total + (reel.likes?.length || 0),
+      0
+    ) || 0;
+    setLikesCount(totalPostLikes + totalReelLikes);
+  }, [initialProfile]);
 
   useEffect(() => {
     if (profileLoading) return;
@@ -8942,179 +9630,207 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
               <EmptyPostsState />
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-[8px] mx-[15px]">
-                  {posts.map((post, index) => {
+                <div className="grid grid-cols-2 gap-[12px] mx-[15px]">
+                  {posts.slice(0, 4).map((post, index) => {
                     const posterUrl = post.thumbnailUrl || videoThumbnails[post._id] || null;
                     const thumb = videoThumbnails[post._id];
+
+                    const postTitles = [
+                      "Work Details",
+                      "Services Breakdown",
+                      "Pricing & Packages",
+                      "Trust & Real Events"
+                    ];
+
+                    const postIcons = [
+                      <Briefcase size={14} />,
+                      <Layers size={14} />,
+                      <Tag size={14} />,
+                      <Shield size={14} />
+                    ];
+
                     return (
-                      <motion.div
+                      <div
                         key={post?._id || `post-${index}`}
-                        whileTap={{ scale: 0.97 }}
-                        onClick={() => {
-                          if (playingVideoId) {
-                            const video = videoRefs.current[playingVideoId];
-                            if (video) {
-                              video.pause();
-                              video.currentTime = 0;
-                            }
-                            setPlayingVideoId(null);
-                          }
-                          setSelectedPost(post);
-                        }}
-                        onTouchStart={() => {
-                          longPressTimerRef.current = setTimeout(() => {
-                            if (post.mediaType === "video") {
-                              const video = videoRefs.current[post._id];
-                              if (video) {
-                                video.play();
-                                setPlayingVideoId(post._id);
-                              }
-                            } else {
-                              setPreviewPost(post);
-                            }
-                            setIsLongPressing(true);
-                          }, 500);
-                        }}
-                        onTouchEnd={() => {
-                          if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-                          if (isLongPressing) {
-                            if (post.mediaType === "video" && playingVideoId === post._id) {
-                              const video = videoRefs.current[post._id];
-                              if (video) {
-                                video.pause();
-                                video.currentTime = 0;
-                              }
-                              setPlayingVideoId(null);
-                            }
-                            setPreviewPost(null);
-                            setIsLongPressing(false);
-                          }
-                        }}
-                        onTouchMove={() => {
-                          if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-                        }}
-                        onMouseDown={() => {
-                          longPressTimerRef.current = setTimeout(() => {
-                            if (post.mediaType === "video") {
-                              const video = videoRefs.current[post._id];
-                              if (video) {
-                                video.play();
-                                setPlayingVideoId(post._id);
-                              }
-                            } else {
-                              setPreviewPost(post);
-                            }
-                            setIsLongPressing(true);
-                          }, 500);
-                        }}
-                        onMouseUp={() => {
-                          if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-                          if (isLongPressing) {
-                            if (post.mediaType === "video" && playingVideoId === post._id) {
-                              const video = videoRefs.current[post._id];
-                              if (video) {
-                                video.pause();
-                                video.currentTime = 0;
-                              }
-                              setPlayingVideoId(null);
-                            }
-                            setPreviewPost(null);
-                            setIsLongPressing(false);
-                          }
-                        }}
-                        onMouseLeave={() => {
-                          if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
-                          if (isLongPressing) {
-                            if (post.mediaType === "video" && playingVideoId === post._id) {
-                              const video = videoRefs.current[post._id];
-                              if (video) {
-                                video.pause();
-                                video.currentTime = 0;
-                              }
-                              setPlayingVideoId(null);
-                            }
-                            setPreviewPost(null);
-                            setIsLongPressing(false);
-                          }
-                        }}
-                        className="aspect-[1/1.3] bg-gray-100 dark:bg-gray-800 overflow-hidden relative cursor-pointer select-none rounded-[10px] group"
+                        className="flex flex-col bg-white dark:bg-gray-900 rounded-[14px] p-[10px] shadow-[0_2px_12px_rgba(0,0,0,0.08)] dark:shadow-[0_2px_12px_rgba(0,0,0,0.3)] border border-gray-100 dark:border-gray-800"
                       >
-                        {post.mediaType === "video" ? (
-                          <div className="relative w-full h-full">
-                            {thumb && thumb !== "FALLBACK" ? (
-                              <img src={thumb} className="w-full h-full object-cover" />
-                            ) : (
-                              <video
-                                ref={(el) => {
-                                  if (el) videoRefs.current[post._id] = el;
-                                }}
-                                src={post.mediaUrl}
-                                poster={posterUrl || undefined}
-                                className="w-full h-full object-cover"
-                                muted
-                                playsInline
-                                loop
-                                preload="metadata"
-                              />
-                            )}
-                            <AnimatePresence>
-                              {playingVideoId !== post._id && (
-                                <motion.div
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  exit={{ opacity: 0 }}
-                                  className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
-                                >
-                                  <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-full p-1.5 shadow-lg">
-                                    <Play size={12} className="text-white fill-white" />
-                                  </div>
-                                </motion.div>
+                        <div className="flex items-center justify-center gap-[6px] mb-[10px] py-[6px] px-[8px] bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-800/80 rounded-[8px]">
+                          <span className="text-gray-500 dark:text-gray-400">
+                            {postIcons[index]}
+                          </span>
+                          <span className="text-[12px] font-semibold text-gray-700 dark:text-gray-200 tracking-wide truncate">
+                            {postTitles[index]}
+                          </span>
+                        </div>
+                        <motion.div
+                          key={post?._id || `post-${index}`}
+                          whileTap={{ scale: 0.97 }}
+                          onClick={() => {
+                            if (playingVideoId) {
+                              const video = videoRefs.current[playingVideoId];
+                              if (video) {
+                                video.pause();
+                                video.currentTime = 0;
+                              }
+                              setPlayingVideoId(null);
+                            }
+                            setSelectedPost(post);
+                          }}
+                          onTouchStart={() => {
+                            longPressTimerRef.current = setTimeout(() => {
+                              if (post.mediaType === "video") {
+                                const video = videoRefs.current[post._id];
+                                if (video) {
+                                  video.play();
+                                  setPlayingVideoId(post._id);
+                                }
+                              } else {
+                                setPreviewPost(post);
+                              }
+                              setIsLongPressing(true);
+                            }, 500);
+                          }}
+                          onTouchEnd={() => {
+                            if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+                            if (isLongPressing) {
+                              if (post.mediaType === "video" && playingVideoId === post._id) {
+                                const video = videoRefs.current[post._id];
+                                if (video) {
+                                  video.pause();
+                                  video.currentTime = 0;
+                                }
+                                setPlayingVideoId(null);
+                              }
+                              setPreviewPost(null);
+                              setIsLongPressing(false);
+                            }
+                          }}
+                          onTouchMove={() => {
+                            if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+                          }}
+                          onMouseDown={() => {
+                            longPressTimerRef.current = setTimeout(() => {
+                              if (post.mediaType === "video") {
+                                const video = videoRefs.current[post._id];
+                                if (video) {
+                                  video.play();
+                                  setPlayingVideoId(post._id);
+                                }
+                              } else {
+                                setPreviewPost(post);
+                              }
+                              setIsLongPressing(true);
+                            }, 500);
+                          }}
+                          onMouseUp={() => {
+                            if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+                            if (isLongPressing) {
+                              if (post.mediaType === "video" && playingVideoId === post._id) {
+                                const video = videoRefs.current[post._id];
+                                if (video) {
+                                  video.pause();
+                                  video.currentTime = 0;
+                                }
+                                setPlayingVideoId(null);
+                              }
+                              setPreviewPost(null);
+                              setIsLongPressing(false);
+                            }
+                          }}
+                          onMouseLeave={() => {
+                            if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+                            if (isLongPressing) {
+                              if (post.mediaType === "video" && playingVideoId === post._id) {
+                                const video = videoRefs.current[post._id];
+                                if (video) {
+                                  video.pause();
+                                  video.currentTime = 0;
+                                }
+                                setPlayingVideoId(null);
+                              }
+                              setPreviewPost(null);
+                              setIsLongPressing(false);
+                            }
+                          }}
+                          className="aspect-[1/1.3] bg-gray-100 dark:bg-gray-800 overflow-hidden relative cursor-pointer select-none rounded-[10px] group"
+                        >
+                          {post.mediaType === "video" ? (
+                            <div className="relative w-full h-full">
+                              {thumb && thumb !== "FALLBACK" ? (
+                                <img src={thumb} className="w-full h-full object-cover" />
+                              ) : (
+                                <video
+                                  ref={(el) => {
+                                    if (el) videoRefs.current[post._id] = el;
+                                  }}
+                                  src={post.mediaUrl}
+                                  poster={posterUrl || undefined}
+                                  className="w-full h-full object-cover"
+                                  muted
+                                  playsInline
+                                  loop
+                                  preload="metadata"
+                                />
                               )}
-                            </AnimatePresence>
-                            <AnimatePresence>
-                              {playingVideoId === post._id && (
-                                <motion.div
-                                  initial={{ opacity: 0, scale: 0.8 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  exit={{ opacity: 0, scale: 0.8 }}
-                                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                                >
-                                  <div className="absolute inset-0 bg-black/10" />
+                              <AnimatePresence>
+                                {playingVideoId !== post._id && (
                                   <motion.div
-                                    animate={{ scale: [1, 1.2, 1] }}
-                                    transition={{ duration: 1.5, repeat: Infinity }}
-                                    className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
                                   >
-                                    <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
-                                      <Pause size={16} className="text-gray-900" />
+                                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-full p-1.5 shadow-lg">
+                                      <Play size={12} className="text-white fill-white" />
                                     </div>
                                   </motion.div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        ) : (
-                          <SmartMedia
-                            key={`media-${post._id}`}
-                            src={post?.mediaUrl}
-                            type="image"
-                            className="w-full h-full object-cover"
-                            loaderImage="/GlowLoadingGif.gif"
-                          />
-                        )}
-                        {(post?.mediaType !== "video" || playingVideoId !== post._id) && (
-                          <div className="absolute inset-0 bg-black/0 group-active:bg-black/40 transition-colors flex items-center justify-center gap-3 text-white text-xs font-bold opacity-0 group-active:opacity-100">
-                            <span className="flex items-center gap-1">
-                              <Heart size={14} className="fill-white" />
-                              {post?.likes?.length}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MessageCircle size={14} className="fill-white" />
-                              {post?.reviews?.length}
-                            </span>
-                          </div>
-                        )}
-                      </motion.div>
+                                )}
+                              </AnimatePresence>
+                              <AnimatePresence>
+                                {playingVideoId === post._id && (
+                                  <motion.div
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                                  >
+                                    <div className="absolute inset-0 bg-black/10" />
+                                    <motion.div
+                                      animate={{ scale: [1, 1.2, 1] }}
+                                      transition={{ duration: 1.5, repeat: Infinity }}
+                                      className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
+                                    >
+                                      <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                                        <Pause size={16} className="text-gray-900" />
+                                      </div>
+                                    </motion.div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          ) : (
+                            <SmartMedia
+                              key={`media-${post._id}`}
+                              src={post?.mediaUrl}
+                              type="image"
+                              className="w-full h-full object-cover"
+                              loaderImage="/GlowLoadingGif.gif"
+                            />
+                          )}
+                          {(post?.mediaType !== "video" || playingVideoId !== post._id) && (
+                            <div className="absolute inset-0 bg-black/0 group-active:bg-black/40 transition-colors flex items-center justify-center gap-3 text-white text-xs font-bold opacity-0 group-active:opacity-100">
+                              <span className="flex items-center gap-1">
+                                <Heart size={14} className="fill-white" />
+                                {post?.likes?.length}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <MessageCircle size={14} className="fill-white" />
+                                {post?.reviews?.length}
+                              </span>
+                            </div>
+                          )}
+                        </motion.div>
+                      </div>
                     );
                   })}
                 </div>
@@ -9147,10 +9863,6 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
                         </motion.div>
                       </div>
                     </div>
-
-                    {/* INTERACTION LAYER (The "Force Click" Overlay) */}
-                    {/* This transparent button covers the entire header area absolutely. */}
-                    {/* z-10 ensures it sits on top of everything. */}
                     <button
                       type="button"
                       className="absolute inset-0 w-full h-full z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500/20"
@@ -10363,11 +11075,10 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
 
       {/* ============ FIXED HEADER WITH INTEGRATED TABS ============ */}
       <div
-        className={`fixed top-0 left-0 right-0 z-[40] transition-all duration-500 ease-out ${
-          isScrolledHeader
-            ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-lg border-b border-gray-200/50 dark:border-gray-800/50"
-            : "bg-gradient-to-b from-black/50 to-transparent"
-        }`}
+        className={`fixed top-0 left-0 right-0 z-[40] transition-all duration-500 ease-out ${isScrolledHeader
+          ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-lg border-b border-gray-200/50 dark:border-gray-800/50"
+          : "bg-gradient-to-b from-black/50 to-transparent"
+          }`}
         style={{
           willChange: isScrolledHeader ? "auto" : "transform, opacity",
         }}
@@ -10388,18 +11099,16 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
             whileTap={{ scale: 0.92 }}
             whileHover={{ scale: 1.05 }}
             onClick={handleBack}
-            className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-              isScrolledHeader ? "b border-gray-200 dark:border-gray-700 shadow-sm" : " border-white/10 shadow-black/20"
-            }`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader ? "b border-gray-200 dark:border-gray-700 shadow-sm" : " border-white/10 shadow-black/20"
+              }`}
             style={{
               willChange: "transform",
             }}
           >
             <ArrowLeft
               size={20}
-              className={`transition-colors duration-500 ease-out ${
-                isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
-              }`}
+              className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
+                }`}
             />
           </motion.button>
 
@@ -10415,9 +11124,8 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
               className="flex items-center gap-2 flex-1 min-w-0 ml-2"
             >
               <span
-                className={`text-sm font-bold truncate transition-colors duration-500 ease-out ${
-                  isScrolledHeader ? "text-gray-900 dark:text-white" : "text-white"
-                }`}
+                className={`text-sm font-bold truncate transition-colors duration-500 ease-out ${isScrolledHeader ? "text-gray-900 dark:text-white" : "text-white"
+                  }`}
               >
                 {"@" + vendor?.username}
               </span>
@@ -10456,40 +11164,36 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
               whileTap={{ scale: 0.92 }}
               whileHover={{ scale: 1.05 }}
               onClick={handleShare}
-              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                isScrolledHeader
-                  ? " border-gray-200 dark:border-gray-700 shadow-sm"
-                  : " border-white/10 shadow-black/20"
-              }`}
+              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
+                ? " border-gray-200 dark:border-gray-700 shadow-sm"
+                : " border-white/10 shadow-black/20"
+                }`}
               style={{
                 willChange: "transform",
               }}
             >
               <Share2
                 size={18}
-                className={`transition-colors duration-500 ease-out ${
-                  isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
-                }`}
+                className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
+                  }`}
               />
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.92 }}
               whileHover={{ scale: 1.05 }}
               onClick={() => setShowMoreOptions(true)}
-              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                isScrolledHeader
-                  ? " border-gray-200 dark:border-gray-700 shadow-sm"
-                  : " border-white/10 shadow-black/20"
-              }`}
+              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
+                ? " border-gray-200 dark:border-gray-700 shadow-sm"
+                : " border-white/10 shadow-black/20"
+                }`}
               style={{
                 willChange: "transform",
               }}
             >
               <MoreVertical
                 size={18}
-                className={`transition-colors duration-500 ease-out ${
-                  isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
-                }`}
+                className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
+                  }`}
               />
             </motion.button>
           </motion.div>
@@ -11017,11 +11721,10 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
                             whileTap={{ scale: 0.9 }}
                             onClick={handleHighlightPrev}
                             disabled={currentHighlightIndex === 0}
-                            className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-xl border shadow-lg transition-all duration-300 ${
-                              currentHighlightIndex === 0
-                                ? "bg-gray-100/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 opacity-40 cursor-not-allowed"
-                                : "bg-white/90 dark:bg-gray-800/90 border-white/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-700 cursor-pointer"
-                            }`}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-xl border shadow-lg transition-all duration-300 ${currentHighlightIndex === 0
+                              ? "bg-gray-100/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 opacity-40 cursor-not-allowed"
+                              : "bg-white/90 dark:bg-gray-800/90 border-white/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-700 cursor-pointer"
+                              }`}
                           >
                             <ChevronLeft
                               size={16}
@@ -11036,11 +11739,10 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
                             whileTap={{ scale: 0.9 }}
                             onClick={handleHighlightNext}
                             disabled={currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1}
-                            className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-xl border shadow-lg transition-all duration-300 ${
-                              currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1
-                                ? "bg-gray-100/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 opacity-40 cursor-not-allowed"
-                                : "bg-white/90 dark:bg-gray-800/90 border-white/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-700 cursor-pointer"
-                            }`}
+                            className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-xl border shadow-lg transition-all duration-300 ${currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1
+                              ? "bg-gray-100/50 dark:bg-gray-800/50 border-gray-200/50 dark:border-gray-700/50 opacity-40 cursor-not-allowed"
+                              : "bg-white/90 dark:bg-gray-800/90 border-white/50 dark:border-gray-700/50 hover:bg-white dark:hover:bg-gray-700 cursor-pointer"
+                              }`}
                           >
                             <ChevronRight
                               size={16}
@@ -11166,9 +11868,9 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
                     animate={
                       hasTrusted
                         ? {
-                            rotate: [0, -15, 15, -10, 10, 0],
-                            scale: [1, 1.15, 1.1, 1.05, 1],
-                          }
+                          rotate: [0, -15, 15, -10, 10, 0],
+                          scale: [1, 1.15, 1.1, 1.05, 1],
+                        }
                         : {}
                     }
                     transition={{ duration: 0.5, ease: smoothEase }}
