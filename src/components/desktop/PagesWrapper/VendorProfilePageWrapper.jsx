@@ -4211,7 +4211,7 @@ const ReelsViewer = ({
                   <img src={vendorImage} alt={vendorName} className="w-full h-full object-cover" />
                 </div>
                 <div>
-                  <span className="text-white font-bold text-sm block">{vendorName}</span>
+                  <span className="text-white font-serif text-sm block">{vendorName}</span>
                   <span className="text-gray-400 text-xs">Reels</span>
                 </div>
               </div>
@@ -9416,6 +9416,22 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
   }, [posts, reels, user?.id, id, profileLoading]);
 
   useEffect(() => {
+    if (!initialProfile) {
+      setLikesCount(0);
+      return;
+    }
+    const totalPostLikes = initialProfile.posts?.reduce(
+      (total, post) => total + (post.likes?.length || 0),
+      0
+    ) || 0;
+    const totalReelLikes = initialProfile.reels?.reduce(
+      (total, reel) => total + (reel.likes?.length || 0),
+      0
+    ) || 0;
+    setLikesCount(totalPostLikes + totalReelLikes);
+  }, [initialProfile]);
+
+  useEffect(() => {
     if (profileLoading) return;
     if (!isUserLoaded) return;
 
@@ -12252,7 +12268,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                     >
                       {/* Name & Premium Badge */}
                       <div className="flex items-center gap-3 flex-wrap">
-                        <h1 className="text-[24px] lg:text-[28px] font-bold text-slate-900 dark:text-white leading-tight">
+                        <h1 className="text-[24px] lg:text-[28px] font-serif font-bold text-slate-900 dark:text-white leading-tight">
                           {vendor?.name}
                         </h1>
                         {vendor?.isPremium && (
@@ -12800,7 +12816,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
             posts={posts}
             initialIndex={posts.findIndex((p) => p._id === selectedPost._id)}
             onClose={() => setSelectedPost(null)}
-            vendorName={vendor?.name}
+            vendorName={profile?.vendorBusinessName || profile?.vendorName || vendor?.name}
             vendorImage={
               profile?.vendorAvatar ||
               (Array.isArray(vendor?.vendorProfile)

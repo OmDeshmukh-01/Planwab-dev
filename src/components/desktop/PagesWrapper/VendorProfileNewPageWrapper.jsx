@@ -3105,12 +3105,10 @@ const PostDetailModal = ({
             )}
           </div>
 
-          {/* ===== RIGHT: Desktop Sidebar ===== */}
-          <div className="hidden lg:flex lg:flex-col lg:w-[420px] lg:min-w-[380px] bg-gray-950 border-l border-gray-800/50">
-            {/* Sidebar Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50">
+          <div className="hidden lg:flex lg:flex-col lg:w-[420px] lg:min-w-[380px] bg-white border-l border-gray-100">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-gray-700">
+                <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-gray-100">
                   <SmartMedia
                     src={vendorImage}
                     type="image"
@@ -3119,21 +3117,27 @@ const PostDetailModal = ({
                   />
                 </div>
                 <div>
-                  <span className="text-white font-bold text-sm block">{vendorName}</span>
-                  <span className="text-gray-400 text-xs">Works</span>
+                  <span className="text-gray-900 font-serif font-bold text-[15px] block tracking-tight">{vendorName}</span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className={`text-xs font-semibold bg-gradient-to-r ${POST_CONFIGS[postNumber]?.color || "from-gray-500 to-gray-600"} bg-clip-text text-transparent`}>
+                      {POST_CONFIGS[postNumber]?.title || "Details"}
+                    </span>
+                    <span className="text-gray-300 text-xs">•</span>
+                    <span className="text-gray-500 text-xs">Post {postNumber}/4</span>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 {isVerified && (
                   <button
                     onClick={() => setShowContentForm(!showContentForm)}
-                    className="p-2 rounded-full bg-gray-900 border border-gray-800 hover:bg-gray-800 text-gray-400 transition-colors"
+                    className="p-2 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors border border-gray-200"
                   >
                     <Pencil size={16} />
                   </button>
                 )}
                 {posts.length > 1 && (
-                  <span className="text-gray-400 text-xs font-mono bg-gray-800 px-3 py-1.5 rounded-full">
+                  <span className="text-gray-500 text-xs font-mono bg-gray-100 px-3 py-1.5 rounded-full">
                     {currentIndex + 1} / {posts.length}
                   </span>
                 )}
@@ -3146,7 +3150,7 @@ const PostDetailModal = ({
                   initial={{ opacity: 0, height: 0 }}
                   animate={{ opacity: 1, height: "auto" }}
                   exit={{ opacity: 0, height: 0 }}
-                  className="px-6 py-4 border-b border-gray-800/50 bg-gray-900/50 block"
+                  className="px-6 py-4 border-b border-gray-100 bg-gray-50"
                 >
                   <PostContentForm
                     postNumber={postNumber}
@@ -3159,7 +3163,7 @@ const PostDetailModal = ({
                     <motion.p
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="mt-4 p-3 bg-red-900/20 border border-red-900/50 text-red-400 text-sm rounded-xl flex items-center gap-2"
+                      className="mt-4 p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl flex items-center gap-2"
                     >
                       <AlertCircle size={16} />
                       {contentSubmitError}
@@ -3169,61 +3173,62 @@ const PostDetailModal = ({
               )}
             </AnimatePresence>
 
-            {/* Caption & Details */}
             <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 no-scrollbar">
               {!showContentForm && (
                 <div className="mb-6">
                   {renderPostContent()}
                 </div>
               )}
-
-              {/* Date */}
               {currentPost.date && <p className="text-gray-500 text-xs">{currentPost.date}</p>}
 
-              {/* Caption */}
               {(currentPost.caption || currentPost.description) && (
-                <p className="text-gray-200 text-sm leading-relaxed">
+                <p className="text-gray-700 text-sm leading-relaxed">
                   {currentPost.caption || currentPost.description}
                 </p>
               )}
 
-              {/* Location & Tags */}
               <div className="flex items-center gap-2 flex-wrap">
                 {currentPost.location && (
-                  <span className="text-blue-400 text-xs flex items-center gap-1 bg-blue-500/10 px-2.5 py-1 rounded-full">
+                  <span className="text-blue-600 text-xs flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded-full">
                     <MapPin size={10} />
                     {currentPost.location}
                   </span>
                 )}
                 {currentPost.tags?.map((tag, idx) => (
-                  <span key={idx} className="px-2.5 py-1 bg-gray-800 rounded-full text-gray-300 text-xs">
+                  <span key={idx} className="px-2 py-1 bg-gray-100 rounded-full text-gray-600 text-xs">
                     #{tag}
                   </span>
                 ))}
               </div>
 
-              {/* Audio info for videos */}
+              <div className="flex gap-2 pt-2">
+                <button className="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 font-semibold text-white text-sm rounded-xl transition-colors shadow-sm active:scale-[0.98]">
+                  Call Now
+                </button>
+                <button className="flex-1 py-2.5 bg-[#00BA61] hover:bg-[#00a857] font-semibold text-white text-sm rounded-xl transition-colors shadow-sm active:scale-[0.98]">
+                  Request Price Quote
+                </button>
+              </div>
+
               {isVideo && (
                 <div className="flex items-center gap-2 pt-2">
-                  <div className="w-5 h-5 rounded bg-gray-800 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded bg-gray-100 flex items-center justify-center">
                     <span className="text-[9px]">🎵</span>
                   </div>
-                  <p className="text-gray-400 text-xs">Original Audio</p>
+                  <p className="text-gray-500 text-xs">Original Audio</p>
                 </div>
               )}
-              {/* Desktop navigation hint */}
+
               {posts.length > 1 && (
                 <div className="pt-2">
-                  <p className="text-gray-600 text-[11px]">
+                  <p className="text-gray-400 text-[11px]">
                     Swipe up/down or use arrow keys to navigate • Double click to like
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Sidebar Action Bar */}
-            <div className="px-6 py-4 border-t border-gray-800/50 space-y-3">
-              {/* Action Buttons Row */}
+            <div className="px-6 py-4 border-t border-gray-100 bg-white space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1">
                   {isLoadingInteractions ? (
@@ -3236,7 +3241,7 @@ const PostDetailModal = ({
                           e.stopPropagation();
                           handleLike();
                         }}
-                        className="p-2.5 rounded-xl hover:bg-gray-800 transition-colors"
+                        className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                         disabled={isInteracting}
                       >
                         <motion.div animate={isLiked ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }} className="flex items-center gap-1.5">
@@ -3252,9 +3257,9 @@ const PostDetailModal = ({
                           e.stopPropagation();
                           setShowCommentsDrawer(true);
                         }}
-                        className="p-2.5 rounded-xl hover:bg-gray-800 transition-colors"
+                        className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                       >
-                        <MessageCircle size={24} className="text-white" />
+                        <MessageCircle size={24} className="text-gray-700" />
                       </motion.button>
                       <motion.button
                         whileTap={{ scale: 0.85 }}
@@ -3262,9 +3267,9 @@ const PostDetailModal = ({
                           e.stopPropagation();
                           setShowShareModal(true);
                         }}
-                        className="p-2.5 rounded-xl hover:bg-gray-800 transition-colors"
+                        className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                       >
-                        <Send size={22} className="text-white" />
+                        <Send size={22} className="text-gray-700" />
                       </motion.button>
                     </>
                   )}
@@ -3279,14 +3284,14 @@ const PostDetailModal = ({
                           e.stopPropagation();
                           handleSave();
                         }}
-                        className="p-2.5 rounded-xl hover:bg-gray-800 transition-colors"
+                        className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                         disabled={isInteracting}
                       >
                         <motion.div animate={isSaved ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }}>
                           {isSaved ? (
-                            <BookmarkCheck size={22} className="text-white fill-white" />
+                            <BookmarkCheck size={22} className="text-gray-700 fill-gray-700" />
                           ) : (
-                            <Bookmark size={22} className="text-white" />
+                            <Bookmark size={22} className="text-gray-700" />
                           )}
                         </motion.div>
                       </motion.button>
@@ -3294,12 +3299,12 @@ const PostDetailModal = ({
                         <motion.button
                           whileTap={{ scale: 0.85 }}
                           onClick={toggleMute}
-                          className="p-2.5 rounded-xl hover:bg-gray-800 transition-colors"
+                          className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                         >
                           {isMuted ? (
-                            <VolumeX size={22} className="text-white" />
+                            <VolumeX size={22} className="text-gray-700" />
                           ) : (
-                            <Volume2 size={22} className="text-white" />
+                            <Volume2 size={22} className="text-gray-700" />
                           )}
                         </motion.button>
                       )}
@@ -3308,20 +3313,18 @@ const PostDetailModal = ({
                 </div>
               </div>
 
-              {/* Desktop Prev/Next Navigation */}
               {posts.length > 1 && (
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
                       if (currentIndex > 0) {
-                        // trigger prev post logic via drag simulation
                         handleDragEnd(null, { offset: { y: 200 }, velocity: { y: 0 } });
                       }
                     }}
                     disabled={currentIndex === 0}
                     className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex === 0
-                      ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
-                      : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
+                      ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
                       }`}
                   >
                     <ChevronUp size={16} />
@@ -3335,8 +3338,8 @@ const PostDetailModal = ({
                     }}
                     disabled={currentIndex >= posts.length - 1}
                     className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex >= posts.length - 1
-                      ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
-                      : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
+                      ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
                       }`}
                   >
                     Next
@@ -9165,13 +9168,30 @@ const RightSidebar = ({
   );
 };
 
-const VendorProfileNewPageWrapper = ({ initialProfile }) => {
-  const { id, category } = useParams();
+const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initialReviews = [], vendorId: initialVendorId }) => {
+  const { id: routeId, category, username } = useParams();
+  const id = routeId || initialVendorId || initialVendor?._id || initialProfile?.vendorId;
   const router = useRouter();
   const { user, isLoaded: isUserLoaded, isSignedIn } = useUser();
   const { backUrl, canGoBack } = useNavigationState();
 
-  const [vendor, setVendor] = useState();
+  const [vendor, setVendor] = useState(() => {
+    const baseVendor = initialVendor || {};
+    const baseProfile = initialProfile || {};
+    return {
+      ...baseVendor,
+      name: baseVendor.name || baseProfile.vendorBusinessName || baseProfile.vendorName,
+      category: baseVendor.category || baseProfile.category,
+      address: {
+        ...baseVendor.address,
+        city: baseVendor.address?.city || baseProfile.location?.city,
+        state: baseVendor.address?.state || baseProfile.location?.state || baseProfile.location?.country
+      },
+      username: baseVendor.username || baseProfile.username,
+      isPremium: baseVendor.isPremium || baseProfile.isPremium,
+      isVerified: baseVendor.isVerified || baseProfile.isVerified
+    };
+  });
   const [profile, setProfile] = useState(initialProfile || {});
   const [reviews, setReviews] = useState();
   const [vendorLoading, setVendorLoading] = useState(false);
@@ -9395,6 +9415,22 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
   }, [posts, reels, user?.id, id, profileLoading]);
 
   useEffect(() => {
+    if (!initialProfile) {
+      setLikesCount(0);
+      return;
+    }
+    const totalPostLikes = initialProfile.posts?.reduce(
+      (total, post) => total + (post.likes?.length || 0),
+      0
+    ) || 0;
+    const totalReelLikes = initialProfile.reels?.reduce(
+      (total, reel) => total + (reel.likes?.length || 0),
+      0
+    ) || 0;
+    setLikesCount(totalPostLikes + totalReelLikes);
+  }, [initialProfile]);
+
+  useEffect(() => {
     if (profileLoading) return;
     if (!isUserLoaded) return;
 
@@ -9460,7 +9496,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
     return colorMap[category] || colorMap.default;
   }, []);
 
-  const categoryColor = useMemo(() => getCategoryColor(vendor?.category), [vendor?.category, getCategoryColor]);
+  const categoryColor = useMemo(() => getCategoryColor(profile?.category || vendor?.category), [profile?.category, vendor?.category, getCategoryColor]);
 
   const cardBounceVariants = {
     initial: { y: 0 },
@@ -11985,8 +12021,8 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <span className="text-sm font-bold truncate text-slate-900 dark:text-white">{vendor?.name}</span>
-                {vendor?.isVerified && (
+                <span className="text-sm font-bold truncate text-slate-900 dark:text-white">{profile?.vendorBusinessName || profile?.vendorName || vendor?.name}</span>
+                {(profile?.isVerified || vendor?.isVerified) && (
                   <div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
                     <Check size={10} className="text-white" strokeWidth={3} />
                   </div>
@@ -12269,10 +12305,10 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
                     >
                       {/* Name & Premium Badge */}
                       <div className="flex items-center gap-3 flex-wrap">
-                        <h1 className="text-[24px] lg:text-[28px] font-bold text-slate-900 dark:text-white leading-tight">
-                          {vendor?.name}
+                        <h1 className="text-[24px] lg:text-[28px] font-serif font-bold text-slate-900 dark:text-white leading-tight">
+                          {vendor?.name || profile?.vendorBusinessName || profile?.vendorName}
                         </h1>
-                        {vendor?.isPremium && (
+                        {(profile?.isPremium || vendor?.isPremium) && (
                           <span className="px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold rounded-full flex items-center gap-1 shadow-md shadow-amber-500/30">
                             <Crown size={12} />
                             PREMIUM
@@ -12282,7 +12318,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
 
                       {/* Title/Category */}
                       <p className="text-[15px] lg:text-[17px] text-slate-700 dark:text-slate-300 mt-1.5 font-medium">
-                        {vendor?.category || "Photography"} Professional
+                        {profile?.category || vendor?.category || "Photography"} Professional
                       </p>
 
                       {/* Company Info Row */}
@@ -12294,7 +12330,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
                           <Building2 size={12} style={{ color: categoryColor.primary }} />
                         </div>
                         <span className="font-medium" style={{ color: categoryColor.primary }}>
-                          {vendor?.category || "Photography"} Services
+                          {profile?.category || vendor?.category || "Photography"} Services
                         </span>
                       </div>
 
@@ -12302,7 +12338,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
                       <div className="flex items-center flex-wrap gap-x-4 gap-y-1 mt-2 text-[13px] text-slate-500 dark:text-slate-400">
                         <span className="flex items-center gap-1.5">
                           <MapPin size={14} />
-                          {vendor?.address?.city || "Mumbai"}, {vendor?.address?.state || "India"}
+                          {profile?.location?.city || vendor?.address?.city || "Mumbai"}, {profile?.location?.state || profile?.location?.country || vendor?.address?.state || "India"}
                         </span>
                         <span
                           className="flex items-center gap-1.5 hover:text-blue-600 hover:underline cursor-pointer"
@@ -12793,7 +12829,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile }) => {
             posts={posts}
             initialIndex={posts.findIndex((p) => p._id === selectedPost._id)}
             onClose={() => setSelectedPost(null)}
-            vendorName={vendor?.name}
+            vendorName={vendor?.name || profile?.vendorBusinessName || profile?.vendorName}
             vendorImage={
               profile?.vendorAvatar ||
               (Array.isArray(vendor?.vendorProfile)

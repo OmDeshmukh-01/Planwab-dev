@@ -3083,8 +3083,14 @@ const PostDetailModal = ({
               />
             </div>
             <div className="flex-1 min-w-0">
-              <span className="text-white font-bold text-sm">{vendorName}</span>
-              {currentPost.date && <p className="text-white/50 text-xs">{currentPost.date}</p>}
+              <span className="text-white font-bold text-sm block">{vendorName}</span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className={`text-xs font-semibold bg-gradient-to-r ${POST_CONFIGS[postNumber]?.color || "from-gray-500 to-gray-600"} bg-clip-text text-transparent`}>
+                  {POST_CONFIGS[postNumber]?.title || "Details"}
+                </span>
+                <span className="text-white/50 text-xs">•</span>
+                <span className="text-white/70 text-xs">Post {postNumber}/4</span>
+              </div>
             </div>
             {/* <motion.button
               whileTap={{ scale: 0.95 }}
@@ -3114,6 +3120,16 @@ const PostDetailModal = ({
                 #{tag}
               </span>
             ))}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 pt-2">
+            <button className="flex-1 py-2 bg-blue-600 hover:bg-blue-700 font-semibold text-white text-[13px] rounded-xl transition-colors shadow-sm active:scale-[0.98]">
+              Call Now
+            </button>
+            <button className="flex-1 py-2 bg-[#00BA61] hover:bg-[#00a857] font-semibold text-white text-[13px] rounded-xl transition-colors shadow-sm active:scale-[0.98]">
+              Request Quote
+            </button>
           </div>
 
           {/* Audio info for videos */}
@@ -8273,7 +8289,23 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
   const router = useRouter();
   const { user, isLoaded: isUserLoaded, isSignedIn } = useUser();
 
-  const [vendor, setVendor] = useState(initialVendor);
+  const [vendor, setVendor] = useState(() => {
+    const baseVendor = initialVendor || {};
+    const baseProfile = initialProfile || {};
+    return {
+      ...baseVendor,
+      name: baseVendor.name || baseProfile.vendorBusinessName || baseProfile.vendorName,
+      category: baseVendor.category || baseProfile.category,
+      address: {
+        ...baseVendor.address,
+        city: baseVendor.address?.city || baseProfile.location?.city,
+        state: baseVendor.address?.state || baseProfile.location?.state || baseProfile.location?.country
+      },
+      username: baseVendor.username || baseProfile.username,
+      isPremium: baseVendor.isPremium || baseProfile.isPremium,
+      isVerified: baseVendor.isVerified || baseProfile.isVerified
+    };
+  });
   const [profile, setProfile] = useState(initialProfile || {});
   const [reviews, setReviews] = useState(initialReviews);
   const [vendorLoading, setVendorLoading] = useState(false);
@@ -10025,7 +10057,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
                 </div>
                 <div>
                   {profile?.vendorId?.length > 2 ? (
-                    <ReviewSection vendorId={profile?.vendorId} vendorName={profile?.vendorName} />
+                    <ReviewSection vendorId={profile?.vendorId} vendorName={vendor?.name || profile?.vendorBusinessName || profile?.vendorName} />
                   ) : (
                     <ReviewsEmptyState />
                   )}
@@ -11485,9 +11517,9 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
                     >
                       <div className="flex items-center gap-2 mb-1.5">
                         <h1 className="text-[17px] font-bold text-gray-900 dark:text-white truncate leading-tight">
-                          {vendor?.name}
+                          {vendor?.name || profile?.vendorBusinessName || profile?.vendorName}
                         </h1>
-                        {vendor?.isPremium && (
+                        {(profile?.isPremium || vendor?.isPremium) && (
                           <motion.span
                             initial={{ opacity: 0, scale: 0.5 }}
                             animate={{ opacity: 1, scale: 1 }}
@@ -11501,12 +11533,12 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
                       </div>
 
                       <p className="text-[13px] font-semibold mb-1" style={{ color: categoryColor.primary }}>
-                        {vendor?.category || "Photography"}
+                        {profile?.category || vendor?.category || "Photography"}
                       </p>
 
                       <p className="text-[12px] text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
                         <MapPin size={11} className="flex-shrink-0" />
-                        <span className="truncate">{vendor?.address?.city || "Mumbai, India"}</span>
+                        <span className="truncate">{profile?.location?.city || vendor?.address?.city || "Mumbai, India"}</span>
                       </p>
 
                       {reviews?.length > 0 && (
@@ -12101,7 +12133,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
             posts={posts}
             initialIndex={posts.findIndex((p) => p._id === selectedPost._id)}
             onClose={() => setSelectedPost(null)}
-            vendorName={vendor?.name}
+            vendorName={vendor?.name || profile?.vendorBusinessName || profile?.vendorName}
             vendorImage={
               profile?.vendorAvatar ||
               (Array.isArray(vendor?.vendorProfile)
@@ -12221,13 +12253,13 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
 
       <AnimatePresence>
         {showShareModal && (
-          <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} vendorName={vendor?.name} />
+          <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} vendorName={vendor?.name || profile?.vendorBusinessName || profile?.vendorName} />
         )}
       </AnimatePresence>
 
       <AnimatePresence>
         {showQRModal && (
-          <QRCodeModal isOpen={showQRModal} onClose={() => setShowQRModal(false)} vendorName={vendor?.name} />
+          <QRCodeModal isOpen={showQRModal} onClose={() => setShowQRModal(false)} vendorName={vendor?.name || profile?.vendorBusinessName || profile?.vendorName} />
         )}
       </AnimatePresence>
 
