@@ -1,5 +1,5 @@
 import VendorProfileNewPageWrapper from "@/components/mobile/PagesWrapper/VendorProfileNewPageWrapper";
-import { getVendorProfileByUsername, getVendorById, getVendorReviews } from "../../../../../../../../database/actions/FetchActions";
+import { getVendorProfileByUsername } from "../../../../../../../../database/actions/FetchActions";
 
 export async function generateMetadata({ params }) {
   const { username } = await params;
@@ -11,8 +11,8 @@ export async function generateMetadata({ params }) {
 
   return {
     title: `${profile.vendorName} - Profile | Vendors Media Hub`,
-    description: profile?.bio 
-      ? `${profile.bio.substring(0, 160)}...` 
+    description: profile?.bio
+      ? `${profile.bio.substring(0, 160)}...`
       : `Book ${profile.vendorName} for your event.`,
     openGraph: {
       title: `${profile.vendorName} - PlanWAB`,
@@ -25,25 +25,10 @@ export default async function VendorProfilePage({ params }) {
   const { username } = await params;
 
   const profileData = await getVendorProfileByUsername(username);
-  
-  // if user doesn't exist
-  if (!profileData || !profileData.vendorId) {
-    return (
-      <VendorProfileNewPageWrapper initialProfile={profileData || {}} initialVendor={{}} initialReviews={[]} />
-    );
-  }
-
-  const [vendorData, reviewsData] = await Promise.all([
-    getVendorById(profileData.vendorId),
-    getVendorReviews(profileData.vendorId)
-  ]);
 
   return (
-    <VendorProfileNewPageWrapper 
+    <VendorProfileNewPageWrapper
       initialProfile={profileData}
-      initialVendor={vendorData || {}}
-      initialReviews={reviewsData?.reviews || []}
-      vendorId={profileData.vendorId}
     />
   );
 }

@@ -755,7 +755,7 @@ const PasswordVerificationModal = ({ isOpen, onClose, onSuccess, vendorId, vendo
     setError("");
 
     try {
-      const response = await fetch(`/api/vendor/${vendorId}/profile/verify-password`, {
+      const response = await fetch(`/api/vendor/${vendor?.username}/profile/verify-password`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password: password.trim() }),
@@ -1958,7 +1958,7 @@ const PostDetailModal = ({
   onDelete,
   onEdit,
   onArchive,
-  vendorId,
+  vendorId: desktopVendorId,
   allInteractions = {},
   isVerified = false,
   profileId,
@@ -1996,7 +1996,7 @@ const PostDetailModal = ({
   const [isLoadingInteractions, setIsLoadingInteractions] = useState(true);
 
   // Content Category Detail States
-  const isOwner = user?.id === vendorId;
+  const isOwner = user?.id === desktopVendorId;
   const postNumber = (currentIndex % 4) + 1;
   const [contentData, setContentData] = useState(currentPost?.content || null);
   const [showContentForm, setShowContentForm] = useState(false);
@@ -2079,7 +2079,7 @@ const PostDetailModal = ({
 
       // Fallback: If no preloaded data, fetch from API
       try {
-        if (!vendorId) {
+        if (!vendor?.username) {
           setIsLoadingInteractions(false);
           return;
         }
@@ -2089,7 +2089,7 @@ const PostDetailModal = ({
           ...(user?.id && { userId: user.id }),
         });
 
-        const res = await fetch(`/api/vendor/${vendorId}/profile/posts/interactions?${params}`);
+        const res = await fetch(`/api/vendor/${vendor?.username}/profile/posts/interactions?${params}`);
         const data = await res.json();
 
         if (data.success) {
@@ -2106,7 +2106,7 @@ const PostDetailModal = ({
     };
 
     fetchInteractionStatus();
-  }, [currentPost?._id, user?.id, vendorId, allInteractions]);
+  }, [currentPost?._id, user?.id, vendor?.username, allInteractions]);
 
   // ===== CONTENT FORM SUBMIT =====
   const handleContentFormSubmit = useCallback(
@@ -2486,7 +2486,7 @@ const PostDetailModal = ({
     setIsInteracting(true);
 
     try {
-      const res = await fetch(`/api/vendor/${vendorId}/profile/posts/interactions`, {
+      const res = await fetch(`/api/vendor/${vendor?.username}/profile/posts/interactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2559,7 +2559,7 @@ const PostDetailModal = ({
     setIsInteracting(true);
 
     try {
-      const res = await fetch(`/api/vendor/${vendorId}/profile/posts/interactions`, {
+      const res = await fetch(`/api/vendor/${vendor?.username}/profile/posts/interactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2602,7 +2602,7 @@ const PostDetailModal = ({
     setReviewSubmitting(true);
 
     try {
-      const res = await fetch(`/api/vendor/${vendorId}/profile/posts/interactions`, {
+      const res = await fetch(`/api/vendor/${vendor?.username}/profile/posts/interactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2632,7 +2632,7 @@ const PostDetailModal = ({
     setReviews((prev) => prev.filter((r) => (r._id || r.id) !== reviewId));
 
     try {
-      await fetch(`/api/vendor/${vendorId}/profile/posts/interactions`, {
+      await fetch(`/api/vendor/${vendor?.username}/profile/posts/interactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -3415,7 +3415,7 @@ const ReelsViewer = ({
   vendorImage,
   onDeleteReel,
   onEditReel,
-  vendorId,
+  vendorId: reelsVendorId,
   allInteractions = {},
 }) => {
   const { user, isSignedIn } = useUser();
@@ -3447,7 +3447,7 @@ const ReelsViewer = ({
   const currentReel = reels[currentIndex];
 
   const getVendorId = () => {
-    return vendorId;
+    return reelsVendorId;
   };
 
   useEffect(() => {
@@ -3493,8 +3493,8 @@ const ReelsViewer = ({
       setIsLoadingInteractions(true);
 
       try {
-        const vendorId = getVendorId();
-        if (!vendorId) {
+        const vendorUsername = vendor?.username;
+        if (!vendorUsername) {
           setIsLoadingInteractions(false);
           return;
         }
@@ -3504,7 +3504,7 @@ const ReelsViewer = ({
           ...(user?.id && { userId: user.id }),
         });
 
-        const res = await fetch(`/api/vendor/${vendorId}/profile/reels/interactions?${params}`);
+        const res = await fetch(`/api/vendor/${vendorUsername}/profile/reels/interactions?${params}`);
         const data = await res.json();
 
         if (data.success) {
@@ -3539,10 +3539,10 @@ const ReelsViewer = ({
       if (viewTracked.has(reelId)) return;
 
       try {
-        const vendorId = getVendorId();
-        if (!vendorId) return;
+        const vendorUsername = vendor?.username;
+        if (!vendorUsername) return;
 
-        const res = await fetch(`/api/vendor/${vendorId}/profile/reels/interactions`, {
+        const res = await fetch(`/api/vendor/${vendorUsername}/profile/reels/interactions`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -3714,9 +3714,9 @@ const ReelsViewer = ({
     setIsInteracting(true);
 
     try {
-      const vendorId = getVendorId();
+      const vendorUsername = vendor?.username;
 
-      const res = await fetch(`/api/vendor/${vendorId}/profile/reels/interactions`, {
+      const res = await fetch(`/api/vendor/${vendorUsername}/profile/reels/interactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -3773,9 +3773,9 @@ const ReelsViewer = ({
     setIsInteracting(true);
 
     try {
-      const vendorId = getVendorId();
+      const vendorUsername = vendor?.username;
 
-      const res = await fetch(`/api/vendor/${vendorId}/profile/reels/interactions`, {
+      const res = await fetch(`/api/vendor/${vendorUsername}/profile/reels/interactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -3881,14 +3881,14 @@ const ReelsViewer = ({
 
   const handleEditReel = async (newCaption, newTitle) => {
     try {
-      const vendorId = getVendorId();
+      const vendorUsername = vendor?.username;
       const reelId = currentReel._id;
 
       const formData = new FormData();
       if (newCaption !== undefined) formData.append("caption", newCaption);
       if (newTitle !== undefined) formData.append("title", newTitle);
 
-      const res = await fetch(`/api/vendor/${vendorId}/profile/reels?reelId=${reelId}`, {
+      const res = await fetch(`/api/vendor/${vendorUsername}/profile/reels?reelId=${reelId}`, {
         method: "PUT",
         body: formData,
       });
@@ -4494,7 +4494,7 @@ const PortfolioViewer = ({ portfolio, onClose, onBookService }) => {
   );
 };
 
-const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, reelsCount, vendorId }) => {
+const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, reelsCount, vendorId: uploadVendorId }) => {
   const [uploadType, setUploadType] = useState(null);
   const [caption, setCaption] = useState("");
   const [title, setTitle] = useState("");
@@ -4597,7 +4597,7 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
     setConfigError(false);
 
     try {
-      const response = await fetch(`/api/vendor/${vendorId}/profile/upload-config`);
+      const response = await fetch(`/api/vendor/${vendor?.username}/profile/upload-config`);
 
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}`);
@@ -4856,7 +4856,7 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
       const filename = generateUniqueFilename(selectedFileRaw.name);
 
       if (uploadType === "post") {
-        storagePath = `posts/${vendorId}/${filename}`;
+        storagePath = `posts/${vendor?.username}/${filename}`;
         safeSetState(setUploadStatus, "Uploading...");
 
         mediaUrl = await uploadToBunnyDirect(selectedFileRaw, storagePath, (progress) => {
@@ -4878,7 +4878,7 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
         safeSetState(setUploadStatus, "Saving...");
 
         // Save metadata to backend
-        const response = await fetch(`/api/vendor/${vendorId}/profile/posts`, {
+        const response = await fetch(`/api/vendor/${vendor?.username}/profile/posts`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -4913,7 +4913,7 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
         }
       } else {
         // Reel upload
-        storagePath = `reels/${vendorId}/${filename}`;
+        storagePath = `reels/${vendor?.username}/${filename}`;
         safeSetState(setUploadStatus, "Uploading video...");
 
         const hasThumbnail = !!thumbnailFile;
@@ -4941,7 +4941,7 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
         if (thumbnailFile) {
           safeSetState(setUploadStatus, "Uploading thumbnail...");
           const thumbFilename = `thumb_${generateUniqueFilename(thumbnailFile.name)}`;
-          thumbnailPath = `reels/${vendorId}/thumbnails/${thumbFilename}`;
+          thumbnailPath = `reels/${vendor?.username}/thumbnails/${thumbFilename}`;
 
           try {
             thumbnailUrl = await uploadToBunnyDirect(thumbnailFile, thumbnailPath, (progress) => {
@@ -4961,7 +4961,7 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
         safeSetState(setUploadStatus, "Saving...");
 
         // Save metadata to backend
-        const response = await fetch(`/api/vendor/${vendorId}/profile/reels`, {
+        const response = await fetch(`/api/vendor/${vendor?.username}/profile/reels`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -8904,8 +8904,8 @@ const RightSidebar = ({
   };
 
   const handleSimilarprofileClick = (profile) => {
-    if (profile?.vendorId) {
-      router.push(`/vendor/${profile.category}/${profile.vendorId}/profile`);
+    if (profile?.username) {
+      router.push(`/vendor/${profile.category}/${profile.username}/profile`);
     } else {
       router.push(`/vendor/${profile.category}/profile/${profile.username}`);
     }
@@ -10944,8 +10944,8 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
                   ))}
                 </div>
                 <div>
-                  {profile?.vendorId?.length > 2 ? (
-                    <ReviewSection vendorId={profile?.vendorId} vendorName={profile?.vendorName} />
+                  {vendor?.username ? (
+                    <ReviewSection vendorId={vendor?.username} vendorName={profile?.vendorName} />
                   ) : (
                     <ReviewsEmptyState />
                   )}
@@ -10956,7 +10956,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
         );
 
       case "services":
-        if (!profile?.vendorId) {
+        if (!vendor?.username) {
           return (
             <div className="flex items-center justify-center px-6 py-16">
               <div className="w-full max-w-md text-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm p-8">
@@ -12840,7 +12840,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
             onDelete={() => handleDeletePost(selectedPost._id)}
             onEdit={(newCaption) => handleEditPost(selectedPost._id, newCaption)}
             onArchive={() => handleArchivePost(selectedPost._id)}
-            vendorId={id}
+            vendorId={vendor?.username}
             allInteractions={postsInteractionsData}
             isVerified={isVerified}
             profileId={profile?._id}
@@ -12864,7 +12864,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
             }
             onDeleteReel={() => handleDeleteReel(reels[selectedReelIndex]._id)}
             onEditReel={(newCaption) => handleEditReel(reels[selectedReelIndex]._id, newCaption)}
-            vendorId={id}
+            vendorId={vendor?.username}
             allInteractions={reelsInteractionsData}
           />
         )}
@@ -12892,7 +12892,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
             onUploadReel={handleUploadReel}
             postsCount={posts.length}
             reelsCount={reels.length}
-            vendorId={id}
+            vendorId={vendor?.username}
           />
         )}
       </AnimatePresence>
@@ -12915,7 +12915,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
             isOpen={showReviewsDrawer}
             onClose={() => setShowReviewsDrawer(false)}
             reviewsData={reviews}
-            vendorId={id}
+            vendorId={vendor?.username}
             vendorName={vendor?.name}
           />
         )}
@@ -12984,7 +12984,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
               updateURLParams({ upload: null });
             }}
             onSuccess={() => setIsVerified(true)}
-            vendorId={id}
+            vendorId={vendor?.username}
             vendorName={vendor?.name}
           />
         )}
