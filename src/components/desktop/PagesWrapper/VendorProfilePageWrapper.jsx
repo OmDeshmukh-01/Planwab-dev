@@ -847,9 +847,8 @@ const PasswordVerificationModal = ({ isOpen, onClose, onSuccess, vendorId, vendo
                     onKeyDown={handleKeyDown}
                     placeholder="Enter your password"
                     disabled={isVerifying}
-                    className={`w-full pl-12 pr-12 py-4 bg-slate-100 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all ${
-                      error ? "border-red-500 focus:border-red-500" : "border-transparent focus:border-blue-500"
-                    } ${isVerifying ? "opacity-60 cursor-not-allowed" : ""}`}
+                    className={`w-full pl-12 pr-12 py-4 bg-slate-100 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all ${error ? "border-red-500 focus:border-red-500" : "border-transparent focus:border-blue-500"
+                      } ${isVerifying ? "opacity-60 cursor-not-allowed" : ""}`}
                   />
                   <motion.button
                     type="button"
@@ -1316,20 +1315,18 @@ const CommentsDrawer = ({ isOpen, onClose, reviews, onAddComment, onDeleteCommen
             className="fixed inset-0 z-[120] bg-black/60 backdrop-blur-sm"
           />
           <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
+            initial={{ x: "100%" }}
+            animate={{ x: 0 }}
+            exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="fixed bottom-0 left-0 right-0 z-[121] bg-[#121212] rounded-t-[20px] h-[75vh] flex flex-col border-t border-white/10"
+            className="fixed top-0 right-0 bottom-0 z-[121] bg-[#121212] w-full lg:w-[40%] flex flex-col border-l border-white/10 shadow-2xl"
           >
-            {/* Drawer Handle */}
-            <div className="w-full flex justify-center pt-3 pb-2" onClick={onClose}>
-              <div className="w-10 h-1 bg-gray-600 rounded-full" />
-            </div>
-
             {/* Header */}
-            <div className="px-4 pb-3 border-b border-white/10 text-center relative">
-              <span className="font-bold text-white">Comments</span>
+            <div className="px-5 py-4 border-b border-white/10 flex items-center justify-between">
+              <span className="font-bold text-white text-lg lg:text-xl">Comments</span>
+              <button onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-full transition-colors text-white">
+                <X size={20} />
+              </button>
             </div>
 
             {/* Comments List */}
@@ -1363,11 +1360,9 @@ const CommentsDrawer = ({ isOpen, onClose, reviews, onAddComment, onDeleteCommen
             </div>
 
             {/* Input Section */}
-            <div className="p-3 border-t border-white/10 bg-[#121212] pb-8">
+            <div className="p-4 border-t border-white/10 bg-[#121212]">
               <div className="flex items-center gap-3 bg-white/10 rounded-full px-4 py-2">
-                {/* Assuming current user avatar is available, else generic */}
                 <div className="w-7 h-7 rounded-full bg-gray-500 overflow-hidden">
-                  {/* Placeholder for current user avatar */}
                   <div className="w-full h-full bg-gradient-to-br from-purple-500 to-blue-500" />
                 </div>
                 <input
@@ -1394,6 +1389,588 @@ const CommentsDrawer = ({ isOpen, onClose, reviews, onAddComment, onDeleteCommen
   );
 };
 
+const POST_CONFIGS = {
+  1: {
+    title: "Work Details",
+    icon: Briefcase,
+    color: "from-blue-500 to-cyan-500",
+    fields: [
+      { key: "caption", label: "Caption", type: "textarea", required: true },
+      { key: "googleRating", label: "Google Rating", type: "number", min: 0, max: 5, step: 0.1, required: true },
+      { key: "teamSize", label: "Team Size", type: "number", min: 1, required: true },
+      { key: "servicesDone", label: "Services Completed", type: "number", min: 0, required: true },
+      { key: "yearsOfExperience", label: "Years of Experience", type: "number", min: 0, required: true },
+      { key: "location", label: "Location", type: "text", required: true },
+    ],
+  },
+  2: {
+    title: "All Service Breakdown",
+    icon: Package,
+    color: "from-purple-500 to-pink-500",
+    fields: [
+      { key: "caption", label: "Caption", type: "textarea", required: true },
+      { key: "eventIncludes", label: "Event Includes (Categories)", type: "array", required: true },
+      { key: "subCategories", label: "Sub Categories", type: "array", required: false },
+    ],
+  },
+  3: {
+    title: "Pricing and Packages",
+    icon: DollarSign,
+    color: "from-green-500 to-emerald-500",
+    fields: [
+      { key: "basePriceMin", label: "Base Price (Min)", type: "number", min: 0, required: true },
+      { key: "basePriceMax", label: "Base Price (Max)", type: "number", min: 0, required: true },
+      { key: "packages", label: "Packages", type: "packages", required: false },
+    ],
+  },
+  4: {
+    title: "Trust & Real Events",
+    icon: Shield,
+    color: "from-amber-500 to-orange-500",
+    fields: [
+      { key: "usp", label: "Unique Selling Points", type: "array", required: true },
+      { key: "callToAction", label: "Call to Action (3 items)", type: "cta", maxItems: 3, required: true },
+    ],
+  },
+};
+
+const NoDataFallback = ({ postNumber, onUpdateClick }) => {
+  const config = POST_CONFIGS[postNumber];
+  if (!config) return null;
+  const IconComponent = config.icon;
+
+  return (
+    <div className="flex flex-col items-center justify-center py-8 px-4 text-center bg-gray-50 border border-gray-200 border-dashed rounded-xl">
+      <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${config.color} flex items-center justify-center mb-4 opacity-80`}>
+        <IconComponent size={24} className="text-white" />
+      </div>
+      <h3 className="text-gray-800 font-medium mb-1">{config.title}</h3>
+      <p className="text-gray-500 text-xs mb-4 max-w-[200px]">
+        No details added for this post category yet.
+      </p>
+      {onUpdateClick && (
+        <button
+          onClick={onUpdateClick}
+          className={`px-4 py-2 bg-gradient-to-r ${config.color} rounded-lg text-white text-xs font-semibold hover:shadow-lg transition-transform active:scale-95`}
+        >
+          Add Details
+        </button>
+      )}
+    </div>
+  );
+};
+
+
+// Validation function
+const validateField = (field, value) => {
+  if (field.required && (!value || (Array.isArray(value) && value.length === 0))) {
+    return `${field.label} is required`;
+  }
+  if (field.type === "number") {
+    const num = parseFloat(value);
+    if (isNaN(num)) return `${field.label} must be a number`;
+    if (field.min !== undefined && num < field.min) return `${field.label} must be at least ${field.min}`;
+    if (field.max !== undefined && num > field.max) return `${field.label} must be at most ${field.max}`;
+  }
+  if (field.key === "googleRating") {
+    const rating = parseFloat(value);
+    if (rating < 0 || rating > 5) return "Rating must be between 0 and 5";
+  }
+  if (field.type === "cta" && Array.isArray(value) && value.length !== 3) {
+    return "Exactly 3 call-to-action items required";
+  }
+  return null;
+};
+
+// Content Form Component
+const PostContentForm = ({ postNumber, initialData, onSubmit, onCancel, isSubmitting }) => {
+  const config = POST_CONFIGS[postNumber];
+  const [formData, setFormData] = useState(() => {
+    const initial = {};
+    config.fields.forEach((field) => {
+      if (field.type === "array" || field.type === "cta") {
+        initial[field.key] = initialData?.[field.key] || [];
+      } else if (field.type === "packages") {
+        initial[field.key] = initialData?.[field.key] || [];
+      } else {
+        initial[field.key] = initialData?.[field.key] || "";
+      }
+    });
+    return initial;
+  });
+  const [errors, setErrors] = useState({});
+  const [arrayInput, setArrayInput] = useState({});
+
+  const handleChange = (key, value) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: null }));
+  };
+
+  const handleArrayAdd = (key, maxItems) => {
+    const inputValue = arrayInput[key]?.trim();
+    if (!inputValue) return;
+    if (maxItems && formData[key].length >= maxItems) {
+      setErrors((prev) => ({ ...prev, [key]: `Maximum ${maxItems} items allowed` }));
+      return;
+    }
+    setFormData((prev) => ({ ...prev, [key]: [...prev[key], inputValue] }));
+    setArrayInput((prev) => ({ ...prev, [key]: "" }));
+  };
+
+  const handleArrayRemove = (key, index) => {
+    setFormData((prev) => ({ ...prev, [key]: prev[key].filter((_, i) => i !== index) }));
+  };
+
+  const handlePackageAdd = () => {
+    setFormData((prev) => ({
+      ...prev,
+      packages: [...prev.packages, { title: "", priceMin: "", priceMax: "" }],
+    }));
+  };
+
+  const handlePackageChange = (index, field, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      packages: prev.packages.map((pkg, i) => (i === index ? { ...pkg, [field]: value } : pkg)),
+    }));
+  };
+
+  const handlePackageRemove = (index) => {
+    setFormData((prev) => ({ ...prev, packages: prev.packages.filter((_, i) => i !== index) }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = {};
+    config.fields.forEach((field) => {
+      const error = validateField(field, formData[field.key]);
+      if (error) newErrors[field.key] = error;
+    });
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    onSubmit(formData);
+  };
+
+  const IconComponent = config.icon;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+      className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-xl max-h-[80vh] flex flex-col"
+    >
+      <div className={`bg-gradient-to-r ${config.color} p-4 flex items-center justify-between`}>
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+            <IconComponent size={18} className="text-white" />
+          </div>
+          <div>
+            <h3 className="text-white font-bold text-sm">{config.title}</h3>
+            <p className="text-white/70 text-[10px] uppercase tracking-wider">Post {postNumber} of 4</p>
+          </div>
+        </div>
+        <button
+          onClick={onCancel}
+          className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center hover:bg-white/30 transition-colors"
+        >
+          <X size={14} className="text-white" />
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
+        {config.fields.map((field) => (
+          <div key={field.key} className="space-y-1.5">
+            <label className="text-xs font-medium text-gray-500 flex items-center gap-1">
+              {field.label}
+              {field.required && <span className="text-red-500">*</span>}
+            </label>
+
+            {field.type === "textarea" && (
+              <textarea
+                value={formData[field.key]}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                className={`w-full px-3 py-2 bg-gray-50 border text-gray-900 rounded-xl text-sm resize-none focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all ${errors[field.key] ? "border-red-400" : "border-gray-200"}`}
+                rows={3}
+                placeholder={`Enter ${field.label.toLowerCase()}...`}
+              />
+            )}
+
+            {field.type === "text" && (
+              <input
+                type="text"
+                value={formData[field.key]}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                className={`w-full px-3 py-2 bg-gray-50 border text-gray-900 rounded-xl text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all ${errors[field.key] ? "border-red-400" : "border-gray-200"}`}
+                placeholder={`Enter ${field.label.toLowerCase()}...`}
+              />
+            )}
+
+            {field.type === "number" && (
+              <input
+                type="number"
+                value={formData[field.key]}
+                onChange={(e) => handleChange(field.key, e.target.value)}
+                min={field.min}
+                max={field.max}
+                step={field.step || 1}
+                className={`w-full px-3 py-2 bg-gray-50 border text-gray-900 rounded-xl text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent transition-all ${errors[field.key] ? "border-red-400" : "border-gray-200"}`}
+                placeholder={`Enter ${field.label.toLowerCase()}...`}
+              />
+            )}
+
+            {(field.type === "array" || field.type === "cta") && (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={arrayInput[field.key] || ""}
+                    onChange={(e) => setArrayInput((prev) => ({ ...prev, [field.key]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleArrayAdd(field.key, field.maxItems);
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 text-gray-900 rounded-xl text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                    placeholder={`Add ${field.label.toLowerCase()}...`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleArrayAdd(field.key, field.maxItems)}
+                    className="px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors border border-gray-200"
+                  >
+                    <Plus size={16} className="text-gray-500" />
+                  </button>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {formData[field.key].map((item, index) => (
+                    <motion.span
+                      key={index}
+                      initial={{ scale: 0.8, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 border border-gray-200 rounded-full text-xs text-gray-600"
+                    >
+                      {item}
+                      <button
+                        type="button"
+                        onClick={() => handleArrayRemove(field.key, index)}
+                        className="w-4 h-4 rounded-full bg-gray-200 hover:bg-red-100 hover:text-red-500 flex items-center justify-center transition-colors"
+                      >
+                        <X size={10} />
+                      </button>
+                    </motion.span>
+                  ))}
+                </div>
+                {field.maxItems && (
+                  <p className="text-xs text-gray-400">
+                    {formData[field.key].length} / {field.maxItems} items
+                  </p>
+                )}
+              </div>
+            )}
+
+            {field.type === "packages" && (
+              <div className="space-y-3">
+                {formData.packages.map((pkg, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Package {index + 1}</span>
+                      <button
+                        type="button"
+                        onClick={() => handlePackageRemove(index)}
+                        className="w-5 h-5 rounded-full hover:bg-red-500/10 flex items-center justify-center transition-colors group"
+                      >
+                        <Trash2 size={12} className="text-gray-400 group-hover:text-red-500" />
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={pkg.title}
+                      onChange={(e) => handlePackageChange(index, "title", e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-gray-200 text-gray-900 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Package title..."
+                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={pkg.priceMin}
+                        onChange={(e) => handlePackageChange(index, "priceMin", e.target.value)}
+                        className="flex-1 px-3 py-2 bg-white border border-gray-200 text-gray-900 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Min price"
+                        min={0}
+                      />
+                      <input
+                        type="number"
+                        value={pkg.priceMax}
+                        onChange={(e) => handlePackageChange(index, "priceMax", e.target.value)}
+                        className="flex-1 px-3 py-2 bg-white border border-gray-200 text-gray-900 rounded-lg text-sm focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Max price"
+                        min={0}
+                      />
+                    </div>
+                  </motion.div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handlePackageAdd}
+                  className="w-full py-2 border border-dashed border-gray-300 rounded-xl text-sm text-gray-400 hover:bg-gray-50 hover:text-gray-600 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Plus size={14} />
+                  Add Package
+                </button>
+              </div>
+            )}
+
+            {errors[field.key] && (
+              <motion.p
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-xs text-red-500 flex items-center gap-1 mt-1"
+              >
+                <AlertCircle size={10} />
+                {errors[field.key]}
+              </motion.p>
+            )}
+          </div>
+        ))}
+      </form>
+
+      <div className="p-4 border-t border-gray-100 bg-white flex gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="flex-1 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className={`flex-1 py-2 bg-gradient-to-r ${config.color} rounded-xl text-sm font-medium text-white flex items-center justify-center gap-2 transition-all ${isSubmitting ? "opacity-70" : "hover:brightness-110"}`}
+        >
+          {isSubmitting ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              Saving...
+            </>
+          ) : (
+            <>
+              <Check size={14} />
+              Save Details
+            </>
+          )}
+        </button>
+      </div>
+    </motion.div>
+  );
+};
+
+
+const WorkDetailsContent = ({ data }) => (
+  <div className="space-y-4">
+    {data.caption && <p className="text-gray-600 text-sm leading-relaxed">{data.caption}</p>}
+    <div className="grid grid-cols-2 gap-3">
+      {data.googleRating !== undefined && (
+        <div className="bg-amber-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Star size={16} className="text-amber-500 fill-amber-500" />
+            <span className="text-xs text-amber-600 font-medium">Google Rating</span>
+          </div>
+          <p className="text-2xl font-bold text-amber-700">{data.googleRating}</p>
+        </div>
+      )}
+      {data.teamSize && (
+        <div className="bg-blue-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Users size={16} className="text-blue-500" />
+            <span className="text-xs text-blue-600 font-medium">Team Size</span>
+          </div>
+          <p className="text-2xl font-bold text-blue-700">{data.teamSize}</p>
+        </div>
+      )}
+      {data.servicesDone !== undefined && (
+        <div className="bg-green-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Briefcase size={16} className="text-green-500" />
+            <span className="text-xs text-green-600 font-medium">Services Done</span>
+          </div>
+          <p className="text-2xl font-bold text-green-700">{data.servicesDone?.toLocaleString()}</p>
+        </div>
+      )}
+      {data.yearsOfExperience !== undefined && (
+        <div className="bg-purple-50 rounded-xl p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <Calendar size={16} className="text-purple-500" />
+            <span className="text-xs text-purple-600 font-medium">Experience</span>
+          </div>
+          <p className="text-2xl font-bold text-purple-700">{data.yearsOfExperience} yrs</p>
+        </div>
+      )}
+    </div>
+
+    {data.location && (
+      <div className="flex items-center gap-2 bg-gray-50 rounded-xl p-3 border border-gray-100 mt-2">
+        <MapPin size={18} className="text-gray-400" />
+        <span className="text-sm font-medium text-gray-600">{data.location}</span>
+      </div>
+    )}
+  </div>
+);
+
+const ServiceBreakdownContent = ({ data }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="space-y-4">
+      {data.caption && <p className="text-gray-600 text-sm leading-relaxed">{data.caption}</p>}
+      {data.eventIncludes?.length > 0 && (
+        <div className="space-y-2">
+          <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+            <Package size={16} className="text-purple-500" />
+            Event Includes
+          </h4>
+          <div className="flex flex-wrap gap-2">
+            {data.eventIncludes.map((item, index) => (
+              <span key={index} className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-medium">
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      {data.subCategories?.length > 0 && (
+        <div className="space-y-2">
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="w-full flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+          >
+            <span className="text-sm font-semibold text-gray-800">Sub Categories</span>
+            <motion.div animate={{ rotate: expanded ? 180 : 0 }} transition={{ duration: 0.2 }}>
+              <ChevronDown size={18} className="text-gray-500" />
+            </motion.div>
+          </button>
+          <AnimatePresence>
+            {expanded && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                className="overflow-hidden"
+              >
+                <div className="flex flex-wrap gap-2 pt-2">
+                  {data.subCategories.map((item, index) => (
+                    <span key={index} className="px-3 py-1.5 bg-pink-100 text-pink-700 rounded-full text-sm">
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
+    </div>
+  );
+};
+
+const PricingContent = ({ data }) => (
+  <div className="space-y-4">
+    {(data.basePriceMin || data.basePriceMax) && (
+      <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <DollarSign size={18} className="text-green-500" />
+          <span className="text-sm font-medium text-green-700">Base Price Range</span>
+        </div>
+        <p className="text-2xl font-bold text-green-800">
+          ₹{data.basePriceMin?.toLocaleString()} - ₹{data.basePriceMax?.toLocaleString()}
+        </p>
+      </div>
+    )}
+    {data.packages?.length > 0 && (
+      <div className="space-y-3">
+        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <Package size={16} className="text-green-500" />
+          Packages
+        </h4>
+        {data.packages.map((pkg, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: index * 0.1 }}
+            className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm"
+          >
+            <h5 className="font-semibold text-gray-800 mb-1">{pkg.title}</h5>
+            <p className="text-green-600 font-bold">
+              ₹{pkg.priceMin?.toLocaleString()} - ₹{pkg.priceMax?.toLocaleString()}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    )}
+  </div>
+);
+
+const TrustContent = ({ data }) => (
+  <div className="space-y-4">
+    {data.usp?.length > 0 && (
+      <div className="space-y-2">
+        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <Sparkles size={16} className="text-amber-500" />
+          Unique Selling Points
+        </h4>
+        <div className="space-y-2">
+          {data.usp.map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: index * 0.05 }}
+              className="flex items-start gap-3 p-3 bg-amber-50 rounded-xl"
+            >
+              <div className="w-6 h-6 bg-amber-200 rounded-full flex items-center justify-center flex-shrink-0">
+                <Check size={14} className="text-amber-700" />
+              </div>
+              <span className="text-sm text-amber-800">{item}</span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    )}
+    {data.callToAction?.length > 0 && (
+      <div className="space-y-2">
+        <h4 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+          <Phone size={16} className="text-orange-500" />
+          Call to Action
+        </h4>
+        <div className="grid gap-2">
+          {data.callToAction.map((item, index) => (
+            <motion.button
+              key={index}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full py-3 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-medium rounded-xl shadow-sm hover:shadow-md transition-shadow"
+            >
+              {item}
+            </motion.button>
+          ))}
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+
 const PostDetailModal = ({
   post,
   posts = [],
@@ -1406,6 +1983,8 @@ const PostDetailModal = ({
   onArchive,
   vendorId,
   allInteractions = {},
+  isVerified = false,
+  profileId,
 }) => {
   const { user, isSignedIn } = useUser();
 
@@ -1438,6 +2017,14 @@ const PostDetailModal = ({
   const [reviews, setReviews] = useState([]);
   const [reviewSubmitting, setReviewSubmitting] = useState(false);
   const [isLoadingInteractions, setIsLoadingInteractions] = useState(true);
+
+  // Content Category Detail States
+  const isOwner = user?.id === vendorId;
+  const postNumber = (currentIndex % 4) + 1;
+  const [contentData, setContentData] = useState(currentPost?.content || null);
+  const [showContentForm, setShowContentForm] = useState(false);
+  const [isContentSubmitting, setIsContentSubmitting] = useState(false);
+  const [contentSubmitError, setContentSubmitError] = useState(null);
 
   // Media states
   const [isPlaying, setIsPlaying] = useState(true);
@@ -1492,7 +2079,12 @@ const PostDetailModal = ({
     setIsPlaying(true);
     setIsLoadingInteractions(true);
     setShowPlayPauseIndicator(false);
-  }, [currentIndex]);
+
+    // Reset Content State
+    setContentData(currentPost?.content || null);
+    setShowContentForm(false);
+    setContentSubmitError(null);
+  }, [currentIndex, currentPost]);
 
   // Fetch interaction status
   useEffect(() => {
@@ -1543,6 +2135,72 @@ const PostDetailModal = ({
     fetchInteractionStatus();
   }, [currentPost?._id, user?.id, vendorId, allInteractions]);
 
+  // ===== CONTENT FORM SUBMIT =====
+  const handleContentFormSubmit = useCallback(
+    async (formData) => {
+      setIsContentSubmitting(true);
+      setContentSubmitError(null);
+
+      const previousData = contentData;
+      setContentData(formData);
+      setShowContentForm(false);
+
+      try {
+        const response = await fetch(`/api/vendor/profile/post-content`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            profileId: profileId,
+            postId: currentPost?._id,
+            postNumber,
+            content: formData,
+          }),
+        });
+
+        const result = await response.json();
+
+        if (!result.success) {
+          throw new Error(result.error || "Failed to update");
+        }
+
+        if (result.data?.content) {
+          setContentData(result.data.content);
+        }
+      } catch (error) {
+        setContentData(previousData);
+        setContentSubmitError(error.message);
+        setShowContentForm(true);
+        console.error(error);
+      } finally {
+        setIsContentSubmitting(false);
+      }
+    },
+    [contentData, vendorId, currentPost?._id, postNumber],
+  );
+
+  // ===== RENDER POST CONTENT =====
+  const renderPostContent = useCallback(() => {
+    const hasContent = contentData && Object.values(contentData).some(val =>
+      Array.isArray(val) ? val.length > 0 : (val !== undefined && val !== null && val !== "")
+    );
+    if (!hasContent) {
+      return <NoDataFallback postNumber={postNumber} onUpdateClick={isOwner ? (() => setShowContentForm(true)) : null} />;
+    }
+
+    switch (postNumber) {
+      case 1:
+        return <WorkDetailsContent data={contentData} />;
+      case 2:
+        return <ServiceBreakdownContent data={contentData} />;
+      case 3:
+        return <PricingContent data={contentData} />;
+      case 4:
+        return <TrustContent data={contentData} />;
+      default:
+        return null;
+    }
+  }, [contentData, postNumber, isOwner]);
+
   // Video event handlers with optimized updates
   useEffect(() => {
     if (!isVideo || !videoRef.current) return;
@@ -1588,7 +2246,7 @@ const PostDetailModal = ({
 
     const handleEnded = () => {
       video.currentTime = 0;
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     };
 
     const handleError = () => {
@@ -1665,7 +2323,7 @@ const PostDetailModal = ({
     } else {
       // Resume video only if it was playing before drag started
       if (videoRef.current && isVideo && wasDragPlayingRef.current) {
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch(() => { });
       }
     }
 
@@ -2039,11 +2697,8 @@ const PostDetailModal = ({
         transition={{ duration: 0.2 }}
         className="fixed inset-0 z-[100] bg-black lg:bg-black/90 lg:backdrop-blur-sm overflow-hidden lg:flex lg:items-center lg:justify-center"
       >
-        {/* Desktop: Centered modal container */}
         <div className="relative w-full h-full lg:w-[92vw] lg:max-w-[1400px] lg:h-[88vh] lg:rounded-2xl lg:overflow-hidden lg:shadow-2xl lg:flex lg:bg-black">
-          {/* ===== LEFT: Media Panel ===== */}
           <div className="absolute inset-0 lg:relative lg:flex-[1.6] lg:h-full">
-            {/* Seekable Progress Bar at Top */}
             <div
               ref={progressBarRef}
               className="absolute top-0 left-0 right-0 z-40 h-1 bg-white/20 cursor-pointer group lg:rounded-tl-2xl"
@@ -2081,7 +2736,6 @@ const PostDetailModal = ({
               </AnimatePresence>
             </div>
 
-            {/* Time Display */}
             {isVideo && duration > 0 && (
               <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30">
                 <div className="bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full">
@@ -2092,7 +2746,6 @@ const PostDetailModal = ({
               </div>
             )}
 
-            {/* Header - Mobile + Desktop close/options */}
             <div className="absolute top-6 left-0 right-0 z-30 px-4 py-3 flex items-center justify-between lg:top-4">
               <motion.button
                 whileTap={{ scale: 0.9 }}
@@ -2117,7 +2770,6 @@ const PostDetailModal = ({
               </motion.button>
             </div>
 
-            {/* Main Content Area with Swipe */}
             <motion.div
               ref={containerRef}
               drag={posts.length > 1 ? "y" : false}
@@ -2309,7 +2961,6 @@ const PostDetailModal = ({
               )}
             </motion.div>
 
-            {/* Mobile-only: Right Side Actions (hidden on desktop) */}
             <div className="absolute right-3 bottom-36 flex flex-col items-center gap-4 z-30 lg:hidden">
               {isLoadingInteractions ? (
                 <ActionsSkeleton />
@@ -2400,7 +3051,6 @@ const PostDetailModal = ({
               )}
             </div>
 
-            {/* Mobile-only: Bottom Content Info (hidden on desktop) */}
             <div className="absolute left-4 right-16 bottom-8 z-30 space-y-2.5 lg:hidden">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-white/30">
@@ -2444,7 +3094,6 @@ const PostDetailModal = ({
               )}
             </div>
 
-            {/* Post Counter - Mobile */}
             {posts.length > 1 && (
               <div className="absolute left-3 top-1/2 -translate-y-1/2 z-30 lg:hidden">
                 <div className="bg-black/40 backdrop-blur-sm px-2 py-3 rounded-full">
@@ -2461,7 +3110,6 @@ const PostDetailModal = ({
               </div>
             )}
 
-            {/* Navigation Hint - Mobile */}
             {posts.length > 1 && (
               <motion.div
                 initial={{ opacity: 0 }}
@@ -2474,12 +3122,10 @@ const PostDetailModal = ({
             )}
           </div>
 
-          {/* ===== RIGHT: Desktop Sidebar ===== */}
-          <div className="hidden lg:flex lg:flex-col lg:w-[420px] lg:min-w-[380px] bg-gray-950 border-l border-gray-800/50">
-            {/* Sidebar Header */}
-            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-800/50">
+          <div className="hidden lg:flex lg:flex-col lg:w-[420px] lg:min-w-[380px] bg-white border-l border-gray-100">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-gray-700">
+                <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-gray-100">
                   <SmartMedia
                     src={vendorImage}
                     type="image"
@@ -2488,82 +3134,118 @@ const PostDetailModal = ({
                   />
                 </div>
                 <div>
-                  <span className="text-white font-bold text-sm block">{vendorName}</span>
-                  <span className="text-gray-400 text-xs">Works</span>
+                  <span className="text-gray-900 font-bold text-sm block">{vendorName}</span>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    <span className={`text-xs font-semibold bg-gradient-to-r ${POST_CONFIGS[postNumber]?.color || "from-gray-500 to-gray-600"} bg-clip-text text-transparent`}>
+                      {POST_CONFIGS[postNumber]?.title || "Details"}
+                    </span>
+                    <span className="text-gray-300 text-xs">•</span>
+                    <span className="text-gray-500 text-xs">Post {postNumber}/4</span>
+                  </div>
                 </div>
               </div>
-              {posts.length > 1 && (
-                <span className="text-gray-400 text-xs font-mono bg-gray-800 px-3 py-1.5 rounded-full">
-                  {currentIndex + 1} / {posts.length}
-                </span>
-              )}
+              <div className="flex items-center gap-2">
+                {isVerified && (
+                  <button
+                    onClick={() => setShowContentForm(!showContentForm)}
+                    className="p-2 rounded-full bg-gray-50 hover:bg-gray-100 text-gray-600 transition-colors border border-gray-200"
+                  >
+                    <Pencil size={16} />
+                  </button>
+                )}
+                {posts.length > 1 && (
+                  <span className="text-gray-500 text-xs font-mono bg-gray-100 px-3 py-1.5 rounded-full">
+                    {currentIndex + 1} / {posts.length}
+                  </span>
+                )}
+              </div>
             </div>
 
-            {/* Caption & Details */}
-            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5 no-scrollbar">
-              {/* Date */}
+            <AnimatePresence>
+              {showContentForm && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: "auto" }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="px-6 py-4 border-b border-gray-100 bg-gray-50"
+                >
+                  <PostContentForm
+                    postNumber={postNumber}
+                    initialData={contentData}
+                    onSubmit={handleContentFormSubmit}
+                    onCancel={() => setShowContentForm(false)}
+                    isSubmitting={isContentSubmitting}
+                  />
+                  {contentSubmitError && (
+                    <motion.p
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-4 p-3 bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl flex items-center gap-2"
+                    >
+                      <AlertCircle size={16} />
+                      {contentSubmitError}
+                    </motion.p>
+                  )}
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 no-scrollbar">
+              {!showContentForm && (
+                <div className="mb-6">
+                  {renderPostContent()}
+                </div>
+              )}
               {currentPost.date && <p className="text-gray-500 text-xs">{currentPost.date}</p>}
 
-              {/* Caption */}
               {(currentPost.caption || currentPost.description) && (
-                <p className="text-gray-200 text-sm leading-relaxed">
+                <p className="text-gray-700 text-sm leading-relaxed">
                   {currentPost.caption || currentPost.description}
                 </p>
               )}
 
-              {/* Location & Tags */}
               <div className="flex items-center gap-2 flex-wrap">
                 {currentPost.location && (
-                  <span className="text-blue-400 text-xs flex items-center gap-1 bg-blue-500/10 px-2.5 py-1 rounded-full">
+                  <span className="text-blue-600 text-xs flex items-center gap-1 bg-blue-50 px-2.5 py-1 rounded-full">
                     <MapPin size={10} />
                     {currentPost.location}
                   </span>
                 )}
                 {currentPost.tags?.map((tag, idx) => (
-                  <span key={idx} className="px-2.5 py-1 bg-gray-800 rounded-full text-gray-300 text-xs">
+                  <span key={idx} className="px-2 py-1 bg-gray-100 rounded-full text-gray-600 text-xs">
                     #{tag}
                   </span>
                 ))}
               </div>
 
-              {/* Audio info for videos */}
+              <div className="flex gap-2 pt-2">
+                <button className="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 font-semibold text-white text-sm rounded-xl transition-colors shadow-sm active:scale-[0.98]">
+                  Call Now
+                </button>
+                <button className="flex-1 py-2.5 bg-[#00BA61] hover:bg-[#00a857] font-semibold text-white text-sm rounded-xl transition-colors shadow-sm active:scale-[0.98]">
+                  Request Price Quote
+                </button>
+              </div>
+
               {isVideo && (
                 <div className="flex items-center gap-2 pt-2">
-                  <div className="w-5 h-5 rounded bg-gray-800 flex items-center justify-center">
+                  <div className="w-5 h-5 rounded bg-gray-100 flex items-center justify-center">
                     <span className="text-[9px]">🎵</span>
                   </div>
-                  <p className="text-gray-400 text-xs">Original Audio</p>
+                  <p className="text-gray-500 text-xs">Original Audio</p>
                 </div>
               )}
 
-              {/* Divider */}
-              <div className="border-t border-gray-800/50 pt-4">
-                <p className="text-gray-500 text-xs font-semibold uppercase tracking-wider mb-3">Engagement</p>
-                <div className="flex items-center gap-6">
-                  <span className="text-gray-300 text-sm flex items-center gap-1.5">
-                    <Heart size={14} className={isLiked ? "text-red-500 fill-red-500" : "text-gray-400"} />
-                    {likes.toLocaleString()} likes
-                  </span>
-                  <span className="text-gray-300 text-sm flex items-center gap-1.5">
-                    <MessageCircle size={14} className="text-gray-400" />
-                    {reviews.length} comments
-                  </span>
-                </div>
-              </div>
-
-              {/* Desktop navigation hint */}
               {posts.length > 1 && (
                 <div className="pt-2">
-                  <p className="text-gray-600 text-[11px]">
+                  <p className="text-gray-400 text-[11px]">
                     Swipe up/down or use arrow keys to navigate • Double click to like
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Sidebar Action Bar */}
-            <div className="px-6 py-4 border-t border-gray-800/50 space-y-3">
-              {/* Action Buttons Row */}
+            <div className="px-6 py-4 border-t border-gray-100 bg-white space-y-3">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1">
                   {isLoadingInteractions ? (
@@ -2576,11 +3258,14 @@ const PostDetailModal = ({
                           e.stopPropagation();
                           handleLike();
                         }}
-                        className="p-2.5 rounded-xl hover:bg-gray-800 transition-colors"
+                        className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                         disabled={isInteracting}
                       >
-                        <motion.div animate={isLiked ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }}>
-                          <Heart size={24} className={isLiked ? "text-red-500 fill-red-500" : "text-white"} />
+                        <motion.div animate={isLiked ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }} className="flex items-center gap-1.5">
+                          <Heart size={24} className={isLiked ? "text-red-500 fill-red-500" : "text-gray-700"} />
+                          {likes > 0 && (
+                            <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{likes}</span>
+                          )}
                         </motion.div>
                       </motion.button>
                       <motion.button
@@ -2589,9 +3274,9 @@ const PostDetailModal = ({
                           e.stopPropagation();
                           setShowCommentsDrawer(true);
                         }}
-                        className="p-2.5 rounded-xl hover:bg-gray-800 transition-colors"
+                        className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                       >
-                        <MessageCircle size={24} className="text-white" />
+                        <MessageCircle size={24} className="text-gray-700" />
                       </motion.button>
                       <motion.button
                         whileTap={{ scale: 0.85 }}
@@ -2599,9 +3284,9 @@ const PostDetailModal = ({
                           e.stopPropagation();
                           setShowShareModal(true);
                         }}
-                        className="p-2.5 rounded-xl hover:bg-gray-800 transition-colors"
+                        className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                       >
-                        <Send size={22} className="text-white" />
+                        <Send size={22} className="text-gray-700" />
                       </motion.button>
                     </>
                   )}
@@ -2616,14 +3301,14 @@ const PostDetailModal = ({
                           e.stopPropagation();
                           handleSave();
                         }}
-                        className="p-2.5 rounded-xl hover:bg-gray-800 transition-colors"
+                        className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                         disabled={isInteracting}
                       >
                         <motion.div animate={isSaved ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }}>
                           {isSaved ? (
-                            <BookmarkCheck size={22} className="text-white fill-white" />
+                            <BookmarkCheck size={22} className="text-gray-700 fill-gray-700" />
                           ) : (
-                            <Bookmark size={22} className="text-white" />
+                            <Bookmark size={22} className="text-gray-700" />
                           )}
                         </motion.div>
                       </motion.button>
@@ -2631,12 +3316,12 @@ const PostDetailModal = ({
                         <motion.button
                           whileTap={{ scale: 0.85 }}
                           onClick={toggleMute}
-                          className="p-2.5 rounded-xl hover:bg-gray-800 transition-colors"
+                          className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                         >
                           {isMuted ? (
-                            <VolumeX size={22} className="text-white" />
+                            <VolumeX size={22} className="text-gray-700" />
                           ) : (
-                            <Volume2 size={22} className="text-white" />
+                            <Volume2 size={22} className="text-gray-700" />
                           )}
                         </motion.button>
                       )}
@@ -2645,22 +3330,19 @@ const PostDetailModal = ({
                 </div>
               </div>
 
-              {/* Desktop Prev/Next Navigation */}
               {posts.length > 1 && (
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => {
                       if (currentIndex > 0) {
-                        // trigger prev post logic via drag simulation
                         handleDragEnd(null, { offset: { y: 200 }, velocity: { y: 0 } });
                       }
                     }}
                     disabled={currentIndex === 0}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      currentIndex === 0
-                        ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
-                        : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex === 0
+                      ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
+                      }`}
                   >
                     <ChevronUp size={16} />
                     Previous
@@ -2672,11 +3354,10 @@ const PostDetailModal = ({
                       }
                     }}
                     disabled={currentIndex >= posts.length - 1}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      currentIndex >= posts.length - 1
-                        ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
-                        : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex >= posts.length - 1
+                      ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
+                      }`}
                   >
                     Next
                     <ChevronDown size={16} />
@@ -2694,10 +3375,10 @@ const PostDetailModal = ({
         >
           <X size={20} className="text-white" />
         </button>
-      </motion.div>
+      </motion.div >
 
       {/* Options Drawer */}
-      <AnimatePresence>
+      < AnimatePresence >
         {showOptionsDrawer && (
           <PostOptionsDrawer
             isOpen={showOptionsDrawer}
@@ -2719,18 +3400,19 @@ const PostDetailModal = ({
               setShowOptionsDrawer(false);
             }}
           />
-        )}
-      </AnimatePresence>
+        )
+        }
+      </AnimatePresence >
 
       {/* Share Modal */}
-      <AnimatePresence>
+      < AnimatePresence >
         {showShareModal && (
           <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} vendorName={vendorName} />
         )}
-      </AnimatePresence>
+      </AnimatePresence >
 
       {/* Comments Drawer */}
-      <CommentsDrawer
+      < CommentsDrawer
         isOpen={showCommentsDrawer}
         onClose={() => setShowCommentsDrawer(false)}
         reviews={reviews}
@@ -2989,7 +3671,7 @@ const ReelsViewer = ({
     const video = videoRef.current;
     if (video) {
       video.currentTime = 0;
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     }
   };
 
@@ -3184,7 +3866,7 @@ const ReelsViewer = ({
       goToReel("down");
     } else {
       if (videoRef.current && isPlaying) {
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch(() => { });
       }
     }
 
@@ -3529,7 +4211,7 @@ const ReelsViewer = ({
                   <img src={vendorImage} alt={vendorName} className="w-full h-full object-cover" />
                 </div>
                 <div>
-                  <span className="text-white font-bold text-sm block">{vendorName}</span>
+                  <span className="text-white font-serif text-sm block">{vendorName}</span>
                   <span className="text-gray-400 text-xs">Reels</span>
                 </div>
               </div>
@@ -3658,11 +4340,10 @@ const ReelsViewer = ({
                       }
                     }}
                     disabled={currentIndex === 0}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      currentIndex === 0
-                        ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
-                        : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex === 0
+                      ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
+                      : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
+                      }`}
                   >
                     <ChevronUp size={16} />
                     Previous
@@ -3677,11 +4358,10 @@ const ReelsViewer = ({
                       }
                     }}
                     disabled={currentIndex >= reels.length - 1}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      currentIndex >= reels.length - 1
-                        ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
-                        : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
-                    }`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex >= reels.length - 1
+                      ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
+                      : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
+                      }`}
                   >
                     Next
                     <ChevronDown size={16} />
@@ -3821,9 +4501,8 @@ const PortfolioViewer = ({ portfolio, onClose, onBookService }) => {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsSaved(!isSaved)}
-            className={`py-3.5 px-5 rounded-2xl border transition-all ${
-              isSaved ? "bg-red-500/20 border-red-500/50" : "bg-white/10 backdrop-blur-xl border-white/20"
-            }`}
+            className={`py-3.5 px-5 rounded-2xl border transition-all ${isSaved ? "bg-red-500/20 border-red-500/50" : "bg-white/10 backdrop-blur-xl border-white/20"
+              }`}
           >
             <Heart size={20} className={isSaved ? "text-red-500 fill-red-500" : "text-white"} />
           </motion.button>
@@ -4680,16 +5359,14 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                     whileTap={{ scale: isPostsFull ? 1 : 0.98 }}
                     onClick={() => !isPostsFull && setUploadType("post")}
                     disabled={isPostsFull}
-                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${
-                      isPostsFull
-                        ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
-                        : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-100 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:shadow-blue-500/10"
-                    }`}
+                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${isPostsFull
+                      ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
+                      : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-100 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:shadow-blue-500/10"
+                      }`}
                   >
                     <div
-                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${
-                        isPostsFull ? "bg-gray-400" : "bg-gradient-to-br from-blue-500 to-purple-600"
-                      }`}
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${isPostsFull ? "bg-gray-400" : "bg-gradient-to-br from-blue-500 to-purple-600"
+                        }`}
                     >
                       <Image size={28} className="text-white" />
                     </div>
@@ -4710,16 +5387,14 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                     whileTap={{ scale: isReelsFull ? 1 : 0.98 }}
                     onClick={() => !isReelsFull && setUploadType("reel")}
                     disabled={isReelsFull}
-                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${
-                      isReelsFull
-                        ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
-                        : "bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-900/20 dark:to-orange-900/20 border-pink-100 dark:border-pink-800 hover:border-pink-300 dark:hover:border-pink-600 hover:shadow-lg hover:shadow-pink-500/10"
-                    }`}
+                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${isReelsFull
+                      ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
+                      : "bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-900/20 dark:to-orange-900/20 border-pink-100 dark:border-pink-800 hover:border-pink-300 dark:hover:border-pink-600 hover:shadow-lg hover:shadow-pink-500/10"
+                      }`}
                   >
                     <div
-                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${
-                        isReelsFull ? "bg-gray-400" : "bg-gradient-to-br from-pink-500 to-orange-500"
-                      }`}
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${isReelsFull ? "bg-gray-400" : "bg-gradient-to-br from-pink-500 to-orange-500"
+                        }`}
                     >
                       <Video size={28} className="text-white" />
                     </div>
@@ -4777,11 +5452,10 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                       whileTap={{ scale: isUploading ? 1 : 0.98 }}
                       onClick={handleFileSelect}
                       disabled={isUploading}
-                      className={`w-full ${uploadType === "reel" ? "aspect-[9/16] lg:aspect-[9/14]" : "aspect-square"} rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-4 overflow-hidden ${
-                        selectedFile
-                          ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                          : "border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
-                      } ${isUploading ? "pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
+                      className={`w-full ${uploadType === "reel" ? "aspect-[9/16] lg:aspect-[9/14]" : "aspect-square"} rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-4 overflow-hidden ${selectedFile
+                        ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                        : "border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
+                        } ${isUploading ? "pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
                     >
                       {selectedFile ? (
                         <div className="relative w-full h-full">
@@ -5160,14 +5834,12 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
 
 const InfoChip = memo(({ icon: Icon, label, value, color = "blue", size = "normal" }) => (
   <div
-    className={`flex items-center gap-2 p-2.5 bg-${color}-50 dark:bg-${color}-900/20 rounded-xl ${
-      size === "small" ? "p-2" : ""
-    }`}
+    className={`flex items-center gap-2 p-2.5 bg-${color}-50 dark:bg-${color}-900/20 rounded-xl ${size === "small" ? "p-2" : ""
+      }`}
   >
     <div
-      className={`w-8 h-8 rounded-lg bg-${color}-100 dark:bg-${color}-800/30 flex items-center justify-center ${
-        size === "small" ? "w-7 h-7" : ""
-      }`}
+      className={`w-8 h-8 rounded-lg bg-${color}-100 dark:bg-${color}-800/30 flex items-center justify-center ${size === "small" ? "w-7 h-7" : ""
+        }`}
     >
       <Icon size={size === "small" ? 14 : 16} className={`text-${color}-600 dark:text-${color}-400`} />
     </div>
@@ -5185,10 +5857,9 @@ const QuickStatCard = memo(({ icon: Icon, label, value, subtext, color = "blue",
   <motion.div
     whileHover={{ scale: 1.02, y: -2 }}
     whileTap={{ scale: 0.98 }}
-    className={`relative overflow-hidden p-3 rounded-2xl ${
-      gradient ||
+    className={`relative overflow-hidden p-3 rounded-2xl ${gradient ||
       `bg-gradient-to-br from-${color}-50 to-${color}-100/50 dark:from-${color}-900/30 dark:to-${color}-800/20`
-    } border border-${color}-100 dark:border-${color}-800/30`}
+      } border border-${color}-100 dark:border-${color}-800/30`}
   >
     <div className="flex items-start justify-between">
       <div>
@@ -5211,9 +5882,8 @@ const PackageCard = memo(({ pkg, isSelected, onSelect }) => (
     layout
     whileTap={{ scale: 0.98 }}
     onClick={() => onSelect(pkg.id || pkg._id)}
-    className={`bg-white dark:bg-gray-900 p-4 rounded-2xl border-2 transition-all shadow-sm ${
-      isSelected ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-gray-100 dark:border-gray-800"
-    } ${pkg.isPopular ? "ring-2 ring-amber-400 ring-offset-2 dark:ring-offset-black" : ""}`}
+    className={`bg-white dark:bg-gray-900 p-4 rounded-2xl border-2 transition-all shadow-sm ${isSelected ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-gray-100 dark:border-gray-800"
+      } ${pkg.isPopular ? "ring-2 ring-amber-400 ring-offset-2 dark:ring-offset-black" : ""}`}
   >
     {pkg.isPopular && (
       <div className="flex justify-center -mt-7 mb-3">
@@ -5272,11 +5942,10 @@ const PackageCard = memo(({ pkg, isSelected, onSelect }) => (
     )}
     <motion.button
       whileTap={{ scale: 0.97 }}
-      className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${
-        isSelected
-          ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
-          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-      }`}
+      className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${isSelected
+        ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
+        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+        }`}
     >
       {isSelected ? "✓ Selected" : "Select Package"}
     </motion.button>
@@ -5611,11 +6280,10 @@ const CategorySpecificSection = memo(({ vendor, formatPrice }) => {
             )}
             {vendor.destinationWeddings !== undefined && (
               <div
-                className={`p-3 rounded-xl flex items-center gap-3 ${
-                  vendor.destinationWeddings
-                    ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
-                    : "bg-gray-50 dark:bg-gray-800"
-                }`}
+                className={`p-3 rounded-xl flex items-center gap-3 ${vendor.destinationWeddings
+                  ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
+                  : "bg-gray-50 dark:bg-gray-800"
+                  }`}
               >
                 {vendor.destinationWeddings ? (
                   <CheckCircle size={18} className="text-green-500" />
@@ -5894,9 +6562,8 @@ const CollapsibleSection = memo(
           <div className="flex items-center gap-3">
             {Icon && (
               <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                  iconBg || "bg-blue-50 dark:bg-blue-900/20"
-                }`}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconBg || "bg-blue-50 dark:bg-blue-900/20"
+                  }`}
               >
                 <Icon className={iconColor || "text-blue-500"} size={18} />
               </div>
@@ -6271,9 +6938,8 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                   <motion.div
                     key={s}
                     animate={{ scaleX: s <= step ? 1 : 0.5 }}
-                    className={`flex-1 h-1.5 rounded-full transition-colors ${
-                      s <= step ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-gray-200 dark:bg-gray-700"
-                    }`}
+                    className={`flex-1 h-1.5 rounded-full transition-colors ${s <= step ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-gray-200 dark:bg-gray-700"
+                      }`}
                   />
                 ))}
               </div>
@@ -6340,11 +7006,10 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                       key={service.id}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setSelectedService(service)}
-                      className={`w-full p-5 rounded-2xl border-2 transition-all text-left cursor-pointer ${
-                        selectedService?.id === service.id
-                          ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/10"
-                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                      }`}
+                      className={`w-full p-5 rounded-2xl border-2 transition-all text-left cursor-pointer ${selectedService?.id === service.id
+                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/10"
+                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                        }`}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -6395,11 +7060,10 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                               setSelectedDate(day.date);
                               setSelectedSlot(slot);
                             }}
-                            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
-                              selectedDate === day.date && selectedSlot === slot
-                                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25"
-                                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                            }`}
+                            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${selectedDate === day.date && selectedSlot === slot
+                              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25"
+                              : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                              }`}
                           >
                             {slot}
                           </motion.button>
@@ -6711,16 +7375,16 @@ const MoreOptionsDrawer = ({
     },
     ...(isVerified
       ? [
-          {
-            id: "updateProfile",
-            label: "Update Profile",
-            icon: Edit3,
-            action: () => {
-              setShowUpdateProfileDrawer(true);
-              onClose();
-            },
+        {
+          id: "updateProfile",
+          label: "Update Profile",
+          icon: Edit3,
+          action: () => {
+            setShowUpdateProfileDrawer(true);
+            onClose();
           },
-        ]
+        },
+      ]
       : []),
     {
       id: "notify",
@@ -6886,13 +7550,12 @@ const MoreOptionsDrawer = ({
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${
-                      option.danger
-                        ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        : option.verified
-                          ? "text-green-600 dark:text-green-400 active:bg-green-50 dark:active:bg-green-900/20 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-default"
-                          : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    }`}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${option.danger
+                      ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      : option.verified
+                        ? "text-green-600 dark:text-green-400 active:bg-green-50 dark:active:bg-green-900/20 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-default"
+                        : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -7679,11 +8342,10 @@ const PostOptionsDrawer = ({ isOpen, onClose, post, onDelete, onShare, onEdit, o
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${
-                      option.danger
-                        ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    }`}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${option.danger
+                      ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -7947,11 +8609,10 @@ const ReelOptionsDrawer = ({ isOpen, onClose, reel, onDelete, onShare, onEdit })
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${
-                      option.danger
-                        ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
-                        : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    }`}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${option.danger
+                      ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
+                      : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -8201,10 +8862,10 @@ const RightSidebar = ({
 
   useEffect(() => {
     if (isSignedIn && isVerified) {
-    QUICK_SETTINGS.push({ id: 2, label: "Update Profile", icon: Pencil, action: "update" });
-    QUICK_SETTINGS.push({ id: 3, label: "Upload Media", icon: Upload, action: "upload" });
-  }
-  },[isSignedIn, isVerified]);
+      QUICK_SETTINGS.push({ id: 2, label: "Update Profile", icon: Pencil, action: "update" });
+      QUICK_SETTINGS.push({ id: 3, label: "Upload Media", icon: Upload, action: "upload" });
+    }
+  }, [isSignedIn, isVerified]);
 
   useEffect(() => {
     if (vendorProfileId) {
@@ -8753,6 +9414,22 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
       setIsLoadingAllInteractions(false);
     }
   }, [posts, reels, user?.id, id, profileLoading]);
+
+  useEffect(() => {
+    if (!initialProfile) {
+      setLikesCount(0);
+      return;
+    }
+    const totalPostLikes = initialProfile.posts?.reduce(
+      (total, post) => total + (post.likes?.length || 0),
+      0
+    ) || 0;
+    const totalReelLikes = initialProfile.reels?.reduce(
+      (total, reel) => total + (reel.likes?.length || 0),
+      0
+    ) || 0;
+    setLikesCount(totalPostLikes + totalReelLikes);
+  }, [initialProfile]);
 
   useEffect(() => {
     if (profileLoading) return;
@@ -9364,11 +10041,12 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
   const handleEditPost = useCallback(
     async (postId, newCaption) => {
       try {
-        const formData = new FormData();
-        formData.append("description", newCaption);
         const response = await fetch(`/api/vendor/${id}/profile/posts?postId=${postId}`, {
           method: "PUT",
-          body: formData,
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ description: newCaption }),
         });
         const result = await response.json();
         if (!result.success) throw new Error(result.error || "Update failed");
@@ -9836,10 +10514,13 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
               <EmptyPostsState />
             ) : (
               <>
-                <div className="grid grid-cols-3 gap-[8px] mx-[15px]">
+                <div className="grid grid-cols-3 gap-[15px] mx-[15px]">
                   {posts.map((post, index) => {
                     const posterUrl = post.thumbnailUrl || videoThumbnails[post._id] || null;
                     const thumb = videoThumbnails[post._id];
+                    const postNum = (index % 4) + 1;
+                    const config = POST_CONFIGS[postNum];
+                    const HeadingIcon = config?.icon;
                     return (
                       <motion.div
                         key={post?._id || `post-${index}`}
@@ -9931,83 +10612,100 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                             setIsLongPressing(false);
                           }
                         }}
-                        className="aspect-[1/1.2] bg-gray-100 dark:bg-gray-800 overflow-hidden relative cursor-pointer select-none rounded-[10px] group"
+                        className="bg-white dark:bg-slate-900 rounded-2xl overflow-hidden cursor-pointer select-none shadow-sm border border-gray-100 dark:border-slate-800 group"
                       >
-                        {post.mediaType === "video" ? (
-                          <div className="relative w-full h-full">
-                            {thumb && thumb !== "FALLBACK" ? (
-                              <img src={thumb} className="w-full h-full object-cover" />
-                            ) : (
-                              <video
-                                ref={(el) => {
-                                  if (el) videoRefs.current[post._id] = el;
-                                }}
-                                src={post.mediaUrl}
-                                poster={posterUrl || undefined}
-                                className="w-full h-full object-cover"
-                                muted
-                                playsInline
-                                loop
-                                preload="metadata"
-                              />
-                            )}
-                            <AnimatePresence>
-                              {playingVideoId !== post._id && (
-                                <motion.div
-                                  initial={{ opacity: 0 }}
-                                  animate={{ opacity: 1 }}
-                                  exit={{ opacity: 0 }}
-                                  className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
-                                >
-                                  <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-full p-1.5 shadow-lg">
-                                    <Play size={12} className="text-white fill-white" />
-                                  </div>
-                                </motion.div>
+                        {/* Post Category Heading */}
+                        {config && (
+                          <div className="px-2 pt-2 pb-3">
+                            <div className="flex items-center justify-center gap-2 py-2 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-slate-700/50 rounded-xl">
+                              {HeadingIcon && (
+                                <HeadingIcon size={16} className="text-slate-600 dark:text-slate-400 flex-shrink-0" />
                               )}
-                            </AnimatePresence>
-                            <AnimatePresence>
-                              {playingVideoId === post._id && (
-                                <motion.div
-                                  initial={{ opacity: 0, scale: 0.8 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  exit={{ opacity: 0, scale: 0.8 }}
-                                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                                >
-                                  <div className="absolute inset-0 bg-black/10" />
+                              <span className="text-sm  font-bold text-slate-800 dark:text-slate-200 truncate">
+                                {config.title}
+                              </span>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Media */}
+                        <div className="aspect-[1/1.05] bg-gray-100 dark:bg-gray-800 overflow-hidden relative rounded-xl mx-2 mb-2">
+                          {post.mediaType === "video" ? (
+                            <div className="relative w-full h-full">
+                              {thumb && thumb !== "FALLBACK" ? (
+                                <img src={thumb} className="w-full h-full object-cover" />
+                              ) : (
+                                <video
+                                  ref={(el) => {
+                                    if (el) videoRefs.current[post._id] = el;
+                                  }}
+                                  src={post.mediaUrl}
+                                  poster={posterUrl || undefined}
+                                  className="w-full h-full object-cover"
+                                  muted
+                                  playsInline
+                                  loop
+                                  preload="metadata"
+                                />
+                              )}
+                              <AnimatePresence>
+                                {playingVideoId !== post._id && (
                                   <motion.div
-                                    animate={{ scale: [1, 1.2, 1] }}
-                                    transition={{ duration: 1.5, repeat: Infinity }}
-                                    className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
                                   >
-                                    <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
-                                      <Pause size={16} className="text-gray-900" />
+                                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-full p-1.5 shadow-lg">
+                                      <Play size={12} className="text-white fill-white" />
                                     </div>
                                   </motion.div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-                        ) : (
-                          <SmartMedia
-                            key={`media-${post._id}`}
-                            src={post?.mediaUrl}
-                            type="image"
-                            className="w-full h-full object-cover"
-                            loaderImage="/GlowLoadingGif.gif"
-                          />
-                        )}
-                        {(post?.mediaType !== "video" || playingVideoId !== post._id) && (
-                          <div className="absolute inset-0 bg-black/0 group-active:bg-black/40 transition-colors flex items-center justify-center gap-3 text-white text-xs font-bold opacity-0 group-active:opacity-100">
-                            <span className="flex items-center gap-1">
-                              <Heart size={14} className="fill-white" />
-                              {post?.likes?.length}
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <MessageCircle size={14} className="fill-white" />
-                              {post?.reviews?.length}
-                            </span>
-                          </div>
-                        )}
+                                )}
+                              </AnimatePresence>
+                              <AnimatePresence>
+                                {playingVideoId === post._id && (
+                                  <motion.div
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                                  >
+                                    <div className="absolute inset-0 bg-black/10" />
+                                    <motion.div
+                                      animate={{ scale: [1, 1.2, 1] }}
+                                      transition={{ duration: 1.5, repeat: Infinity }}
+                                      className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
+                                    >
+                                      <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                                        <Pause size={16} className="text-gray-900" />
+                                      </div>
+                                    </motion.div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          ) : (
+                            <SmartMedia
+                              key={`media-${post._id}`}
+                              src={post?.mediaUrl}
+                              type="image"
+                              className="w-full h-full object-cover"
+                              loaderImage="/GlowLoadingGif.gif"
+                            />
+                          )}
+                          {(post?.mediaType !== "video" || playingVideoId !== post._id) && (
+                            <div className="absolute inset-0 bg-black/0 group-active:bg-black/40 transition-colors flex items-center justify-center gap-3 text-white text-xs font-bold opacity-0 group-active:opacity-100">
+                              <span className="flex items-center gap-1">
+                                <Heart size={14} className="fill-white" />
+                                {post?.likes?.length}
+                              </span>
+                              <span className="flex items-center gap-1">
+                                <MessageCircle size={14} className="fill-white" />
+                                {post?.reviews?.length}
+                              </span>
+                            </div>
+                          )}
+                        </div>
                       </motion.div>
                     );
                   })}
@@ -11236,11 +11934,10 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
 
       {/* ============ FIXED HEADER ============ */}
       <div
-        className={`fixed top-[82px] max-w-[800px] mx-auto left-0 right-0 z-[40] transition-all duration-500 ease-out rounded-xl ${
-          isScrolledHeader
-            ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-slate-200/50 dark:border-slate-800/50"
-            : "bg-transparent"
-        }`}
+        className={`fixed top-[82px] max-w-[800px] mx-auto left-0 right-0 z-[40] transition-all duration-500 ease-out rounded-xl ${isScrolledHeader
+          ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-slate-200/50 dark:border-slate-800/50"
+          : "bg-transparent"
+          }`}
       >
         <div className="px-4 lg:px-6">
           {/* Row 1: Navigation Controls */}
@@ -11255,17 +11952,15 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
               whileTap={{ scale: 0.92 }}
               whileHover={{ scale: 1.05 }}
               onClick={handleBack}
-              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                isScrolledHeader
-                  ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
-                  : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
-              }`}
+              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
+                ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
+                : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
+                }`}
             >
               <ArrowLeft
                 size={20}
-                className={`transition-colors duration-500 ease-out ${
-                  isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
-                }`}
+                className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                  }`}
               />
             </motion.button>
 
@@ -11309,34 +12004,30 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                 whileTap={{ scale: 0.92 }}
                 whileHover={{ scale: 1.05 }}
                 onClick={handleShare}
-                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                  isScrolledHeader
-                    ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
-                    : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
-                }`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
+                  ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
+                  : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
+                  }`}
               >
                 <Share2
                   size={18}
-                  className={`transition-colors duration-500 ease-out ${
-                    isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
-                  }`}
+                  className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                    }`}
                 />
               </motion.button>
               <motion.button
                 whileTap={{ scale: 0.92 }}
                 whileHover={{ scale: 1.05 }}
                 onClick={() => setShowMoreOptions(true)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                  isScrolledHeader
-                    ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
-                    : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
-                }`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
+                  ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
+                  : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
+                  }`}
               >
                 <MoreVertical
                   size={18}
-                  className={`transition-colors duration-500 ease-out ${
-                    isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
-                  }`}
+                  className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                    }`}
                 />
               </motion.button>
             </motion.div>
@@ -11577,7 +12268,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                     >
                       {/* Name & Premium Badge */}
                       <div className="flex items-center gap-3 flex-wrap">
-                        <h1 className="text-[24px] lg:text-[28px] font-bold text-slate-900 dark:text-white leading-tight">
+                        <h1 className="text-[24px] lg:text-[28px] font-serif font-bold text-slate-900 dark:text-white leading-tight">
                           {vendor?.name}
                         </h1>
                         {vendor?.isPremium && (
@@ -11871,11 +12562,10 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                       whileTap={{ scale: 0.9 }}
                       onClick={handleHighlightPrev}
                       disabled={currentHighlightIndex === 0}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
-                        currentHighlightIndex === 0
-                          ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
-                          : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                      }`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${currentHighlightIndex === 0
+                        ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
+                        : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                        }`}
                     >
                       <ChevronLeft size={16} className="text-slate-600 dark:text-slate-400" />
                     </motion.button>
@@ -11883,11 +12573,10 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                       whileTap={{ scale: 0.9 }}
                       onClick={handleHighlightNext}
                       disabled={currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
-                        currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1
-                          ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
-                          : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                      }`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1
+                        ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
+                        : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                        }`}
                     >
                       <ChevronRight size={16} className="text-slate-600 dark:text-slate-400" />
                     </motion.button>
@@ -12127,7 +12816,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
             posts={posts}
             initialIndex={posts.findIndex((p) => p._id === selectedPost._id)}
             onClose={() => setSelectedPost(null)}
-            vendorName={vendor?.name}
+            vendorName={profile?.vendorBusinessName || profile?.vendorName || vendor?.name}
             vendorImage={
               profile?.vendorAvatar ||
               (Array.isArray(vendor?.vendorProfile)
@@ -12140,6 +12829,8 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
             onArchive={() => handleArchivePost(selectedPost._id)}
             vendorId={id}
             allInteractions={postsInteractionsData}
+            isVerified={isVerified}
+            profileId={profile?._id}
           />
         )}
       </AnimatePresence>

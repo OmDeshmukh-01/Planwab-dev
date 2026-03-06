@@ -11,8 +11,8 @@ export async function generateMetadata({ params }) {
 
   return {
     title: `${profile.vendorName} - Profile | Vendors Media Hub`,
-    description: profile?.bio 
-      ? `${profile.bio.substring(0, 160)}...` 
+    description: profile?.bio
+      ? `${profile.bio.substring(0, 160)}...`
       : `Book ${profile.vendorName} for your event.`,
     openGraph: {
       title: `${profile.vendorName} - PlanWAB`,
@@ -27,7 +27,7 @@ export default async function VendorProfilePage({ params }) {
   const profileData = await getVendorProfileByUsername(username);
 
   return (
-    <VendorProfileNewPageWrapper 
+    <VendorProfileNewPageWrapper
       initialProfile={profileData}
     />
   );
