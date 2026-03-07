@@ -3,12 +3,19 @@
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState, useTransition } from "react";
 
-export default function SearchModal() {
+export default function SearchModal({ externalOpen, onOpenChange }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef(null);
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    if (externalOpen) {
+      setOpen(true);
+      onOpenChange?.(false);
+    }
+  }, [externalOpen, onOpenChange]);
 
   // Ctrl+K / Cmd+K listener
   useEffect(() => {

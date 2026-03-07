@@ -1959,6 +1959,7 @@ const PostDetailModal = ({
   onEdit,
   onArchive,
   vendorId: desktopVendorId,
+  vendorUsername,
   allInteractions = {},
   isVerified = false,
   profileId,
@@ -2079,7 +2080,7 @@ const PostDetailModal = ({
 
       // Fallback: If no preloaded data, fetch from API
       try {
-        if (!vendor?.username) {
+        if (!vendorUsername) {
           setIsLoadingInteractions(false);
           return;
         }
@@ -2089,7 +2090,7 @@ const PostDetailModal = ({
           ...(user?.id && { userId: user.id }),
         });
 
-        const res = await fetch(`/api/vendor/${vendor?.username}/profile/posts/interactions?${params}`);
+        const res = await fetch(`/api/vendor/${vendorUsername}/profile/posts/interactions?${params}`);
         const data = await res.json();
 
         if (data.success) {
@@ -2106,7 +2107,7 @@ const PostDetailModal = ({
     };
 
     fetchInteractionStatus();
-  }, [currentPost?._id, user?.id, vendor?.username, allInteractions]);
+  }, [currentPost?._id, user?.id, vendorUsername, allInteractions]);
 
   // ===== CONTENT FORM SUBMIT =====
   const handleContentFormSubmit = useCallback(
@@ -2486,7 +2487,7 @@ const PostDetailModal = ({
     setIsInteracting(true);
 
     try {
-      const res = await fetch(`/api/vendor/${vendor?.username}/profile/posts/interactions`, {
+      const res = await fetch(`/api/vendor/${vendorUsername}/profile/posts/interactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2559,7 +2560,7 @@ const PostDetailModal = ({
     setIsInteracting(true);
 
     try {
-      const res = await fetch(`/api/vendor/${vendor?.username}/profile/posts/interactions`, {
+      const res = await fetch(`/api/vendor/${vendorUsername}/profile/posts/interactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2602,7 +2603,7 @@ const PostDetailModal = ({
     setReviewSubmitting(true);
 
     try {
-      const res = await fetch(`/api/vendor/${vendor?.username}/profile/posts/interactions`, {
+      const res = await fetch(`/api/vendor/${vendorUsername}/profile/posts/interactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -2632,7 +2633,7 @@ const PostDetailModal = ({
     setReviews((prev) => prev.filter((r) => (r._id || r.id) !== reviewId));
 
     try {
-      await fetch(`/api/vendor/${vendor?.username}/profile/posts/interactions`, {
+      await fetch(`/api/vendor/${vendorUsername}/profile/posts/interactions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -12841,6 +12842,7 @@ const VendorProfileNewPageWrapper = ({ initialProfile, initialVendor = {}, initi
             onEdit={(newCaption) => handleEditPost(selectedPost._id, newCaption)}
             onArchive={() => handleArchivePost(selectedPost._id)}
             vendorId={vendor?.username}
+            vendorUsername={profile?.username || vendor?.username}
             allInteractions={postsInteractionsData}
             isVerified={isVerified}
             profileId={profile?._id}

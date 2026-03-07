@@ -95,6 +95,7 @@ import {
   Mail,
   MessageSquare,
   QrCode,
+  ImageIcon,
 } from "lucide-react";
 import { useCartStore } from "../../../GlobalState/CartDataStore";
 import { useUser } from "@clerk/clerk-react";
@@ -970,9 +971,8 @@ const PromoCarousel = memo(() => {
           {promos.map((_, idx) => (
             <button key={idx} onClick={() => setActiveIndex(idx)} className="group relative">
               <div
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  idx === activeIndex ? "w-8 bg-blue-600" : "w-1.5 bg-gray-300 dark:bg-gray-600"
-                }`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex ? "w-8 bg-blue-600" : "w-1.5 bg-gray-300 dark:bg-gray-600"
+                  }`}
               />
             </button>
           ))}
@@ -1598,11 +1598,10 @@ const FilterSidebar = memo(
                       <button
                         key={cat.id}
                         onClick={() => handleCategoryChange(cat.id)}
-                        className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all ${
-                          isSelected
-                            ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500"
-                            : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700"
-                        }`}
+                        className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all ${isSelected
+                          ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500"
+                          : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700"
+                          }`}
                       >
                         <div
                           className="p-2 rounded-lg"
@@ -1719,11 +1718,10 @@ const FilterSidebar = memo(
                           setPriceRange(preset.range);
                           setCurrentPage(1);
                         }}
-                        className={`px-3 py-2 text-xs font-medium rounded-lg transition-all ${
-                          priceRange[0] === preset.range[0] && priceRange[1] === preset.range[1]
-                            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-2 border-green-500"
-                            : "bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-2 border-transparent hover:bg-gray-100"
-                        }`}
+                        className={`px-3 py-2 text-xs font-medium rounded-lg transition-all ${priceRange[0] === preset.range[0] && priceRange[1] === preset.range[1]
+                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-2 border-green-500"
+                          : "bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-2 border-transparent hover:bg-gray-100"
+                          }`}
                       >
                         {preset.label}
                       </button>
@@ -1832,11 +1830,10 @@ const FilterSidebar = memo(
                         setRatingFilter(rating);
                         setCurrentPage(1);
                       }}
-                      className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all ${
-                        ratingFilter === rating
-                          ? "bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-500"
-                          : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100"
-                      }`}
+                      className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all ${ratingFilter === rating
+                        ? "bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-500"
+                        : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100"
+                        }`}
                     >
                       <div className="flex items-center gap-1">
                         {Array.from({ length: 5 }).map((_, i) => (
@@ -1889,11 +1886,10 @@ const FilterSidebar = memo(
                           setSortBy(opt.value);
                           setCurrentPage(1);
                         }}
-                        className={`w-full flex items-center gap-3 p-2 rounded-lg text-left transition-all ${
-                          sortBy === opt.value
-                            ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500"
-                            : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100"
-                        }`}
+                        className={`w-full flex items-center gap-3 p-2 rounded-lg text-left transition-all ${sortBy === opt.value
+                          ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500"
+                          : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100"
+                          }`}
                       >
                         <span className="text-sm text-gray-600 dark:text-gray-400">{opt.label}</span>
                         {sortBy === opt.value && <Check size={14} className="text-blue-600 ml-auto" />}
@@ -1909,9 +1905,8 @@ const FilterSidebar = memo(
                           setSortOrder("desc");
                           setCurrentPage(1);
                         }}
-                        className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                          sortOrder === "desc" ? "bg-white dark:bg-gray-600 shadow-sm" : "text-gray-500"
-                        }`}
+                        className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${sortOrder === "desc" ? "bg-white dark:bg-gray-600 shadow-sm" : "text-gray-500"
+                          }`}
                       >
                         High to Low
                       </button>
@@ -1920,9 +1915,8 @@ const FilterSidebar = memo(
                           setSortOrder("asc");
                           setCurrentPage(1);
                         }}
-                        className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
-                          sortOrder === "asc" ? "bg-white dark:bg-gray-600 shadow-sm" : "text-gray-500"
-                        }`}
+                        className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${sortOrder === "asc" ? "bg-white dark:bg-gray-600 shadow-sm" : "text-gray-500"
+                          }`}
                       >
                         Low to High
                       </button>
@@ -2034,11 +2028,10 @@ const CategoryChips = memo(({ selectedCategories, onSelect }) => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           transition={{ duration: 0.2 }}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all border ${
-            selectedCategories.length === 0
-              ? "bg-blue-600 text-white border-transparent shadow-md"
-              : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-          }`}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all border ${selectedCategories.length === 0
+            ? "bg-blue-600 text-white border-transparent shadow-md"
+            : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+            }`}
         >
           <Sparkles size={15} />
           All Categories
@@ -2054,11 +2047,10 @@ const CategoryChips = memo(({ selectedCategories, onSelect }) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.2 }}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all border ${
-                isSelected
-                  ? "bg-blue-600 text-white border-transparent shadow-md"
-                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-              }`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all border ${isSelected
+                ? "bg-blue-600 text-white border-transparent shadow-md"
+                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                }`}
             >
               <CatIcon size={15} />
               {cat.label}
@@ -2324,7 +2316,7 @@ const VendorCard = memo(
     addToRecentlyViewed,
     setShowShareModal,
     setShareItem,
-     isLeadModalOpen,
+    isLeadModalOpen,
     setLeadModalActionType,
     setIsLeadModalOpen
   }) => {
@@ -2339,7 +2331,7 @@ const VendorCard = memo(
     const inCart = isInCart(vendor._id);
 
     const { getHrefWithState } = useNavigationState();
-        const { allowedAction, canContinue } = useAppValuesStore();
+    const { allowedAction, canContinue } = useAppValuesStore();
 
     const router = useRouter();
 
@@ -2466,13 +2458,13 @@ const VendorCard = memo(
 
     const handleCall = useCallback(() => {
       console.log("Allowed Action:", allowedAction, "Can Continue:", canContinue);
-      if(canContinue){
-            if (vendor.phoneNo) window.location.href = `tel:${vendor.phoneNo}`;
-            else onShowToast?.("Phone number not available", "info");
-        }else {
-           setIsLeadModalOpen(true);
-           setLeadModalActionType("revealPhone");
-        }
+      if (canContinue) {
+        if (vendor.phoneNo) window.location.href = `tel:${vendor.phoneNo}`;
+        else onShowToast?.("Phone number not available", "info");
+      } else {
+        setIsLeadModalOpen(true);
+        setLeadModalActionType("revealPhone");
+      }
     }, [vendor.phoneNo, onShowToast]);
 
     if (isListView) {
@@ -2531,11 +2523,10 @@ const VendorCard = memo(
                           e.preventDefault();
                           handleProfileClick(vendor._id);
                         }}
-                        className={`w-10 h-10 rounded-full overflow-hidden border-2 shrink-0 cursor-pointer transition-all duration-300 relative ${
-                          isNavigating || isPending
-                            ? "border-blue-500 shadow-lg"
-                            : "border-gray-100 hover:border-blue-400 hover:shadow-md"
-                        }`}
+                        className={`w-10 h-10 rounded-full overflow-hidden border-2 shrink-0 cursor-pointer transition-all duration-300 relative ${isNavigating || isPending
+                          ? "border-blue-500 shadow-lg"
+                          : "border-gray-100 hover:border-blue-400 hover:shadow-md"
+                          }`}
                       >
                         {/* Loading Border Animation */}
                         {(isNavigating || isPending) && (
@@ -3659,15 +3650,14 @@ const ActiveFiltersDisplay = memo(
                           }}
                           className={`
                           px-2.5 py-1 rounded-md text-xs font-semibold transition-all duration-200
-                          ${
-                            crumb.type === "root"
+                          ${crumb.type === "root"
                               ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
                               : crumb.isEnd
                                 ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-700"
                                 : crumb.removable
                                   ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 border border-blue-300 dark:border-blue-700 cursor-pointer"
                                   : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-                          }
+                            }
                           ${hoveredCrumb === index && crumb.removable ? "shadow-md" : ""}
                         `}
                         >
@@ -3883,11 +3873,10 @@ const CustomSortDropdown = memo(({ sortBy, sortOrder, onSortChange, onOrderChang
                       onSortChange(opt.value);
                       setIsOpen(false);
                     }}
-                    className={`w-full flex items-start gap-3 p-3 rounded-lg text-left transition-all ${
-                      isActive
-                        ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700"
-                        : "hover:bg-gray-50 dark:hover:bg-gray-700 border border-transparent"
-                    }`}
+                    className={`w-full flex items-start gap-3 p-3 rounded-lg text-left transition-all ${isActive
+                      ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700"
+                      : "hover:bg-gray-50 dark:hover:bg-gray-700 border border-transparent"
+                      }`}
                   >
                     <Icon size={18} className={isActive ? "text-blue-600" : "text-gray-400"} />
                     <div className="flex-1">
@@ -4036,6 +4025,187 @@ const RecentlyViewed = () => {
   );
 };
 
+const TopProfilesCarousel = memo(({
+  selectedCategories = [],
+  selectedLocations = [],
+  selectedSubcategory = "",
+  priceRange = [0, 1000000],
+  sortBy,
+  sortOrder,
+  ratingFilter,
+  showFeaturedOnly
+}) => {
+  const [vendors, setVendors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const scrollRef = useRef(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchVendorProfiles = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const queryParams = new URLSearchParams({
+          sortBy: sortBy || "trust",
+          sortOrder: sortOrder || "desc",
+          page: "1",
+          limit: "20",
+        });
+        if (selectedCategories?.length > 0) queryParams.set("categories", selectedCategories.join(","));
+        if (selectedSubcategory) queryParams.set("subcategory", selectedSubcategory);
+        if (selectedLocations?.length > 0) queryParams.set("cities", selectedLocations.join(","));
+        if (priceRange[0] > 0) queryParams.set("minPrice", priceRange[0].toString());
+        if (priceRange[1] < 1000000) queryParams.set("maxPrice", priceRange[1].toString());
+        if (ratingFilter > 0) queryParams.set("minRating", ratingFilter.toString());
+        if (showFeaturedOnly) queryParams.set("featured", "true");
+        const response = await fetch(`/api/vendor/profile/lists?${queryParams.toString()}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const result = await response.json();
+        if (result.success && Array.isArray(result.data)) {
+          setVendors(result.data);
+        } else {
+          throw new Error(result.message || "Failed to fetch vendor profiles");
+        }
+      } catch (err) {
+        setError(err.message || "Failed to load vendors");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchVendorProfiles();
+  }, [
+    selectedCategories,
+    selectedSubcategory,
+    selectedLocations,
+    priceRange,
+    sortBy,
+    sortOrder,
+    ratingFilter,
+    showFeaturedOnly,
+  ]);
+
+  const handleVendorClick = useCallback((vendor) => {
+    const targetId = vendor?.vendorId || vendor?._id;
+    if (targetId && vendor?.category) {
+      router.push(`/vendor/${vendor.category}/${targetId}/profile?tab=posts`);
+    } else if (targetId) {
+      router.push(`/vendor/${targetId}`); // Fallback
+    }
+  }, [router]);
+
+  const getTrustBadgeColor = (trust) => {
+    if (trust >= 80) return "bg-green-500";
+    if (trust >= 60) return "bg-blue-500";
+    if (trust >= 40) return "bg-yellow-500";
+    return "bg-gray-400";
+  };
+
+  if (loading) {
+    return (
+      <div className="flex gap-5 overflow-hidden py-4">
+        {[...Array(8)].map((_, idx) => (
+          <div key={idx} className="flex flex-col items-center gap-3 min-w-[110px] animate-pulse">
+            <div className="w-[110px] h-[110px] rounded-full bg-gray-200 dark:bg-gray-700" />
+            <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+            <div className="h-2 w-14 bg-gray-200 dark:bg-gray-700 rounded" />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (error || vendors.length === 0) {
+    return (
+      <div className="flex items-center justify-center py-8 text-sm text-gray-400 dark:text-gray-500">
+        {error ? `Unable to load top profiles` : "No top profiles found"}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={scrollRef}
+      className="flex gap-5 overflow-x-auto pb-2 scrollbar-hide"
+      style={{ scrollbarWidth: "none" }}
+    >
+      {vendors.map((vendor, index) => (
+        <motion.div
+          key={vendor._id}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: index * 0.04, duration: 0.25 }}
+          whileHover={{ y: -4, scale: 1.03 }}
+          onClick={() => handleVendorClick(vendor)}
+          className="flex flex-col items-center gap-2 min-w-[110px] cursor-pointer group"
+        >
+          <div className="relative">
+            <div
+              className={`absolute -top-1 -right-1 w-8 h-8 rounded-full ${getTrustBadgeColor(vendor.trust)} flex items-center justify-center z-10 shadow-md border-2 border-white dark:border-gray-800 text-white text-[10px] font-bold`}
+            >
+              {vendor.trust}
+            </div>
+            <div className="w-[110px] h-[110px] rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600 shadow-md group-hover:shadow-xl transition-shadow duration-300">
+              {vendor.vendorAvatar ? (
+                <img
+                  src={vendor.vendorAvatar}
+                  alt={vendor.vendorBusinessName}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  loading="lazy"
+                  onError={(e) => { e.target.onerror = null; e.target.src = "/placeholder-avatar.png"; }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-2xl font-bold">
+                  {vendor.vendorBusinessName?.charAt(0).toUpperCase() || "V"}
+                </div>
+              )}
+            </div>
+            {vendor.trust >= 70 && (
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2 + index * 0.04 }}
+                className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-blue-500 rounded-full p-1 shadow-md border-2 border-white dark:border-gray-800"
+              >
+                <BadgeCheck size={13} className="text-white" />
+              </motion.div>
+            )}
+          </div>
+          <div className="flex flex-col items-center gap-0.5 w-full px-1">
+            <p className="text-xs font-semibold text-gray-900 dark:text-white text-center line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+              {vendor.vendorBusinessName}
+            </p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400 capitalize">
+              {vendor.category?.replace(/-/g, " ")}
+            </p>
+            {vendor.location?.city && (
+              <div className="flex items-center gap-0.5 text-[9px] text-gray-400">
+                <MapPin size={8} />
+                <span className="line-clamp-1">{vendor.location.city}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2 mt-0.5">
+              {vendor.likesCount > 0 && (
+                <div className="flex items-center gap-0.5 text-[9px] text-gray-500">
+                  <Heart size={9} fill="currentColor" />
+                  <span>{vendor.likesCount > 999 ? `${(vendor.likesCount / 1000).toFixed(1)}k` : vendor.likesCount}</span>
+                </div>
+              )}
+              {vendor.postsCount > 0 && (
+                <div className="flex items-center gap-0.5 text-[9px] text-gray-400">
+                  <ImageIcon size={8} />
+                  <span>{vendor.postsCount}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+  );
+});
+TopProfilesCarousel.displayName = "TopProfilesCarousel";
+
 // Main Component
 export default function DesktopVendorMarketplace() {
   const params = useParams();
@@ -4076,13 +4246,16 @@ export default function DesktopVendorMarketplace() {
   const [selectedLocations, setSelectedLocations] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [ratingFilter, setRatingFilter] = useState(0);
-   const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
-    const [leadModalActionType, setLeadModalActionType] = useState("general");
+  const [isLeadModalOpen, setIsLeadModalOpen] = useState(false);
+  const [leadModalActionType, setLeadModalActionType] = useState("general");
 
   const [recentSearches, setRecentSearches] = useLocalStorage("desktop_recentSearches", []);
   const [compareMode, setCompareMode] = useState(false);
   const [compareList, setCompareList] = useState([]);
   const [showCompare, setShowCompare] = useState(false);
+  const [showTopProfiles, setShowTopProfiles] = useState(false);
+  const topProfilesRef = useRef(null);
+  const vendorListRef = useRef(null);
 
   const [toastData, setToastData] = useState({
     message: "",
@@ -4595,7 +4768,9 @@ export default function DesktopVendorMarketplace() {
 
   const handlePageChange = useCallback((page) => {
     setCurrentPage(page);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    setTimeout(() => {
+      vendorListRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   }, []);
 
   const clearAllFilters = useCallback(() => {
@@ -4820,6 +4995,33 @@ export default function DesktopVendorMarketplace() {
       <ScrollToTopButton />
       <CartPreview />
 
+      {/* Top Profiles Floating Button - sits above nav icons */}
+      <motion.button
+        whileHover={{ scale: 1.1, opacity: 1 }}
+        whileTap={{ scale: 0.92 }}
+        onClick={() => {
+          const willOpen = !showTopProfiles;
+          setShowTopProfiles(willOpen);
+          if (willOpen) {
+            setTimeout(() => {
+              topProfilesRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }, 400);
+          }
+        }}
+        className="fixed right-1 z-[9998] flex items-center gap-2 px-3 py-2 rounded-xl text-white font-semibold text-xs shadow-xl transition-all opacity-40 hover:opacity-100"
+        style={{
+          bottom: "295px",
+          background: showTopProfiles
+            ? "linear-gradient(135deg, #d97706, #b45309)"
+            : "linear-gradient(135deg, #f59e0b, #d97706)",
+          boxShadow: "0 6px 24px rgba(245, 158, 11, 0.45)",
+        }}
+        title={showTopProfiles ? "Hide Top Profiles" : "Show Top Profiles"}
+      >
+        <Star size={15} fill="white" color="white" />
+        <span>Top Profiles</span>
+      </motion.button>
+
       <AnimatePresence>
         {toastData.visible && <Toast message={toastData.message} type={toastData.type} onClose={hideToast} />}
       </AnimatePresence>
@@ -4864,6 +5066,47 @@ export default function DesktopVendorMarketplace() {
           <main className="flex-1 min-w-0 space-y-3">
             {/* Category Chips */}
             <CategoryChips selectedCategories={selectedCategories} onSelect={handleCategoryChange} />
+
+            {/* Top Profiles Inline Carousel - shown when button is clicked */}
+            <AnimatePresence initial={false}>
+              {showTopProfiles && (
+                <motion.div
+                  ref={topProfilesRef}
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1, transition: { height: { duration: 0.35 }, opacity: { duration: 0.25, delay: 0.05 } } }}
+                  exit={{ height: 0, opacity: 0, transition: { height: { duration: 0.25 }, opacity: { duration: 0.15 } } }}
+                  className="overflow-hidden"
+                >
+                  <div className="bg-white dark:bg-gray-800 rounded-2xl border border-amber-200 dark:border-amber-900/40 shadow-sm">
+                    <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 dark:border-gray-700">
+                      <div className="flex items-center gap-2">
+                        <Star size={15} fill="#f59e0b" color="#f59e0b" />
+                        <p className="text-sm font-bold text-gray-900 dark:text-white">Top Profiles</p>
+                        <span className="text-xs text-gray-400">Most trusted vendors on the platform</span>
+                      </div>
+                      <button
+                        onClick={() => setShowTopProfiles(false)}
+                        className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      >
+                        <X size={15} className="text-gray-400" />
+                      </button>
+                    </div>
+                    <div className="px-5 py-4">
+                      <TopProfilesCarousel
+                        selectedCategories={selectedCategories}
+                        selectedSubcategory={selectedSubcategory}
+                        selectedLocations={selectedLocations}
+                        priceRange={priceRange}
+                        sortBy="rating"
+                        sortOrder="desc"
+                        ratingFilter={ratingFilter}
+                        showFeaturedOnly={showFeaturedOnly}
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {/* Subcategory Chips - Only when single category selected */}
             {/* <AnimatePresence>
@@ -4915,8 +5158,9 @@ export default function DesktopVendorMarketplace() {
               )}
             </AnimatePresence>
 
+
             {/* Content Header Bar */}
-            <div className="sticky top-22 z-60 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+            <div ref={vendorListRef} className="sticky top-22 z-60 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
               <div className="flex items-center justify-between">
                 {/* Left: Results Count & Info */}
                 <div className="flex items-center gap-4">
@@ -4996,11 +5240,10 @@ export default function DesktopVendorMarketplace() {
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setShowSavedSearches(!showSavedSearches)}
-                      className={`p-2 rounded-xl transition-all relative ${
-                        savedSearches.length > 0
-                          ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                      }`}
+                      className={`p-2 rounded-xl transition-all relative ${savedSearches.length > 0
+                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        }`}
                       title="Saved Searches"
                     >
                       <Heart size={16} className={savedSearches.length > 0 ? "fill-blue-600" : ""} />
@@ -5161,11 +5404,10 @@ export default function DesktopVendorMarketplace() {
                       setCompareMode(!compareMode);
                       if (compareMode) setCompareList([]);
                     }}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                      compareMode
-                        ? "bg-blue-600 text-white shadow-md"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${compareMode
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      }`}
                   >
                     <ArrowRightLeft size={16} />
                     <span className="hidden sm:inline">{compareMode ? "Exit Compare" : "Compare"}</span>
@@ -5179,11 +5421,10 @@ export default function DesktopVendorMarketplace() {
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setIsMapView(!isMapView)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
-                        isMapView
-                          ? "bg-blue-600 text-white shadow-md"
-                          : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                      }`}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${isMapView
+                        ? "bg-blue-600 text-white shadow-md"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        }`}
                     >
                       {isMapView ? <List size={16} /> : <MapIcon size={16} />}
                       <span className="hidden sm:inline">{isMapView ? "List" : "Map"}</span>
@@ -5200,11 +5441,10 @@ export default function DesktopVendorMarketplace() {
                           <button
                             key={mode.id}
                             onClick={() => setViewMode(mode.id)}
-                            className={`p-2 rounded-lg transition-all ${
-                              isActive
-                                ? "bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm"
-                                : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                            }`}
+                            className={`p-2 rounded-lg transition-all ${isActive
+                              ? "bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm"
+                              : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                              }`}
                             title={mode.label}
                           >
                             <Icon size={16} />
@@ -5368,11 +5608,11 @@ export default function DesktopVendorMarketplace() {
                             animate={
                               compareList.length >= 2
                                 ? {
-                                    boxShadow: [
-                                      "0 0 0 0 rgba(255, 255, 255, 0.7)",
-                                      "0 0 0 10px rgba(255, 255, 255, 0)",
-                                    ],
-                                  }
+                                  boxShadow: [
+                                    "0 0 0 0 rgba(255, 255, 255, 0.7)",
+                                    "0 0 0 10px rgba(255, 255, 255, 0)",
+                                  ],
+                                }
                                 : {}
                             }
                             transition={{
@@ -5386,19 +5626,17 @@ export default function DesktopVendorMarketplace() {
                               }
                             }}
                             disabled={compareList.length < 2}
-                            className={`px-4 py-2 rounded-xl font-bold text-sm shadow-lg transition-all flex items-center gap-2 ${
-                              compareList.length >= 2
-                                ? "bg-white text-blue-600 hover:bg-gray-50 cursor-pointer"
-                                : "bg-white/20 text-white/40 cursor-not-allowed"
-                            }`}
+                            className={`px-4 py-2 rounded-xl font-bold text-sm shadow-lg transition-all flex items-center gap-2 ${compareList.length >= 2
+                              ? "bg-white text-blue-600 hover:bg-gray-50 cursor-pointer"
+                              : "bg-white/20 text-white/40 cursor-not-allowed"
+                              }`}
                           >
                             <GitCompare size={16} />
                             <span className="hidden sm:inline">Compare</span>
                             {compareList.length > 0 && (
                               <span
-                                className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
-                                  compareList.length >= 2 ? "bg-blue-600 text-white" : "bg-white/30 text-white/60"
-                                }`}
+                                className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${compareList.length >= 2 ? "bg-blue-600 text-white" : "bg-white/30 text-white/60"
+                                  }`}
                               >
                                 {compareList.length}
                               </span>
@@ -5436,11 +5674,10 @@ export default function DesktopVendorMarketplace() {
                                 showToast("Compare mode activated - Select vendors to compare", "success");
                               }
                             }}
-                            className={`p-2.5 rounded-xl transition-all relative ${
-                              compareMode
-                                ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
-                                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                            }`}
+                            className={`p-2.5 rounded-xl transition-all relative ${compareMode
+                              ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
+                              : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                              }`}
                             title={compareMode ? "Exit compare mode" : "Enter compare mode"}
                           >
                             <GitCompare size={18} />
@@ -5594,7 +5831,7 @@ export default function DesktopVendorMarketplace() {
                             addToRecentlyViewed={addToRecentlyViewed}
                             setShowShareModal={setShowShareModal}
                             setShareItem={setShareItem}
-                                 setIsLeadModalOpen={setIsLeadModalOpen}
+                            setIsLeadModalOpen={setIsLeadModalOpen}
                             setLeadModalActionType={setLeadModalActionType}
                             isLeadModalOpen={isLeadModalOpen}
                           />
@@ -5796,13 +6033,13 @@ export default function DesktopVendorMarketplace() {
         )}
       </AnimatePresence>
 
-          <LeadCaptureModal
-      isOpen={isLeadModalOpen}
-      onClose={() => setIsLeadModalOpen(false)}
-      actionType={leadModalActionType}
-      title="Plan Your Perfect Event"
-      subtitle="Get started with India's most affordable event planning marketplace"
-    />
+      <LeadCaptureModal
+        isOpen={isLeadModalOpen}
+        onClose={() => setIsLeadModalOpen(false)}
+        actionType={leadModalActionType}
+        title="Plan Your Perfect Event"
+        subtitle="Get started with India's most affordable event planning marketplace"
+      />
 
       {/* ========== CUSTOM STYLES FOR COMPARE BAR ========== */}
       <style jsx>{`
