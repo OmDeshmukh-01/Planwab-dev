@@ -573,6 +573,7 @@ export async function GET(request) {
         { name: searchRegex },
         { email: searchRegex },
         { username: searchRegex },
+        { category: searchRegex },
         { "address.city": searchRegex },
         { "address.state": searchRegex },
         { "address.street": searchRegex },
@@ -582,6 +583,9 @@ export async function GET(request) {
         { amenities: searchRegex },
         { facilities: searchRegex },
         { eventTypes: searchRegex },
+        { services: searchRegex },
+        { "vendorProfile.category": searchRegex },
+        { "vendorProfile.subCategory": searchRegex },
       ];
 
       andConditions.push({ $or: searchConditions });
