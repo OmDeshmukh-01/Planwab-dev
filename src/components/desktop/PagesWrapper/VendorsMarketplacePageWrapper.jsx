@@ -971,8 +971,9 @@ const PromoCarousel = memo(() => {
           {promos.map((_, idx) => (
             <button key={idx} onClick={() => setActiveIndex(idx)} className="group relative">
               <div
-                className={`h-1.5 rounded-full transition-all duration-300 ${idx === activeIndex ? "w-8 bg-blue-600" : "w-1.5 bg-gray-300 dark:bg-gray-600"
-                  }`}
+                className={`h-1.5 rounded-full transition-all duration-300 ${
+                  idx === activeIndex ? "w-8 bg-blue-600" : "w-1.5 bg-gray-300 dark:bg-gray-600"
+                }`}
               />
             </button>
           ))}
@@ -1507,7 +1508,7 @@ const FilterSidebar = memo(
                           Clear
                         </button>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-2 max-w-[265px]">
                         {recentSearches.slice(0, 5).map((search, i) => {
                           if (!search || !search.trim()) return null;
                           return (
@@ -1598,10 +1599,11 @@ const FilterSidebar = memo(
                       <button
                         key={cat.id}
                         onClick={() => handleCategoryChange(cat.id)}
-                        className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all ${isSelected
-                          ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500"
-                          : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700"
-                          }`}
+                        className={`w-full flex items-center gap-3 p-2.5 rounded-xl transition-all ${
+                          isSelected
+                            ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500"
+                            : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100 dark:hover:bg-gray-700"
+                        }`}
                       >
                         <div
                           className="p-2 rounded-lg"
@@ -1718,10 +1720,11 @@ const FilterSidebar = memo(
                           setPriceRange(preset.range);
                           setCurrentPage(1);
                         }}
-                        className={`px-3 py-2 text-xs font-medium rounded-lg transition-all ${priceRange[0] === preset.range[0] && priceRange[1] === preset.range[1]
-                          ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-2 border-green-500"
-                          : "bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-2 border-transparent hover:bg-gray-100"
-                          }`}
+                        className={`px-3 py-2 text-xs font-medium rounded-lg transition-all ${
+                          priceRange[0] === preset.range[0] && priceRange[1] === preset.range[1]
+                            ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border-2 border-green-500"
+                            : "bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-400 border-2 border-transparent hover:bg-gray-100"
+                        }`}
                       >
                         {preset.label}
                       </button>
@@ -1830,10 +1833,11 @@ const FilterSidebar = memo(
                         setRatingFilter(rating);
                         setCurrentPage(1);
                       }}
-                      className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all ${ratingFilter === rating
-                        ? "bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-500"
-                        : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100"
-                        }`}
+                      className={`w-full flex items-center gap-3 p-2 rounded-lg transition-all ${
+                        ratingFilter === rating
+                          ? "bg-yellow-50 dark:bg-yellow-900/20 border-2 border-yellow-500"
+                          : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100"
+                      }`}
                     >
                       <div className="flex items-center gap-1">
                         {Array.from({ length: 5 }).map((_, i) => (
@@ -1886,10 +1890,11 @@ const FilterSidebar = memo(
                           setSortBy(opt.value);
                           setCurrentPage(1);
                         }}
-                        className={`w-full flex items-center gap-3 p-2 rounded-lg text-left transition-all ${sortBy === opt.value
-                          ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500"
-                          : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100"
-                          }`}
+                        className={`w-full flex items-center gap-3 p-2 rounded-lg text-left transition-all ${
+                          sortBy === opt.value
+                            ? "bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-500"
+                            : "bg-gray-50 dark:bg-gray-700/50 border-2 border-transparent hover:bg-gray-100"
+                        }`}
                       >
                         <span className="text-sm text-gray-600 dark:text-gray-400">{opt.label}</span>
                         {sortBy === opt.value && <Check size={14} className="text-blue-600 ml-auto" />}
@@ -1905,8 +1910,9 @@ const FilterSidebar = memo(
                           setSortOrder("desc");
                           setCurrentPage(1);
                         }}
-                        className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${sortOrder === "desc" ? "bg-white dark:bg-gray-600 shadow-sm" : "text-gray-500"
-                          }`}
+                        className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                          sortOrder === "desc" ? "bg-white dark:bg-gray-600 shadow-sm" : "text-gray-500"
+                        }`}
                       >
                         High to Low
                       </button>
@@ -1915,8 +1921,9 @@ const FilterSidebar = memo(
                           setSortOrder("asc");
                           setCurrentPage(1);
                         }}
-                        className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${sortOrder === "asc" ? "bg-white dark:bg-gray-600 shadow-sm" : "text-gray-500"
-                          }`}
+                        className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                          sortOrder === "asc" ? "bg-white dark:bg-gray-600 shadow-sm" : "text-gray-500"
+                        }`}
                       >
                         Low to High
                       </button>
@@ -1933,7 +1940,7 @@ const FilterSidebar = memo(
 );
 FilterSidebar.displayName = "FilterSidebar";
 
-const CategoryChips = memo(({ selectedCategories, onSelect }) => {
+const CategoryChips = memo(({ selectedCategories, onSelect, showTopProfiles, setShowTopProfiles, topProfilesRef }) => {
   const scrollRef = useRef(null);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
   const [showRightArrow, setShowRightArrow] = useState(true);
@@ -2028,13 +2035,38 @@ const CategoryChips = memo(({ selectedCategories, onSelect }) => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           transition={{ duration: 0.2 }}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all border ${selectedCategories.length === 0
-            ? "bg-blue-600 text-white border-transparent shadow-md"
-            : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-            }`}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all border ${
+            selectedCategories.length === 0
+              ? "bg-blue-600 text-white border-transparent shadow-md"
+              : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+          }`}
         >
           <Sparkles size={15} />
           All Categories
+        </motion.button>
+
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.92 }}
+          onClick={() => {
+            const willOpen = !showTopProfiles;
+            setShowTopProfiles(willOpen);
+            if (willOpen) {
+              setTimeout(() => {
+                topProfilesRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+              }, 400);
+            }
+          }}
+          className="flex flex-row min-w-[114px] items-center gap-2 px-3 py-3 rounded-xl text-white font-semibold text-xs transition-all !opacity-100 cursor-pointer"
+          style={{
+            background: showTopProfiles
+              ? "linear-gradient(135deg, #d97706, #b45309)"
+              : "linear-gradient(135deg, rgba(245,158,11,0.5), rgba(217,119,6,0.5))",
+          }}
+          title={showTopProfiles ? "Hide Top Profiles" : "Show Top Profiles"}
+        >
+          <Star size={15} fill="white" color="white" />
+          <span className="w-full z-20 flex">Top Profiles</span>
         </motion.button>
 
         {VENDOR_CATEGORIES.map((cat) => {
@@ -2047,10 +2079,11 @@ const CategoryChips = memo(({ selectedCategories, onSelect }) => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               transition={{ duration: 0.2 }}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all border ${isSelected
-                ? "bg-blue-600 text-white border-transparent shadow-md"
-                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all border ${
+                isSelected
+                  ? "bg-blue-600 text-white border-transparent shadow-md"
+                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
             >
               <CatIcon size={15} />
               {cat.label}
@@ -2318,7 +2351,7 @@ const VendorCard = memo(
     setShareItem,
     isLeadModalOpen,
     setLeadModalActionType,
-    setIsLeadModalOpen
+    setIsLeadModalOpen,
   }) => {
     const [showActions, setShowActions] = useState(false);
     const [isLiked, setIsLiked] = useState(false);
@@ -2523,10 +2556,11 @@ const VendorCard = memo(
                           e.preventDefault();
                           handleProfileClick(vendor._id);
                         }}
-                        className={`w-10 h-10 rounded-full overflow-hidden border-2 shrink-0 cursor-pointer transition-all duration-300 relative ${isNavigating || isPending
-                          ? "border-blue-500 shadow-lg"
-                          : "border-gray-100 hover:border-blue-400 hover:shadow-md"
-                          }`}
+                        className={`w-10 h-10 rounded-full overflow-hidden border-2 shrink-0 cursor-pointer transition-all duration-300 relative ${
+                          isNavigating || isPending
+                            ? "border-blue-500 shadow-lg"
+                            : "border-gray-100 hover:border-blue-400 hover:shadow-md"
+                        }`}
                       >
                         {/* Loading Border Animation */}
                         {(isNavigating || isPending) && (
@@ -3650,14 +3684,15 @@ const ActiveFiltersDisplay = memo(
                           }}
                           className={`
                           px-2.5 py-1 rounded-md text-xs font-semibold transition-all duration-200
-                          ${crumb.type === "root"
+                          ${
+                            crumb.type === "root"
                               ? "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
                               : crumb.isEnd
                                 ? "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-300 dark:border-green-700"
                                 : crumb.removable
                                   ? "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800 border border-blue-300 dark:border-blue-700 cursor-pointer"
                                   : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400"
-                            }
+                          }
                           ${hoveredCrumb === index && crumb.removable ? "shadow-md" : ""}
                         `}
                         >
@@ -3873,10 +3908,11 @@ const CustomSortDropdown = memo(({ sortBy, sortOrder, onSortChange, onOrderChang
                       onSortChange(opt.value);
                       setIsOpen(false);
                     }}
-                    className={`w-full flex items-start gap-3 p-3 rounded-lg text-left transition-all ${isActive
-                      ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700"
-                      : "hover:bg-gray-50 dark:hover:bg-gray-700 border border-transparent"
-                      }`}
+                    className={`w-full flex items-start gap-3 p-3 rounded-lg text-left transition-all ${
+                      isActive
+                        ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700"
+                        : "hover:bg-gray-50 dark:hover:bg-gray-700 border border-transparent"
+                    }`}
                   >
                     <Icon size={18} className={isActive ? "text-blue-600" : "text-gray-400"} />
                     <div className="flex-1">
@@ -4025,185 +4061,320 @@ const RecentlyViewed = () => {
   );
 };
 
-const TopProfilesCarousel = memo(({
-  selectedCategories = [],
-  selectedLocations = [],
-  selectedSubcategory = "",
-  priceRange = [0, 1000000],
-  sortBy,
-  sortOrder,
-  ratingFilter,
-  showFeaturedOnly
-}) => {
-  const [vendors, setVendors] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const scrollRef = useRef(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    const fetchVendorProfiles = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        const queryParams = new URLSearchParams({
-          sortBy: sortBy || "trust",
-          sortOrder: sortOrder || "desc",
-          page: "1",
-          limit: "20",
-        });
-        if (selectedCategories?.length > 0) queryParams.set("categories", selectedCategories.join(","));
-        if (selectedSubcategory) queryParams.set("subcategory", selectedSubcategory);
-        if (selectedLocations?.length > 0) queryParams.set("cities", selectedLocations.join(","));
-        if (priceRange[0] > 0) queryParams.set("minPrice", priceRange[0].toString());
-        if (priceRange[1] < 1000000) queryParams.set("maxPrice", priceRange[1].toString());
-        if (ratingFilter > 0) queryParams.set("minRating", ratingFilter.toString());
-        if (showFeaturedOnly) queryParams.set("featured", "true");
-        const response = await fetch(`/api/vendor/profile/lists?${queryParams.toString()}`);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        const result = await response.json();
-        if (result.success && Array.isArray(result.data)) {
-          setVendors(result.data);
-        } else {
-          throw new Error(result.message || "Failed to fetch vendor profiles");
-        }
-      } catch (err) {
-        setError(err.message || "Failed to load vendors");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchVendorProfiles();
-  }, [
-    selectedCategories,
-    selectedSubcategory,
-    selectedLocations,
-    priceRange,
+const TopProfilesCarousel = memo(
+  ({
+    selectedCategories = [],
+    selectedLocations = [],
+    selectedSubcategory = "",
+    priceRange = [0, 1000000],
     sortBy,
     sortOrder,
     ratingFilter,
     showFeaturedOnly,
-  ]);
+  }) => {
+    const [vendors, setVendors] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const scrollRef = useRef(null);
+    const [showLeftArrow, setShowLeftArrow] = useState(false);
+    const [showRightArrow, setShowRightArrow] = useState(true);
+    const [isScrolling, setIsScrolling] = useState(false);
+    const router = useRouter();
 
-  const handleVendorClick = useCallback((vendor) => {
-    const targetId = vendor?.vendorId || vendor?._id;
-    if (targetId && vendor?.category) {
-      router.push(`/vendor/${vendor.category}/${targetId}/profile?tab=posts`);
-    } else if (targetId) {
-      router.push(`/vendor/${targetId}`); // Fallback
-    }
-  }, [router]);
+    // ── Scroll arrow visibility ──────────────────────────────────────────
+    const handleScroll = useCallback(() => {
+      if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        setShowLeftArrow(scrollLeft > 5);
+        setShowRightArrow(scrollLeft < scrollWidth - clientWidth - 5);
+      }
+    }, []);
 
-  const getTrustBadgeColor = (trust) => {
-    if (trust >= 80) return "bg-green-500";
-    if (trust >= 60) return "bg-blue-500";
-    if (trust >= 40) return "bg-yellow-500";
-    return "bg-gray-400";
-  };
+    useEffect(() => {
+      handleScroll();
+      window.addEventListener("resize", handleScroll);
+      return () => window.removeEventListener("resize", handleScroll);
+    }, [handleScroll]);
 
-  if (loading) {
-    return (
-      <div className="flex gap-5 overflow-hidden py-4">
-        {[...Array(8)].map((_, idx) => (
-          <div key={idx} className="flex flex-col items-center gap-3 min-w-[110px] animate-pulse">
-            <div className="w-[110px] h-[110px] rounded-full bg-gray-200 dark:bg-gray-700" />
-            <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
-            <div className="h-2 w-14 bg-gray-200 dark:bg-gray-700 rounded" />
-          </div>
-        ))}
-      </div>
+    // Re-check arrows after vendors load (content width changes)
+    useEffect(() => {
+      if (!loading) {
+        // Small delay to let DOM paint the new items
+        setTimeout(handleScroll, 50);
+      }
+    }, [loading, handleScroll]);
+
+    // ── Smooth scroll ────────────────────────────────────────────────────
+    const scroll = useCallback(
+      (direction) => {
+        if (scrollRef.current && !isScrolling) {
+          setIsScrolling(true);
+
+          const container = scrollRef.current;
+          const scrollAmount = container.clientWidth * 0.8;
+          const start = container.scrollLeft;
+          const target = start + direction * scrollAmount;
+          const duration = 400;
+          const startTime = performance.now();
+
+          const easeInOutCubic = (t) =>
+            t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+          const animateScroll = (currentTime) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            container.scrollLeft = start + (target - start) * easeInOutCubic(progress);
+
+            if (progress < 1) {
+              requestAnimationFrame(animateScroll);
+            } else {
+              setIsScrolling(false);
+            }
+          };
+
+          requestAnimationFrame(animateScroll);
+        }
+      },
+      [isScrolling],
     );
-  }
 
-  if (error || vendors.length === 0) {
-    return (
-      <div className="flex items-center justify-center py-8 text-sm text-gray-400 dark:text-gray-500">
-        {error ? `Unable to load top profiles` : "No top profiles found"}
-      </div>
+    // ── Data fetching ────────────────────────────────────────────────────
+    useEffect(() => {
+      const fetchVendorProfiles = async () => {
+        try {
+          setLoading(true);
+          setError(null);
+          const queryParams = new URLSearchParams({
+            sortBy: sortBy || "trust",
+            sortOrder: sortOrder || "desc",
+            page: "1",
+            limit: "20",
+          });
+          if (selectedCategories?.length > 0)
+            queryParams.set("categories", selectedCategories.join(","));
+          if (selectedSubcategory)
+            queryParams.set("subcategory", selectedSubcategory);
+          if (selectedLocations?.length > 0)
+            queryParams.set("cities", selectedLocations.join(","));
+          if (priceRange[0] > 0)
+            queryParams.set("minPrice", priceRange[0].toString());
+          if (priceRange[1] < 1000000)
+            queryParams.set("maxPrice", priceRange[1].toString());
+          if (ratingFilter > 0)
+            queryParams.set("minRating", ratingFilter.toString());
+          if (showFeaturedOnly)
+            queryParams.set("featured", "true");
+
+          const response = await fetch(
+            `/api/vendor/profile/lists?${queryParams.toString()}`,
+          );
+          if (!response.ok)
+            throw new Error(`HTTP error! status: ${response.status}`);
+          const result = await response.json();
+          if (result.success && Array.isArray(result.data)) {
+            setVendors(result.data);
+          } else {
+            throw new Error(result.message || "Failed to fetch vendor profiles");
+          }
+        } catch (err) {
+          setError(err.message || "Failed to load vendors");
+        } finally {
+          setLoading(false);
+        }
+      };
+      fetchVendorProfiles();
+    }, [
+      selectedCategories,
+      selectedSubcategory,
+      selectedLocations,
+      priceRange,
+      sortBy,
+      sortOrder,
+      ratingFilter,
+      showFeaturedOnly,
+    ]);
+
+    const handleVendorClick = useCallback(
+      (vendor) => {
+        const targetId = vendor?.vendorId || vendor?._id;
+        if (targetId && vendor?.category) {
+          router.push(`/vendor/${vendor.category}/${targetId}/profile?tab=posts`);
+        } else if (targetId) {
+          router.push(`/vendor/${targetId}`);
+        }
+      },
+      [router],
     );
-  }
 
-  return (
-    <div
-      ref={scrollRef}
-      className="flex gap-5 overflow-x-auto pb-2 scrollbar-hide"
-      style={{ scrollbarWidth: "none" }}
-    >
-      {vendors.map((vendor, index) => (
-        <motion.div
-          key={vendor._id}
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: index * 0.04, duration: 0.25 }}
-          whileHover={{ y: -4, scale: 1.03 }}
-          onClick={() => handleVendorClick(vendor)}
-          className="flex flex-col items-center gap-2 min-w-[110px] cursor-pointer group"
-        >
-          <div className="relative">
+    const getTrustBadgeColor = (trust) => {
+      if (trust >= 80) return "bg-green-500";
+      if (trust >= 60) return "bg-blue-500";
+      if (trust >= 40) return "bg-yellow-500";
+      return "bg-gray-400";
+    };
+
+    // ── Loading skeleton ─────────────────────────────────────────────────
+    if (loading) {
+      return (
+        <div className="flex gap-5 overflow-hidden py-4">
+          {[...Array(8)].map((_, idx) => (
             <div
-              className={`absolute -top-1 -right-1 w-8 h-8 rounded-full ${getTrustBadgeColor(vendor.trust)} flex items-center justify-center z-10 shadow-md border-2 border-white dark:border-gray-800 text-white text-[10px] font-bold`}
+              key={idx}
+              className="flex flex-col items-center gap-3 min-w-[110px] animate-pulse"
             >
-              {vendor.trust}
+              <div className="w-[110px] h-[110px] rounded-full bg-gray-200 dark:bg-gray-700" />
+              <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded" />
+              <div className="h-2 w-14 bg-gray-200 dark:bg-gray-700 rounded" />
             </div>
-            <div className="w-[110px] h-[110px] rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600 shadow-md group-hover:shadow-xl transition-shadow duration-300">
-              {vendor.vendorAvatar ? (
-                <img
-                  src={vendor.vendorAvatar}
-                  alt={vendor.vendorBusinessName}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  loading="lazy"
-                  onError={(e) => { e.target.onerror = null; e.target.src = "/placeholder-avatar.png"; }}
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-2xl font-bold">
-                  {vendor.vendorBusinessName?.charAt(0).toUpperCase() || "V"}
+          ))}
+        </div>
+      );
+    }
+
+    if (error || vendors.length === 0) {
+      return (
+        <div className="flex items-center justify-center py-8 text-sm text-gray-400 dark:text-gray-500">
+          {error ? "Unable to load top profiles" : "No top profiles found"}
+        </div>
+      );
+    }
+
+    // ── Render ───────────────────────────────────────────────────────────
+    return (
+      <div className="relative">
+        {/* Left Arrow */}
+        <AnimatePresence>
+          {showLeftArrow && (
+            <motion.button
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 10 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => scroll(-1)}
+              disabled={isScrolling}
+              className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 shadow-lg rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={16} className="text-gray-600 dark:text-gray-400" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* Scrollable container */}
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="flex gap-5 overflow-x-auto pb-2 px-1 py-4"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {vendors.map((vendor, index) => (
+            <motion.div
+              key={vendor._id}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: index * 0.04, duration: 0.25 }}
+              whileHover={{ y: -4, scale: 1.03 }}
+              onClick={() => handleVendorClick(vendor)}
+              className="flex flex-col items-center gap-2 min-w-[110px] cursor-pointer group"
+            >
+              <div className="relative">
+                <div
+                  className={`absolute -top-1 -right-1 w-8 h-8 rounded-full ${getTrustBadgeColor(vendor.trust)} flex items-center justify-center z-10 shadow-md border-2 border-white dark:border-gray-800 text-white text-[10px] font-bold`}
+                >
+                  {vendor.trust}
                 </div>
-              )}
-            </div>
-            {vendor.trust >= 70 && (
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2 + index * 0.04 }}
-                className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-blue-500 rounded-full p-1 shadow-md border-2 border-white dark:border-gray-800"
-              >
-                <BadgeCheck size={13} className="text-white" />
-              </motion.div>
-            )}
-          </div>
-          <div className="flex flex-col items-center gap-0.5 w-full px-1">
-            <p className="text-xs font-semibold text-gray-900 dark:text-white text-center line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-              {vendor.vendorBusinessName}
-            </p>
-            <p className="text-[10px] text-gray-500 dark:text-gray-400 capitalize">
-              {vendor.category?.replace(/-/g, " ")}
-            </p>
-            {vendor.location?.city && (
-              <div className="flex items-center gap-0.5 text-[9px] text-gray-400">
-                <MapPin size={8} />
-                <span className="line-clamp-1">{vendor.location.city}</span>
+                <div className="w-[110px] h-[110px] rounded-full overflow-hidden border-2 border-gray-200 dark:border-gray-600 shadow-md group-hover:shadow-xl transition-shadow duration-300">
+                  {vendor.vendorAvatar ? (
+                    <img
+                      src={vendor.vendorAvatar}
+                      alt={vendor.vendorBusinessName}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "/placeholder-avatar.png";
+                      }}
+                    />
+                  ) : (
+                    <div className="w-[110px] h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-2xl font-bold">
+                      {vendor.vendorBusinessName?.charAt(0).toUpperCase() || "V"}
+                    </div>
+                  )}
+                </div>
+                {vendor.trust >= 70 && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ delay: 0.2 + index * 0.04 }}
+                    className="absolute -bottom-1 left-1/2 -translate-x-1/2 bg-blue-500 rounded-full p-1 shadow-md border-2 border-white dark:border-gray-800"
+                  >
+                    <BadgeCheck size={13} className="text-white" />
+                  </motion.div>
+                )}
               </div>
-            )}
-            <div className="flex items-center gap-2 mt-0.5">
-              {vendor.likesCount > 0 && (
-                <div className="flex items-center gap-0.5 text-[9px] text-gray-500">
-                  <Heart size={9} fill="currentColor" />
-                  <span>{vendor.likesCount > 999 ? `${(vendor.likesCount / 1000).toFixed(1)}k` : vendor.likesCount}</span>
+
+              <div className="flex flex-col items-center gap-0.5 w-full px-1">
+                <p className="w-[115px] text-xs font-semibold text-gray-900 dark:text-white text-center line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                  {vendor.vendorBusinessName}
+                </p>
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 capitalize">
+                  {vendor.category?.replace(/-/g, " ")}
+                </p>
+                {vendor.location?.city && (
+                  <div className="flex items-center gap-0.5 text-[9px] text-gray-400">
+                    <MapPin size={8} />
+                    <span className="line-clamp-1">{vendor.location.city}</span>
+                  </div>
+                )}
+                <div className="flex items-center gap-2 mt-0.5">
+                  {vendor.likesCount > 0 && (
+                    <div className="flex items-center gap-0.5 text-[9px] text-gray-500">
+                      <Heart size={9} fill="currentColor" />
+                      <span>
+                        {vendor.likesCount > 999
+                          ? `${(vendor.likesCount / 1000).toFixed(1)}k`
+                          : vendor.likesCount}
+                      </span>
+                    </div>
+                  )}
+                  {vendor.postsCount > 0 && (
+                    <div className="flex items-center gap-0.5 text-[9px] text-gray-400">
+                      <ImageIcon size={8} />
+                      <span>{vendor.postsCount}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-              {vendor.postsCount > 0 && (
-                <div className="flex items-center gap-0.5 text-[9px] text-gray-400">
-                  <ImageIcon size={8} />
-                  <span>{vendor.postsCount}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        </motion.div>
-      ))}
-    </div>
-  );
-});
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Right Arrow */}
+        <AnimatePresence>
+          {showRightArrow && (
+            <motion.button
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+              onClick={() => scroll(1)}
+              disabled={isScrolling}
+              className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 w-8 h-8 bg-white dark:bg-gray-800 shadow-lg rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronRight size={16} className="text-gray-600 dark:text-gray-400" />
+            </motion.button>
+          )}
+        </AnimatePresence>
+
+        {/* Hide webkit scrollbar */}
+        <style jsx>{`
+          div::-webkit-scrollbar {
+            display: none;
+          }
+        `}</style>
+      </div>
+    );
+  },
+);
 TopProfilesCarousel.displayName = "TopProfilesCarousel";
 
 // Main Component
@@ -4996,7 +5167,7 @@ export default function DesktopVendorMarketplace() {
       <CartPreview />
 
       {/* Top Profiles Floating Button - sits above nav icons */}
-      <motion.button
+      {/* <motion.button
         whileHover={{ scale: 1.1, opacity: 1 }}
         whileTap={{ scale: 0.92 }}
         onClick={() => {
@@ -5020,7 +5191,7 @@ export default function DesktopVendorMarketplace() {
       >
         <Star size={15} fill="white" color="white" />
         <span>Top Profiles</span>
-      </motion.button>
+      </motion.button> */}
 
       <AnimatePresence>
         {toastData.visible && <Toast message={toastData.message} type={toastData.type} onClose={hideToast} />}
@@ -5065,7 +5236,13 @@ export default function DesktopVendorMarketplace() {
           {/* RIGHT COLUMN - Main Content */}
           <main className="flex-1 min-w-0 space-y-3">
             {/* Category Chips */}
-            <CategoryChips selectedCategories={selectedCategories} onSelect={handleCategoryChange} />
+            <CategoryChips
+              selectedCategories={selectedCategories}
+              onSelect={handleCategoryChange}
+              showTopProfiles={showTopProfiles}
+              setShowTopProfiles={setShowTopProfiles}
+              topProfilesRef={topProfilesRef}
+            />
 
             {/* Top Profiles Inline Carousel - shown when button is clicked */}
             <AnimatePresence initial={false}>
@@ -5073,8 +5250,16 @@ export default function DesktopVendorMarketplace() {
                 <motion.div
                   ref={topProfilesRef}
                   initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: "auto", opacity: 1, transition: { height: { duration: 0.35 }, opacity: { duration: 0.25, delay: 0.05 } } }}
-                  exit={{ height: 0, opacity: 0, transition: { height: { duration: 0.25 }, opacity: { duration: 0.15 } } }}
+                  animate={{
+                    height: "auto",
+                    opacity: 1,
+                    transition: { height: { duration: 0.35 }, opacity: { duration: 0.25, delay: 0.05 } },
+                  }}
+                  exit={{
+                    height: 0,
+                    opacity: 0,
+                    transition: { height: { duration: 0.25 }, opacity: { duration: 0.15 } },
+                  }}
                   className="overflow-hidden"
                 >
                   <div className="bg-white dark:bg-gray-800 rounded-2xl border border-amber-200 dark:border-amber-900/40 shadow-sm">
@@ -5158,9 +5343,11 @@ export default function DesktopVendorMarketplace() {
               )}
             </AnimatePresence>
 
-
             {/* Content Header Bar */}
-            <div ref={vendorListRef} className="sticky top-22 z-60 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm">
+            <div
+              ref={vendorListRef}
+              className="sticky top-22 z-60 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm"
+            >
               <div className="flex items-center justify-between">
                 {/* Left: Results Count & Info */}
                 <div className="flex items-center gap-4">
@@ -5240,10 +5427,11 @@ export default function DesktopVendorMarketplace() {
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setShowSavedSearches(!showSavedSearches)}
-                      className={`p-2 rounded-xl transition-all relative ${savedSearches.length > 0
-                        ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                        }`}
+                      className={`p-2 rounded-xl transition-all relative ${
+                        savedSearches.length > 0
+                          ? "bg-blue-50 dark:bg-blue-900/30 text-blue-600"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      }`}
                       title="Saved Searches"
                     >
                       <Heart size={16} className={savedSearches.length > 0 ? "fill-blue-600" : ""} />
@@ -5404,10 +5592,11 @@ export default function DesktopVendorMarketplace() {
                       setCompareMode(!compareMode);
                       if (compareMode) setCompareList([]);
                     }}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${compareMode
-                      ? "bg-blue-600 text-white shadow-md"
-                      : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                      }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                      compareMode
+                        ? "bg-blue-600 text-white shadow-md"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                    }`}
                   >
                     <ArrowRightLeft size={16} />
                     <span className="hidden sm:inline">{compareMode ? "Exit Compare" : "Compare"}</span>
@@ -5421,10 +5610,11 @@ export default function DesktopVendorMarketplace() {
                     <motion.button
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setIsMapView(!isMapView)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${isMapView
-                        ? "bg-blue-600 text-white shadow-md"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                        }`}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                        isMapView
+                          ? "bg-blue-600 text-white shadow-md"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      }`}
                     >
                       {isMapView ? <List size={16} /> : <MapIcon size={16} />}
                       <span className="hidden sm:inline">{isMapView ? "List" : "Map"}</span>
@@ -5441,10 +5631,11 @@ export default function DesktopVendorMarketplace() {
                           <button
                             key={mode.id}
                             onClick={() => setViewMode(mode.id)}
-                            className={`p-2 rounded-lg transition-all ${isActive
-                              ? "bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm"
-                              : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                              }`}
+                            className={`p-2 rounded-lg transition-all ${
+                              isActive
+                                ? "bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm"
+                                : "text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                            }`}
                             title={mode.label}
                           >
                             <Icon size={16} />
@@ -5608,11 +5799,11 @@ export default function DesktopVendorMarketplace() {
                             animate={
                               compareList.length >= 2
                                 ? {
-                                  boxShadow: [
-                                    "0 0 0 0 rgba(255, 255, 255, 0.7)",
-                                    "0 0 0 10px rgba(255, 255, 255, 0)",
-                                  ],
-                                }
+                                    boxShadow: [
+                                      "0 0 0 0 rgba(255, 255, 255, 0.7)",
+                                      "0 0 0 10px rgba(255, 255, 255, 0)",
+                                    ],
+                                  }
                                 : {}
                             }
                             transition={{
@@ -5626,17 +5817,19 @@ export default function DesktopVendorMarketplace() {
                               }
                             }}
                             disabled={compareList.length < 2}
-                            className={`px-4 py-2 rounded-xl font-bold text-sm shadow-lg transition-all flex items-center gap-2 ${compareList.length >= 2
-                              ? "bg-white text-blue-600 hover:bg-gray-50 cursor-pointer"
-                              : "bg-white/20 text-white/40 cursor-not-allowed"
-                              }`}
+                            className={`px-4 py-2 rounded-xl font-bold text-sm shadow-lg transition-all flex items-center gap-2 ${
+                              compareList.length >= 2
+                                ? "bg-white text-blue-600 hover:bg-gray-50 cursor-pointer"
+                                : "bg-white/20 text-white/40 cursor-not-allowed"
+                            }`}
                           >
                             <GitCompare size={16} />
                             <span className="hidden sm:inline">Compare</span>
                             {compareList.length > 0 && (
                               <span
-                                className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${compareList.length >= 2 ? "bg-blue-600 text-white" : "bg-white/30 text-white/60"
-                                  }`}
+                                className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${
+                                  compareList.length >= 2 ? "bg-blue-600 text-white" : "bg-white/30 text-white/60"
+                                }`}
                               >
                                 {compareList.length}
                               </span>
@@ -5674,10 +5867,11 @@ export default function DesktopVendorMarketplace() {
                                 showToast("Compare mode activated - Select vendors to compare", "success");
                               }
                             }}
-                            className={`p-2.5 rounded-xl transition-all relative ${compareMode
-                              ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
-                              : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                              }`}
+                            className={`p-2.5 rounded-xl transition-all relative ${
+                              compareMode
+                                ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
+                                : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                            }`}
                             title={compareMode ? "Exit compare mode" : "Enter compare mode"}
                           >
                             <GitCompare size={18} />
@@ -5811,9 +6005,9 @@ export default function DesktopVendorMarketplace() {
                 <motion.div key="vendors" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
                   <div className="relative">
                     {isLoading && (
-                      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 animate-pulse z-10 rounded-full" />
+                      <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500 animate-pulse z-10 rounded-full" />
                     )}
-                    <div className={`grid gap-5 ${gridClass}`}>
+                    <div className={`grid gap-5 transition-all ${gridClass} ${isLoading ? "pointer-events-none opacity-50 pt-5" : ""}`}>
                       {vendors.map((vendor, index) => (
                         <motion.div
                           key={vendor._id}

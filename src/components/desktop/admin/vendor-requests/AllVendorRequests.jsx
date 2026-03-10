@@ -63,21 +63,113 @@ const statusConfig = {
 };
 
 const categoryOptions = [
-  "Event Planner",
-  "Venue",
-  "Photographer",
-  "Decorator",
-  "Caterer",
-  "Makeup Artist",
-  "DJ/Music",
-  "Mehendi Artist",
-  "Cake",
-  "Pandit",
+  { value: "planners", label: "Event Planner" },
+  { value: "venues", label: "Venue" },
+  { value: "photographers", label: "Photographer" },
+  { value: "decorators", label: "Decorator" },
+  { value: "caterer", label: "Caterer" },
+  { value: "makeup", label: "Makeup Artist" },
+  { value: "djs", label: "DJ/Music" },
+  { value: "mehendi", label: "Mehendi Artist" },
+  { value: "cake", label: "Cake" },
+  { value: "pandit", label: "Pandit" },
 ];
 
-const experienceOptions = ["0-1", "1-3", "3-5", "5-10", "10+"];
-const teamSizeOptions = ["1", "2-5", "6-10", "11-20", "20+"];
-const statusOptions = ["RECEIVED", "PROCESSING", "PENDING", "COMPLETED", "FAILED"];
+const experienceOptions = [
+  { value: "0-1", label: "0-1" },
+  { value: "1-3", label: "1-3" },
+  { value: "3-5", label: "3-5" },
+  { value: "5-10", label: "5-10" },
+  { value: "10+", label: "10+" },
+];
+
+const teamSizeOptions = [
+  { value: "1", label: "1" },
+  { value: "2-5", label: "2-5" },
+  { value: "6-10", label: "6-10" },
+  { value: "11-20", label: "11-20" },
+  { value: "20+", label: "20+" },
+];
+
+const statusOptions = [
+  { value: "RECEIVED", label: "Received" },
+  { value: "PROCESSING", label: "Processing" },
+  { value: "PENDING", label: "Pending" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "FAILED", label: "Failed" },
+];
+
+const cityOptions = [
+  { value: "noida", label: "Noida" },
+  { value: "gurgaon", label: "Gurgaon" },
+  { value: "delhi", label: "Delhi" },
+  { value: "mumbai", label: "Mumbai" },
+  { value: "bangalore", label: "Bangalore" },
+  { value: "chennai", label: "Chennai" },
+  { value: "hyderabad", label: "Hyderabad" },
+  { value: "pune", label: "Pune" },
+  { value: "ahmedabad", label: "Ahmedabad" },
+  { value: "jaipur", label: "Jaipur" },
+  { value: "lucknow", label: "Lucknow" },
+  { value: "kanpur", label: "Kanpur" },
+  { value: "nagpur", label: "Nagpur" },
+  { value: "indore", label: "Indore" },
+  { value: "thane", label: "Thane" },
+  { value: "bhopal", label: "Bhopal" },
+  { value: "visakhapatnam", label: "Visakhapatnam" },
+  { value: "pimpri-chinchwad", label: "Pimpri-Chinchwad" },
+  { value: "patna", label: "Patna" },
+  { value: "vadodara", label: "Vadodara" },
+  { value: "ghaziabad", label: "Ghaziabad" },
+  { value: "ludhiana", label: "Ludhiana" },
+  { value: "agra", label: "Agra" },
+  { value: "nashik", label: "Nashik" },
+  { value: "faridabad", label: "Faridabad" },
+  { value: "meerut", label: "Meerut" },
+  { value: "rajkot", label: "Rajkot" },
+  { value: "kalyan", label: "Kalyan" },
+  { value: "vasai-virar", label: "Vasai-Virar" },
+  { value: "varanasi", label: "Varanasi" },
+  { value: "srinagar", label: "Srinagar" },
+  { value: "aurangabad", label: "Aurangabad" },
+  { value: "dhanbad", label: "Dhanbad" },
+  { value: "amritsar", label: "Amritsar" },
+  { value: "navi mumbai", label: "Navi Mumbai" },
+  { value: "allahabad", label: "Allahabad" },
+  { value: "ranchi", label: "Ranchi" },
+  { value: "howrah", label: "Howrah" },
+  { value: "coimbatore", label: "Coimbatore" },
+  { value: "jabalpur", label: "Jabalpur" },
+  { value: "gwalior", label: "Gwalior" },
+  { value: "vijayawada", label: "Vijayawada" },
+  { value: "jodhpur", label: "Jodhpur" },
+  { value: "madurai", label: "Madurai" },
+  { value: "raipur", label: "Raipur" },
+  { value: "kota", label: "Kota" },
+  { value: "guwahati", label: "Guwahati" },
+  { value: "chandigarh", label: "Chandigarh" },
+  { value: "solapur", label: "Solapur" },
+  { value: "hubli-dharwad", label: "Hubli-Dharwad" },
+  { value: "bareilly", label: "Bareilly" },
+  { value: "moradabad", label: "Moradabad" },
+  { value: "mysore", label: "Mysore" },
+  { value: "tiruchirappalli", label: "Tiruchirappalli" },
+  { value: "gurugram", label: "Gurugram" },
+  { value: "aligarh", label: "Aligarh" },
+  { value: "jalandhar", label: "Jalandhar" },
+  { value: "bhubaneswar", label: "Bhubaneswar" },
+  { value: "salem", label: "Salem" },
+  { value: "warangal", label: "Warangal" },
+  { value: "mira-bhayandar", label: "Mira-Bhayandar" },
+  { value: "thiruvananthapuram", label: "Thiruvananthapuram" },
+  { value: "bhiwandi", label: "Bhiwandi" },
+  { value: "saharanpur", label: "Saharanpur" },
+  { value: "guntur", label: "Guntur" },
+  { value: "amravati", label: "Amravati" },
+  { value: "bikaner", label: "Bikaner" },
+  { value: "noida extension", label: "Noida Extension" },
+];
+
 
 export default function AllVendorRequests({ requestType = "vendor", onViewRequest, onEditRequest, onDeleteSuccess, refreshTrigger, onStatsUpdate }) {
   const [requests, setRequests] = useState([]);
@@ -611,14 +703,16 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
   }, [allRequestsData]);
 
   const statusFilterOptions = useMemo(() => {
-    return [
-      { value: "all", label: "All Status" },
-      ...statusOptions.map((status) => ({
-        value: status,
-        label: status.charAt(0).toUpperCase() + status.slice(1).toLowerCase().replace(/_/g, " "),
-      })),
-    ];
-  }, []);
+  return [
+    { value: "all", label: "All Status" },
+    ...statusOptions.map((s) => ({ value: s.value, label: s.label })),
+  ];
+}, []);
+
+const cityFilterOptions = useMemo(
+  () => [{ value: "all", label: "All Cities" }, ...cityOptions],
+  []
+);
 
   const registrationTypeOptions = [
     { value: "all", label: "All Types" },
@@ -758,8 +852,8 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
                   />
                   <FilterDropdown
                     label="City"
-                    options={cityOptions}
-                    value={cityFilter}
+                    options={cityFilterOptions}
+                    value={cityFilterOptions.value}
                     onChange={(val) => {
                       setCityFilter(val);
                       setCurrentPage(1);
@@ -1200,10 +1294,10 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
                         >
                           <option value="">Select Category</option>
                           {categoryOptions.map((cat) => (
-                            <option key={cat} value={cat}>
-                              {cat}
-                            </option>
-                          ))}
+  <option key={cat.value} value={cat.value}>
+    {cat.label}
+  </option>
+))}
                         </select>
                       </div>
 
@@ -1218,10 +1312,10 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
                         >
                           <option value="">Select Experience</option>
                           {experienceOptions.map((exp) => (
-                            <option key={exp} value={exp}>
-                              {exp} years
-                            </option>
-                          ))}
+  <option key={exp.value} value={exp.value}>
+    {exp.label} years
+  </option>
+))}
                         </select>
                       </div>
 
@@ -1234,10 +1328,10 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
                         >
                           <option value="">Select Team Size</option>
                           {teamSizeOptions.map((size) => (
-                            <option key={size} value={size}>
-                              {size} members
-                            </option>
-                          ))}
+  <option key={size.value} value={size.value}>
+    {size.label} members
+  </option>
+))}
                         </select>
                       </div>
                     </>
@@ -1251,10 +1345,10 @@ export default function AllVendorRequests({ requestType = "vendor", onViewReques
                       className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     >
                       {statusOptions.map((status) => (
-                        <option key={status} value={status}>
-                          {status.charAt(0).toUpperCase() + status.slice(1).toLowerCase().replace(/_/g, " ")}
-                        </option>
-                      ))}
+  <option key={status.value} value={status.value}>
+    {status.label}
+  </option>
+))}
                     </select>
                   </div>
 
@@ -1630,9 +1724,9 @@ const FilterDropdown = ({ label, options, value, onChange, icon: Icon }) => {
               exit={{ opacity: 0, y: -10 }}
               className="absolute top-full left-0 mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-20 overflow-hidden max-h-60 overflow-y-auto"
             >
-              {options.map((option) => (
+              {options.map((option, index) => (
                 <button
-                  key={option.value}
+                  key={option.value || `option-${index}`}
                   onClick={() => {
                     onChange(option.value);
                     setIsOpen(false);
@@ -2031,93 +2125,6 @@ const RequestTableRow = ({ request, requestType, onAction }) => {
       </tr>
     );
 
-  }
-
-  if (requestType === "planning-tools") {
-    return (
-      <tr className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors group">
-
-        {/* Event Name */}
-        <td className="px-4 py-3">
-          <div className="flex items-center gap-3">
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
-                {request.name || "Unnamed Event"}
-              </h3>
-              <p className="text-xs text-gray-500 dark:text-gray-400">
-                {request.venue || "No Venue"}
-              </p>
-            </div>
-          </div>
-        </td>
-
-        {/* User ID */}
-        <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
-          {request.userId}
-        </td>
-
-        {/* Category */}
-        <td className="px-4 py-3 hidden md:table-cell text-sm text-gray-600 dark:text-gray-300 capitalize">
-          {request.category || "N/A"}
-        </td>
-        <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
-          {request.guestCount || 0}
-        </td>
-
-        {/* Venue */}
-        <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
-          {request.venue || "N/A"}
-        </td>
-
-        {/* Date */}
-        <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
-          {request.date
-            ? new Date(request.date).toLocaleDateString()
-            : "N/A"}
-        </td>
-
-        {/* Budget */}
-        <td className="px-4 py-3 hidden lg:table-cell text-sm text-gray-600 dark:text-gray-300">
-          ₹{request.budget?.toLocaleString() || 0}
-        </td>
-
-        {/* Status */}
-        <td className="px-4 py-3">
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 capitalize">
-            {request.status || "unknown"}
-          </span>
-        </td>
-
-        {/* Actions */}
-        <td className="px-4 py-3 text-right">
-          <div className="flex items-center justify-end gap-2">
-            <button
-              onClick={() => onAction("view", request)}
-              className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
-              title="View Event"
-            >
-              <Eye size={16} />
-            </button>
-
-            <button
-              onClick={() => onAction("edit", request)}
-              className="p-1.5 text-gray-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"
-              title="Edit Event"
-            >
-              <Edit size={16} />
-            </button>
-
-            <button
-              onClick={() => onAction("delete", request)}
-              className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-              title="Delete Event"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
-        </td>
-      </tr>
-    );
   }
 
   // Default: Vendor
