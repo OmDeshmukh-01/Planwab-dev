@@ -1,7 +1,7 @@
 "use client";
 
-import { memo, useEffect, useMemo, useState, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { motion } from "framer-motion";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useCategoryStore } from "@/GlobalState/CategoryStore";
 import HeroSection from "../HomePage/HeroSection";
@@ -10,14 +10,12 @@ import HowItWorksSection from "../HomePage/HowItWorks";
 import Testimonials from "../HomePage/TestimonialsSection";
 import VendorsCatSection from "../HomePage/VendorsSection";
 import FloatingLines from "../ui/FloatingLinesUiEffect";
-import CategoriesGridSection from "../HomePage/CategoriesGrid";
 import WeddingPlanningTools from "../HomePage/PlanningTools";
 import LandingCarousel from "../VendorsCarousel1";
 import { Camera, MapPin, PersonStanding } from "lucide-react";
 import CarouselHeader from "../CarouselHeader";
 import CardsWithBanner from "../HomePage/CardsWithBanner";
 
-// ── Theme Definitions ──
 export const categoryThemes = {
   Events: {
     glow: "bg-violet-500/10 dark:bg-violet-500/20",
@@ -77,7 +75,6 @@ export const categoryThemes = {
   },
 };
 
-// ── Category Cards Data ──
 export const categoryCards = [
   {
     name: "Events",
@@ -109,7 +106,6 @@ export const categoryCards = [
   },
 ];
 
-// ── Carousel Images per Category ──
 export const carouselImages = {
   Events: [
     "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429490/events_osoyqb.png",
@@ -133,7 +129,6 @@ export const carouselImages = {
   ],
 };
 
-// ── Right-side Hero Images ──
 export const heroSideImages = {
   Events: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429708/eventsRight_y1ay0u.jpg",
   Wedding: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429711/weddingRight_e2atzb.jpg",
@@ -141,15 +136,15 @@ export const heroSideImages = {
   Birthday: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429701/birthdayRight_tox6wr.jpg",
 };
 
-const CategoryButton = ({ category, imageSrc, active }) => {
-  const inactiveImages = {
-    Wedding: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429996/WeddingHeaderCard_vslgmt.png",
-    Anniversary: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429999/AnniversaryHeaderCard_garm4n.png",
-    Birthday: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429994/BirthdayHeaderCard_nat4mj.png",
-    Events: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429994/EventsHeaderCard_ppcemp.png",
-  };
+const INACTIVE_IMAGES = {
+  Wedding: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429996/WeddingHeaderCard_vslgmt.png",
+  Anniversary: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429999/AnniversaryHeaderCard_garm4n.png",
+  Birthday: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429994/BirthdayHeaderCard_nat4mj.png",
+  Events: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771429994/EventsHeaderCard_ppcemp.png",
+};
 
-  const backgroundImage = active ? imageSrc : inactiveImages[category] || "/sample-image.png";
+const CategoryButton = ({ category, imageSrc, active }) => {
+  const backgroundImage = active ? imageSrc : INACTIVE_IMAGES[category] || "/sample-image.png";
 
   return (
     <div
@@ -169,19 +164,14 @@ const CategoryButton = ({ category, imageSrc, active }) => {
         backgroundRepeat: "no-repeat",
       }}
     >
-      {/* Overlay (only for active) */}
       {active && (
         <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/70 via-black/40 to-transparent rounded-b-xl pointer-events-none"></div>
       )}
-
-      {/* Bottom Center Text (only for active) */}
       {active && (
         <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 z-10">
           <span className="text-white text-base font-bold whitespace-nowrap">{category}</span>
         </div>
       )}
-
-      {/* Bottom Indicator (unchanged) */}
       <div
         className={`
           absolute bottom-0 left-1/2 transform -translate-x-1/2 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full
@@ -200,7 +190,6 @@ const categoryGradients = {
   Birthday: ["#FCD34D", "#D97706"],
 };
 
-// ── Category-Specific API Configuration ──
 const CATEGORY_SECTIONS_CONFIG = {
   Events: {
     featured: {
@@ -233,13 +222,7 @@ const CATEGORY_SECTIONS_CONFIG = {
       title: "DJs & Entertainment",
       subtitle: "Keep your guests entertained",
     },
-    // decorators: {
-    //   query: "categories=decorators&sortBy=rating&limit=12&sortOrder=desc&page=1",
-    //   title: "Event Decorators",
-    //   subtitle: "Transform your venue beautifully",
-    // },
   },
-
   Wedding: {
     featured: {
       query: "featured=true&sortBy=rating&limit=12&sortOrder=desc&page=2",
@@ -287,7 +270,6 @@ const CATEGORY_SECTIONS_CONFIG = {
       subtitle: "Music that makes memories",
     },
   },
-
   Anniversary: {
     featured: {
       query: "featured=true&sortBy=rating&limit=12&sortOrder=desc&page=3",
@@ -324,18 +306,7 @@ const CATEGORY_SECTIONS_CONFIG = {
       title: "Anniversary Caterers",
       subtitle: "Fine dining for your celebration",
     },
-    // decorators: {
-    //   query: "categories=decorators&sortBy=rating&limit=12&sortOrder=desc&page=3",
-    //   title: "Decorators",
-    //   subtitle: "Romantic ambiance for your day",
-    // },
-    // florists: {
-    //   query: "categories=florists&sortBy=rating&limit=12&sortOrder=desc&page=3",
-    //   title: "Florists",
-    //   subtitle: "Beautiful flowers for your anniversary",
-    // },
   },
-
   Birthday: {
     featured: {
       query: "featured=true&sortBy=rating&limit=12&sortOrder=desc&page=4",
@@ -357,16 +328,6 @@ const CATEGORY_SECTIONS_CONFIG = {
       title: "Birthday Party Venues",
       subtitle: "Fun spaces for every age",
     },
-    // cakes: {
-    //   query: "categories=cakes&sortBy=rating&limit=12&sortOrder=desc&page=4",
-    //   title: "Cake Designers",
-    //   subtitle: "Custom cakes that wow",
-    // },
-    // decorators: {
-    //   query: "categories=decors&sortBy=rating&limit=12&sortOrder=desc&page=4",
-    //   title: "Birthday Decorators",
-    //   subtitle: "Themed decorations that delight",
-    // },
     catering: {
       query: "categories=catering&sortBy=rating&limit=12&sortOrder=desc&page=1",
       title: "Party Caterers",
@@ -375,32 +336,106 @@ const CATEGORY_SECTIONS_CONFIG = {
   },
 };
 
+const CAROUSEL_HEADER_IMAGES = {
+  events: {
+    featured: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594539/FeaturedVendorsEventsDesktopCarHeaderCard_efnzy5.avif",
+    planners: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594691/PlannersEventsDesktopCarHeaderCard_g7uva8.png",
+    photographers: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594540/PhotoGrapherEventsDesktopCarHeaderCard_dhs5tk.avif",
+    venues: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594540/VenuesEventsDesktopCarHeaderCard_itlslv.webp",
+    makeup: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594540/MakeUpEventsDesktopCarHeaderCard_z8xdef.avif",
+    catering: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105015/CateringVendorsEventsDesktopCarHeaderCard_wdqf9t.avif",
+    djs: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105012/DjsEventsDesktopCarHeaderCard_oyj1cv.avif",
+    decorators: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105013/DecorsEventsDesktopCarHeaderCard_oek0kn.webp",
+    cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597012/EventsCWB_femplz.webp",
+  },
+  wedding: {
+    featured: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/FeaturedVendorsWeddingDesktopCarHeaderCard_ycnu2l.avif",
+    planners: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771517863/plannerWeddingDesktopCarHeaderCard_p38nbw.png",
+    photographers: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/PhotoGrapherWeddingDesktopCarHeaderCard_vqbl4p.avif",
+    venues: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/VenuesWeddingDesktopCarHeaderCard_n3iamk.webp",
+    makeup: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/MakeUpWeddingDesktopCarHeaderCard_bmnfxf.avif",
+    catering: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104867/CateringVendorsWeddingDesktopCarHeaderCard_cvi6cd.avif",
+    decorators: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104866/DecorsWeddingDesktopCarHeaderCard_odfjpx.webp",
+    florists: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104865/floristsWeddingDesktopCarHeaderCard_jfx1fu.avif",
+    invitations: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105152/InvitationsWeddingDesktopCarHeaderCard_cxalqt.avif",
+    mehendi: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105477/MehendiWeddingDesktopCarHeaderCard_doklaf.avif",
+    cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597043/WeddingCWB_g5s05q.webp",
+  },
+  anniversary: {
+    featured: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595640/FeaturedVendorsAnniversaryDesktopCarHeaderCard_ah2nd6.avif",
+    planners: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595655/PlannersAnniversaryDesktopCarHeaderCard_hasn0v.png",
+    photographers: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595642/PhotoGrapherAnniversaryDesktopCarHeaderCard_pvczsj.avif",
+    venues: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595641/VenuesAnniversaryDesktopCarHeaderCard_r5eci4.webp",
+    makeup: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595640/MakeUpAnniversaryDesktopCarHeaderCard_ei91ro.avif",
+    catering: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104702/CateringVendorsAnniversaryDesktopCarHeaderCard_k5kwjl.avif",
+    decorators: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104711/DecorsAnniversaryDesktopCarHeaderCard_jgi3d7.webp",
+    florists: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104741/floristsAnniversaryDesktopCarHeaderCard_n5i10s.avif",
+    cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597071/AnniversaryCWB_h9zf4i.webp",
+  },
+  birthday: {
+    featured: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595843/FeaturedVendorsBirthdayDesktopCarHeaderCard_txxlmq.avif",
+    planners: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595857/PlannersBirthdayDesktopCarHeaderCard_aw3owa.png",
+    photographers: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595846/PhotoGrapherBirthdayDesktopCarHeaderCard_pyxcu6.avif",
+    venues: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595844/VenuesBirthdayDesktopCarHeaderCard_y7mr16.webp",
+    makeup: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595844/MakeUpBirthdayDesktopCarHeaderCard_yqp2u4.avif",
+    cakes: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104510/CakesBirthdayDesktopCarHeaderCard_xcyw37.avif",
+    decorators: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104510/DecorsBirthdayDesktopCarHeaderCard_f7hvtq.webp",
+    entertainment: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104511/EntertainmentGrapherBirthdayDesktopCarHeaderCard_zjvbai.avif",
+    catering: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104510/CateringVendorsBirthdayDesktopCarHeaderCard_xlu8w4.avif",
+    cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597110/BirthdayCWB_xzl9iq.webp",
+  },
+};
+
+const DEFAULT_CATEGORY = "Wedding";
+
+function resolveCategory(raw) {
+  if (raw && CATEGORY_SECTIONS_CONFIG[raw]) return raw;
+  return DEFAULT_CATEGORY;
+}
+
+function buildEmptySections(category) {
+  const config = CATEGORY_SECTIONS_CONFIG[resolveCategory(category)];
+  return Object.keys(config).reduce((acc, key) => {
+    acc[key] = { data: [], loading: true, error: null };
+    return acc;
+  }, {});
+}
+
 export default function DesktopHomePageWrapper() {
-  const { activeCategoryDesktop: activeCategory, setActiveCategoryDesktop: setActiveCategory } = useCategoryStore();
+  const { activeCategoryDesktop: rawActiveCategory, setActiveCategoryDesktop: setActiveCategory } = useCategoryStore();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [sections, setSections] = useState(() => {
-    const initialCategory = activeCategory || "Wedding";
-    const config = CATEGORY_SECTIONS_CONFIG[initialCategory] || CATEGORY_SECTIONS_CONFIG.Wedding;
+  const sectionsCategoryRef = useRef(null);
+  const initializedRef = useRef(false);
 
-    return Object.keys(config).reduce((acc, key) => {
-      acc[key] = { data: [], loading: true, error: null };
-      return acc;
-    }, {});
-  });
+  const activeCategory = resolveCategory(rawActiveCategory);
 
-  // Get current category configuration
-  const currentCategoryConfig = useMemo(() => {
-    const config = CATEGORY_SECTIONS_CONFIG[activeCategory];
-    if (!config) {
-      console.warn(`Configuration not found for category: ${activeCategory}, using Wedding`);
-      return CATEGORY_SECTIONS_CONFIG.Wedding;
+  const [sections, setSections] = useState(() => buildEmptySections(activeCategory));
+
+  // Sync store if raw value was invalid
+  useEffect(() => {
+    if (!rawActiveCategory || !CATEGORY_SECTIONS_CONFIG[rawActiveCategory]) {
+      setActiveCategory(DEFAULT_CATEGORY);
     }
-    return config;
+  }, [rawActiveCategory, setActiveCategory]);
+
+  // Sync from URL search params on mount
+  useEffect(() => {
+    const paramCategory = searchParams.get("category");
+    if (paramCategory) {
+      const formatted = paramCategory.charAt(0).toUpperCase() + paramCategory.slice(1).toLowerCase();
+      if (categoryThemes[formatted] && formatted !== rawActiveCategory) {
+        setActiveCategory(formatted);
+      }
+    }
+    initializedRef.current = true;
+  }, [searchParams, setActiveCategory, rawActiveCategory]);
+
+  const currentCategoryConfig = useMemo(() => {
+    return CATEGORY_SECTIONS_CONFIG[activeCategory];
   }, [activeCategory]);
 
-  // Get section keys for current category
   const currentSectionKeys = useMemo(() => {
     return Object.keys(currentCategoryConfig);
   }, [currentCategoryConfig]);
@@ -409,273 +444,140 @@ export default function DesktopHomePageWrapper() {
     setIsDarkMode(document.documentElement.classList.contains("dark"));
   }, []);
 
+  // Data fetching effect — keyed on the resolved (safe) activeCategory
   useEffect(() => {
-    const paramCategory = searchParams.get("category");
-    if (paramCategory) {
-      const formatted = paramCategory.charAt(0).toUpperCase() + paramCategory.slice(1).toLowerCase();
-      if (categoryThemes[formatted]) {
-        setActiveCategory(formatted);
-      }
-    }
-  }, [searchParams, setActiveCategory]);
-
-  const fetchSection = useCallback(async (key, query, signal) => {
-    if (!key || !query) {
-      console.error(`Invalid parameters for fetchSection: key=${key}, query=${query}`);
-      return;
-    }
-
-    setSections((prev) => ({
-      ...prev,
-      [key]: { ...prev[key], loading: true, error: null },
-    }));
-
-    try {
-      const res = await fetch(`/api/vendor?${query}`, { signal });
-
-      if (!res.ok) {
-        throw new Error(`HTTP error! status: ${res.status}`);
-      }
-
-      const json = await res.json();
-
-      if (!signal?.aborted) {
-        setSections((prev) => ({
-          ...prev,
-          [key]: {
-            data: Array.isArray(json?.data) ? json.data : [],
-            loading: false,
-            error: null,
-          },
-        }));
-      }
-    } catch (error) {
-      if (error.name === "AbortError") {
-        console.log(`Fetch aborted for ${key}`);
-        return;
-      }
-
-      console.error(`Error fetching ${key}:`, error);
-
-      if (!signal?.aborted) {
-        setSections((prev) => ({
-          ...prev,
-          [key]: {
-            data: [],
-            loading: false,
-            error: error.message || "Failed to fetch data",
-          },
-        }));
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!activeCategory || !CATEGORY_SECTIONS_CONFIG[activeCategory]) {
-      console.warn(`Invalid category: ${activeCategory}, using default Wedding`);
-      return;
-    }
-
-    const abortController = new AbortController();
     const categoryConfig = CATEGORY_SECTIONS_CONFIG[activeCategory];
+    if (!categoryConfig) return;
+
+    const categoryAtFetchTime = activeCategory;
+    const abortController = new AbortController();
+    const { signal } = abortController;
+
+    sectionsCategoryRef.current = categoryAtFetchTime;
 
     setSections(
       Object.keys(categoryConfig).reduce((acc, key) => {
         acc[key] = { data: [], loading: true, error: null };
         return acc;
-      }, {}),
+      }, {})
     );
 
-    const fetchPromises = Object.entries(categoryConfig).map(([key, config]) => {
-      if (config?.query) {
-        return fetchSection(key, config.query, abortController.signal);
-      } else {
-        console.warn(`Invalid config for section ${key}:`, config);
-        return Promise.resolve();
-      }
-    });
-
-    Promise.allSettled(fetchPromises).then((results) => {
-      results.forEach((result, index) => {
-        if (result.status === "rejected") {
-          const sectionKey = Object.keys(categoryConfig)[index];
-          console.error(`Failed to fetch section ${sectionKey}:`, result.reason);
+    const fetchOne = async (key, query) => {
+      const url = `/api/vendor?${query}`;
+      try {
+        const res = await fetch(url, { signal });
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          throw new Error(`HTTP ${res.status}: ${text.slice(0, 120)}`);
         }
-      });
+        const json = await res.json();
+
+        if (signal.aborted || sectionsCategoryRef.current !== categoryAtFetchTime) return;
+
+        const data = Array.isArray(json?.data) ? json.data : [];
+        setSections((prev) => ({
+          ...prev,
+          [key]: { data, loading: false, error: null },
+        }));
+      } catch (err) {
+        if (err.name === "AbortError") return;
+        if (sectionsCategoryRef.current !== categoryAtFetchTime) return;
+
+        setSections((prev) => ({
+          ...prev,
+          [key]: { data: [], loading: false, error: err.message },
+        }));
+      }
+    };
+
+    Object.entries(categoryConfig).forEach(([key, config]) => {
+      if (config?.query) {
+        fetchOne(key, config.query);
+      } else {
+        setSections((prev) => ({
+          ...prev,
+          [key]: { data: [], loading: false, error: "No query configured" },
+        }));
+      }
     });
 
     return () => {
       abortController.abort();
     };
-  }, [activeCategory, fetchSection]);
+  }, [activeCategory]);
 
-  const handleCategoryChange = (categoryName) => {
-    setActiveCategory(categoryName);
-    router.push(`?category=${categoryName.toLowerCase()}`, { scroll: false });
-  };
+  const handleCategoryChange = useCallback(
+    (categoryName) => {
+      const resolved = resolveCategory(categoryName);
+      setActiveCategory(resolved);
+      router.push(`?category=${resolved.toLowerCase()}`, { scroll: false });
+    },
+    [setActiveCategory, router]
+  );
 
   const currentTheme = useMemo(() => {
-    const theme = categoryThemes[activeCategory];
-    if (!theme) {
-      console.warn(`Theme not found for category: ${activeCategory}, using Events theme`);
-      return categoryThemes.Events;
-    }
-    return theme;
+    return categoryThemes[activeCategory] || categoryThemes[DEFAULT_CATEGORY];
   }, [activeCategory]);
+
   const activeCategoryData = useMemo(() => {
-    const data = categoryCards.find((c) => c.name === activeCategory);
-    if (!data) {
-      console.warn(`Category data not found for: ${activeCategory}, using default`);
-      return categoryCards[0];
-    }
-    return data;
+    return categoryCards.find((c) => c.name === activeCategory) || categoryCards[0];
   }, [activeCategory]);
 
-  const cardsData1 = [
-    {
-      title: `${activeCategory === "Default" ? "Event" : activeCategory} Planner`,
-      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428626/PlannerCat_p16v2m.png",
-      link: "/vendors/marketplace/planners",
-    },
-    {
-      title: "Photographer",
-      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428623/PhotographerCat_ymq0vh.png",
-      link: "/vendors/marketplace/photographers",
-    },
-    {
-      title: "mehendi",
-      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428620/MehndiCat_hdsxxo.png",
-      link: "/vendors/marketplace/mehendi",
-    },
-    {
-      title: "MakeUp",
-      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428617/MakeUpCat_lcp68d.png",
-      link: "/vendors/marketplace/makeup",
-    },
-    {
-      title: `${activeCategory} Venues`,
-      image:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771518098/Hydra_Category_Wedding_Season-18-11-25_yrbjzq.webp",
-      link: "/vendors/marketplace/venues",
-    },
-    {
-      title: "DJs & Sound",
-      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428615/DJCat_hay9fu.png",
-      link: "/vendors/marketplace/djs",
-    },
-    {
-      title: "Dhol",
-      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428613/DholCat_swqr0p.png",
-      link: "/vendors/marketplace/dhol",
-    },
-    {
-      title: "Caterers",
-      image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428610/CaterorsCat_pch4d5.png",
-      link: "/vendors/marketplace/catering",
-    },
-  ];
-
-  const CarouselHeaderImages = {
-    events: {
-      featured:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594539/FeaturedVendorsEventsDesktopCarHeaderCard_efnzy5.avif",
-      planners:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594691/PlannersEventsDesktopCarHeaderCard_g7uva8.png",
-      photographers:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594540/PhotoGrapherEventsDesktopCarHeaderCard_dhs5tk.avif",
-      venues:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594540/VenuesEventsDesktopCarHeaderCard_itlslv.webp",
-      makeup:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771594540/MakeUpEventsDesktopCarHeaderCard_z8xdef.avif",
-      catering:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105015/CateringVendorsEventsDesktopCarHeaderCard_wdqf9t.avif",
-      djs: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105012/DjsEventsDesktopCarHeaderCard_oyj1cv.avif",
-      decorators:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105013/DecorsEventsDesktopCarHeaderCard_oek0kn.webp",
-
-      cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597012/EventsCWB_femplz.webp",
-    },
-    wedding: {
-      featured:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/FeaturedVendorsWeddingDesktopCarHeaderCard_ycnu2l.avif",
-      planners:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771517863/plannerWeddingDesktopCarHeaderCard_p38nbw.png",
-      photographers:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/PhotoGrapherWeddingDesktopCarHeaderCard_vqbl4p.avif",
-      venues:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/VenuesWeddingDesktopCarHeaderCard_n3iamk.webp",
-      makeup:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771591300/MakeUpWeddingDesktopCarHeaderCard_bmnfxf.avif",
-      catering:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104867/CateringVendorsWeddingDesktopCarHeaderCard_cvi6cd.avif",
-      decorators:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104866/DecorsWeddingDesktopCarHeaderCard_odfjpx.webp",
-      florists:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104865/floristsWeddingDesktopCarHeaderCard_jfx1fu.avif",
-      invitations:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105152/InvitationsWeddingDesktopCarHeaderCard_cxalqt.avif",
-      mehendi: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772105477/MehendiWeddingDesktopCarHeaderCard_doklaf.avif",  
-
-      cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597043/WeddingCWB_g5s05q.webp",
-    },
-    anniversary: {
-      featured:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595640/FeaturedVendorsAnniversaryDesktopCarHeaderCard_ah2nd6.avif",
-      planners:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595655/PlannersAnniversaryDesktopCarHeaderCard_hasn0v.png",
-      photographers:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595642/PhotoGrapherAnniversaryDesktopCarHeaderCard_pvczsj.avif",
-      venues:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595641/VenuesAnniversaryDesktopCarHeaderCard_r5eci4.webp",
-      makeup:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595640/MakeUpAnniversaryDesktopCarHeaderCard_ei91ro.avif",
-      catering:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104702/CateringVendorsAnniversaryDesktopCarHeaderCard_k5kwjl.avif",
-      decorators:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104711/DecorsAnniversaryDesktopCarHeaderCard_jgi3d7.webp",
-      florists:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104741/floristsAnniversaryDesktopCarHeaderCard_n5i10s.avif",
-
-      cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597071/AnniversaryCWB_h9zf4i.webp",
-    },
-    birthday: {
-      featured:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595843/FeaturedVendorsBirthdayDesktopCarHeaderCard_txxlmq.avif",
-      planners:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595857/PlannersBirthdayDesktopCarHeaderCard_aw3owa.png",
-      photographers:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595846/PhotoGrapherBirthdayDesktopCarHeaderCard_pyxcu6.avif",
-      venues:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595844/VenuesBirthdayDesktopCarHeaderCard_y7mr16.webp",
-      makeup:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771595844/MakeUpBirthdayDesktopCarHeaderCard_yqp2u4.avif",
-      cakes:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104510/CakesBirthdayDesktopCarHeaderCard_xcyw37.avif",
-      decorators:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104510/DecorsBirthdayDesktopCarHeaderCard_f7hvtq.webp",
-      entertainment:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104511/EntertainmentGrapherBirthdayDesktopCarHeaderCard_zjvbai.avif",
-      catering:
-        "https://res.cloudinary.com/dhkkvo36x/image/upload/v1772104510/CateringVendorsBirthdayDesktopCarHeaderCard_xlu8w4.avif",
-
-      cardsWithBanner1: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771597110/BirthdayCWB_xzl9iq.webp",
-    },
-  };
+  const cardsData1 = useMemo(
+    () => [
+      {
+        title: `${activeCategory} Planner`,
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428626/PlannerCat_p16v2m.png",
+        link: "/vendors/marketplace/planners",
+      },
+      {
+        title: "Photographer",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428623/PhotographerCat_ymq0vh.png",
+        link: "/vendors/marketplace/photographers",
+      },
+      {
+        title: "mehendi",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428620/MehndiCat_hdsxxo.png",
+        link: "/vendors/marketplace/mehendi",
+      },
+      {
+        title: "MakeUp",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428617/MakeUpCat_lcp68d.png",
+        link: "/vendors/marketplace/makeup",
+      },
+      {
+        title: `${activeCategory} Venues`,
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771518098/Hydra_Category_Wedding_Season-18-11-25_yrbjzq.webp",
+        link: "/vendors/marketplace/venues",
+      },
+      {
+        title: "DJs & Sound",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428615/DJCat_hay9fu.png",
+        link: "/vendors/marketplace/djs",
+      },
+      {
+        title: "Dhol",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428613/DholCat_swqr0p.png",
+        link: "/vendors/marketplace/dhol",
+      },
+      {
+        title: "Caterers",
+        image: "https://res.cloudinary.com/dhkkvo36x/image/upload/v1771428610/CaterorsCat_pch4d5.png",
+        link: "/vendors/marketplace/catering",
+      },
+    ],
+    [activeCategory]
+  );
 
   const carouselHeaderImagesCategoryWise = useMemo(() => {
-    return CarouselHeaderImages[activeCategory.toLowerCase()] || CarouselHeaderImages.wedding;
+    return CAROUSEL_HEADER_IMAGES[activeCategory.toLowerCase()] || CAROUSEL_HEADER_IMAGES.wedding;
   }, [activeCategory]);
 
-  // Helper to safely render carousel with category-specific data
   const renderCarouselSection = useCallback(
-    (sectionKey, icon, accentColor = "#ec4899") => {
+    (sectionKey, icon) => {
       const sectionData = sections[sectionKey];
       const sectionConfig = currentCategoryConfig[sectionKey];
-
-      if (!sectionData || !sectionConfig) {
-        console.warn(`Section ${sectionKey} not configured for category ${activeCategory}`);
-        return null;
-      }
+      if (!sectionData || !sectionConfig) return null;
 
       return (
         <LandingCarousel
@@ -690,18 +592,16 @@ export default function DesktopHomePageWrapper() {
         />
       );
     },
-    [sections, currentCategoryConfig, activeCategory, currentTheme],
+    [sections, currentCategoryConfig, activeCategory, currentTheme]
   );
 
-  // Helper to render carousel header
   const renderCarouselHeader = useCallback(
     (sectionKey, contentSide = "left") => {
       const sectionConfig = currentCategoryConfig[sectionKey];
-
       if (!sectionConfig) return null;
 
       const categoryLower = activeCategory.toLowerCase();
-      const headerImages = CarouselHeaderImages[categoryLower] || CarouselHeaderImages.wedding;
+      const headerImages = CAROUSEL_HEADER_IMAGES[categoryLower] || CAROUSEL_HEADER_IMAGES.wedding;
       const imageSrc = headerImages[sectionKey] || headerImages.featured;
 
       return (
@@ -717,7 +617,7 @@ export default function DesktopHomePageWrapper() {
         />
       );
     },
-    [currentCategoryConfig, activeCategory, currentTheme],
+    [currentCategoryConfig, activeCategory, currentTheme]
   );
 
   return (
@@ -728,23 +628,13 @@ export default function DesktopHomePageWrapper() {
         transition={{ duration: 0.5 }}
         className={`relative z-0 pb-10 ${currentTheme?.bgLight}`}
       >
-        {/* <div
-          className="absolute inset-0 -z-10 dark:hidden"
-          style={{ background: "radial-gradient(125% 125% at 50% 90%, #fff 40%, #f59e0b 100%)" }}
-        />
-        <div
-          className="absolute inset-0 -z-10 hidden dark:block"
-          style={{ background: "radial-gradient(125% 125% at 50% 90%, #0d1117 40%, #451a03 100%)" }}
-        /> */}
         <div className="hidden absolute inset-0 -z-10 dark:block">
           <FloatingLines
             linesGradient={categoryGradients[activeCategory] || categoryGradients.Wedding}
             enabledWaves={["top", "middle", "bottom"]}
           />
         </div>
-        {/* ── Hero with overlapping cards ── */}
         <div className="relative z-50 max-w-7xl mx-auto px-4 pt-34">
-          {/* Category Cards — 70% width, centered, overlapping main card */}
           <div className="relative z-40 flex justify-center mb-[-44px]">
             <div className="flex items-stretch gap-2 w-[72%] h-[90px]">
               <motion.div
@@ -757,7 +647,7 @@ export default function DesktopHomePageWrapper() {
               >
                 <div className="flex min-w-full min-h-full gap-2 items-center bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-800/50 dark:to-gray-900/50 rounded-2xl p-1.5 shadow-inner border border-gray-200/50 dark:border-gray-700/50">
                   {categoryCards.map((cat) => {
-                    const isActive = activeCategory.toLowerCase() === cat.name.toLowerCase();
+                    const isActive = activeCategory === cat.name;
                     return (
                       <div key={cat.name} onClick={() => handleCategoryChange(cat.name)} className="w-full">
                         <CategoryButton category={cat.name} imageSrc={cat.image} active={isActive} />
@@ -768,136 +658,118 @@ export default function DesktopHomePageWrapper() {
               </motion.div>
             </div>
           </div>
-
-          {/* ── Main Content Card ── */}
           <HeroSection activeCategory={activeCategory} theme={currentTheme} categoryData={activeCategoryData} />
         </div>
         <WeddingPlanningTools activeCategory={activeCategory} buttonColor={currentTheme?.gradientLight || "#ec4899"} />
-        {/* White merging effect — light mode only */}
         <div className="pointer-events-none absolute bottom-0 left-0 w-full h-22 dark:hidden">
           <div className="absolute inset-0 bg-gradient-to-t from-white via-white/80 to-transparent" />
         </div>
       </motion.div>
-      {/* ── Rest of Page ── */}
 
-      {/* Dynamic Category-Based Carousels */}
       {currentSectionKeys.includes("planners") && (
         <>
           {renderCarouselHeader("planners", "left")}
-          {renderCarouselSection("planners", PersonStanding, "#ec4899")}
+          {renderCarouselSection("planners", PersonStanding)}
         </>
       )}
 
       {currentSectionKeys.includes("photographers") && (
         <>
           {renderCarouselHeader("photographers", "right")}
-          {renderCarouselSection("photographers", Camera, "#ec4899")}
+          {renderCarouselSection("photographers", Camera)}
         </>
       )}
 
-      {/* Cards With Banner - Only for certain categories */}
-      {(activeCategory === "Events" || activeCategory === "Wedding") && (
         <CardsWithBanner
           heading="Top Categories For You ..."
           contentSide="right"
           backgroundImage={carouselHeaderImagesCategoryWise.cardsWithBanner1}
           cards={cardsData1}
         />
-      )}
 
       {currentSectionKeys.includes("venues") && (
         <>
           {renderCarouselHeader("venues", "left")}
-          {renderCarouselSection("venues", MapPin, "#ec4899")}
+          {renderCarouselSection("venues", MapPin)}
         </>
       )}
 
       {currentSectionKeys.includes("makeup") && (
         <>
           {renderCarouselHeader("makeup", "right")}
-          {renderCarouselSection("makeup", PersonStanding, "#ec4899")}
+          {renderCarouselSection("makeup", PersonStanding)}
         </>
       )}
 
-      {/* Birthday-specific sections */}
       {currentSectionKeys.includes("cakes") && (
         <>
           {renderCarouselHeader("cakes", "left")}
-          {renderCarouselSection("cakes", PersonStanding, "#ec4899")}
+          {renderCarouselSection("cakes", PersonStanding)}
         </>
       )}
 
       {currentSectionKeys.includes("decorators") && (
         <>
           {renderCarouselHeader("decorators", "right")}
-          {renderCarouselSection("decorators", PersonStanding, "#ec4899")}
+          {renderCarouselSection("decorators", PersonStanding)}
         </>
       )}
 
       {currentSectionKeys.includes("entertainment") && (
         <>
           {renderCarouselHeader("entertainment", "left")}
-          {renderCarouselSection("entertainment", PersonStanding, "#ec4899")}
+          {renderCarouselSection("entertainment", PersonStanding)}
         </>
       )}
 
-      {/* Anniversary-specific sections */}
       {currentSectionKeys.includes("florists") && (
         <>
           {renderCarouselHeader("florists", "right")}
-          {renderCarouselSection("florists", PersonStanding, "#ec4899")}
+          {renderCarouselSection("florists", PersonStanding)}
         </>
       )}
 
       {currentSectionKeys.includes("mehendi") && (
         <>
           {renderCarouselHeader("mehendi", "left")}
-          {renderCarouselSection("mehendi", PersonStanding, "#ec4899")}
+          {renderCarouselSection("mehendi", PersonStanding)}
         </>
       )}
 
       {currentSectionKeys.includes("dhol") && (
         <>
           {renderCarouselHeader("dhol", "right")}
-          {renderCarouselSection("dhol", PersonStanding, "#ec4899")}
+          {renderCarouselSection("dhol", PersonStanding)}
         </>
       )}
 
       {currentSectionKeys.includes("catering") && (
         <>
           {renderCarouselHeader("catering", "right")}
-          {renderCarouselSection("catering", PersonStanding, "#ec4899")}
+          {renderCarouselSection("catering", PersonStanding)}
         </>
       )}
 
       {currentSectionKeys.includes("djs") && (
         <>
           {renderCarouselHeader("djs", "left")}
-          {renderCarouselSection("djs", PersonStanding, "#ec4899")}
+          {renderCarouselSection("djs", PersonStanding)}
         </>
       )}
 
       {currentSectionKeys.includes("invitations") && (
         <>
           {renderCarouselHeader("invitations", "right")}
-          {renderCarouselSection("invitations", PersonStanding, "#ec4899")}
-        </>
-      )}
-
-      {currentSectionKeys.includes("dhol") && (
-        <>
-          {renderCarouselHeader("dhol", "left")}
-          {renderCarouselSection("dhol", PersonStanding, "#ec4899")}
+          {renderCarouselSection("invitations", PersonStanding)}
         </>
       )}
 
       <HowItWorksSection buttonColor={currentTheme?.gradientLight || "#ec4899"} />
 
-      {/* Featured Section - Available in all categories */}
       {currentSectionKeys.includes("featured") && (
         <>
           {renderCarouselHeader("featured", "left")}
-          {renderCarouselSection("featured", PersonStanding, "#ec4899")}
+          {renderCarouselSection("featured", PersonStanding)}
         </>
       )}
 

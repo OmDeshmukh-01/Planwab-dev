@@ -159,7 +159,7 @@ const CarouselCard = memo(({ item, index, onAddToCart, isInCart, user, theme }) 
       transition={{ duration: 0.4, delay: index * 0.05 }}
       whileHover={{ y: -8 }}
       onClick={handleCardClick}
-      className="flex-shrink-0 w-64 bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 group cursor-pointer snap-start min-h-[375px] max-h-[378px]"
+      className="flex-shrink-0 w-64 bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl hover:shadow-slate-200/50 transition-all duration-500 group cursor-pointer min-h-[375px] max-h-[378px]"
     >
       {/* Image */}
       <div className="relative h-48 overflow-hidden bg-slate-100">
@@ -273,7 +273,7 @@ const ExploreMoreCard = memo(({ title, onViewAll }) => (
     animate={{ opacity: 1, scale: 1 }}
     whileHover={{ scale: 1.02, y: -4 }}
     onClick={onViewAll}
-    className="flex-shrink-0 w-72 rounded-3xl border-[3px] border-dashed border-slate-200 flex flex-col items-center justify-center text-center p-8 group cursor-pointer hover:border-indigo-300 transition-all duration-500 bg-gradient-to-br from-slate-50/50 to-white snap-start min-h-[375px] max-h-[378px]"
+    className="flex-shrink-0 w-72 rounded-3xl border-[3px] border-dashed border-slate-200 flex flex-col items-center justify-center text-center p-8 group cursor-pointer hover:border-indigo-300 transition-all duration-500 bg-gradient-to-br from-slate-50/50 to-white min-h-[375px] max-h-[378px]"
   >
     <motion.div
       whileHover={{ scale: 1.15, rotate: 90 }}
@@ -336,7 +336,9 @@ export const LandingCarousel = memo(
     icon: Icon = Sparkles,
     theme,
   }) => {
-    const scrollRef = useRef(null);
+    const containerRef = useRef(null);
+const trackRef = useRef(null);
+const [xOffset, setXOffset] = useState(0);
     const router = useRouter();
     const [showLeft, setShowLeft] = useState(false);
     const [showRight, setShowRight] = useState(true);
@@ -344,25 +346,39 @@ export const LandingCarousel = memo(
     const { user } = useUser();
 
     const checkScroll = useCallback(() => {
-      if (scrollRef.current) {
-        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-        setShowLeft(scrollLeft > 10);
-        setShowRight(scrollLeft < scrollWidth - clientWidth - 10);
-      }
-    }, []);
+  if (!containerRef.current || !trackRef.current) return;
+  const containerWidth = containerRef.current.offsetWidth;
+  const trackWidth = trackRef.current.offsetWidth;
+  const maxOffset = -(trackWidth - containerWidth);
+  setShowLeft(xOffset < -10);
+  setShowRight(xOffset > maxOffset + 10);
+}, [xOffset]);
 
-    useEffect(() => {
-      checkScroll();
-      window.addEventListener("resize", checkScroll);
-      return () => window.removeEventListener("resize", checkScroll);
-    }, [checkScroll, items]);
+   useEffect(() => {
+  checkScroll();
+  window.addEventListener("resize", checkScroll);
+  return () => window.removeEventListener("resize", checkScroll);
+}, [checkScroll, items]);
 
-    const scroll = (direction) => {
-      if (scrollRef.current) {
-        const amount = direction === "left" ? -900 : 900;
-        scrollRef.current.scrollBy({ left: amount, behavior: "smooth" });
-      }
-    };
+useEffect(() => {
+  setXOffset(0);
+}, [items.length]);
+
+   const scroll = useCallback(
+  (direction) => {
+    if (!containerRef.current || !trackRef.current) return;
+    const containerWidth = containerRef.current.offsetWidth;
+    const trackWidth = trackRef.current.offsetWidth;
+    const maxOffset = -(trackWidth - containerWidth);
+    const scrollAmount = 272 * 2; // w-64 (256px) + gap-x-4 (16px) × 2 cards
+    const newOffset =
+      direction === "left"
+        ? Math.min(0, xOffset + scrollAmount)
+        : Math.max(maxOffset, xOffset - scrollAmount);
+    setXOffset(newOffset);
+  },
+  [xOffset],
+);
 
     const handleViewAll = () => {
       router.push(`/vendors/marketplace/${items[0]?.category?.toLowerCase() || "planners"}`);
@@ -422,12 +438,14 @@ export const LandingCarousel = memo(
           <NavButton direction="left" onClick={() => scroll("left")} show={showLeft && !isLoading} />
           <NavButton direction="right" onClick={() => scroll("right")} show={showRight && !isLoading} />
 
-          <div
-            ref={scrollRef}
-            onScroll={checkScroll}
-            className="flex gap-6 gap-x-4 overflow-x-auto no-scrollbar pb-4 px-2 snap-x snap-mandatory"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
+          <div ref={containerRef} className="overflow-hidden">
+  <motion.div
+    ref={trackRef}
+    animate={{ x: xOffset }}
+    transition={{ type: "spring", stiffness: 110, damping: 22, mass: 0.85 }}
+    className="flex gap-x-4 pb-4 px-2"
+    style={{ width: "max-content" }}
+  >
             {isLoading ? (
               [...Array(5)].map((_, i) => <CardSkeleton key={i} />)
             ) : (
@@ -446,6 +464,7 @@ export const LandingCarousel = memo(
                 {items.length > 0 && <ExploreMoreCard title={title} onViewAll={handleViewAll} />}
               </>
             )}
+          </motion.div>
           </div>
         </div>
 

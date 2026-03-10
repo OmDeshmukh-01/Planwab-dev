@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useTransition } from "react";
 import Image from "next/image";
 import {
   Globe,
@@ -47,12 +47,12 @@ import {
   Store,
 } from "lucide-react";
 import { useCategoryStore } from "@/GlobalState/CategoryStore";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "@/contexts/ThemeContext";
 import { SignedIn, SignedOut, SignInButton, SignUpButton, useClerk, UserButton, useUser } from "@clerk/nextjs";
-import SearchModal from "./SearchModal";
+import SearchModal, { matchItems, SuggestionList } from "./SearchModal";
 
 const vendorCategories = [
   { key: "venues", label: "Venues", icon: Building2, description: "Banquet halls, hotels, resorts" },
@@ -344,44 +344,125 @@ const ProfileDropdown = ({ isOpen }) => {
 /* ─── Homepage Search Bar ─── */
 const HomeSearchBar = ({ onOpen }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const [query, setQuery] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const wrapperRef = useRef(null);
+  const inputRef = useRef(null);
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+        setIsFocused(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const navigate = (href) => {
+    startTransition(() => router.push(href));
+    setShowSuggestions(false);
+    setQuery("");
+  };
+
+  const handleSearchAll = (q) =>
+    navigate(`/vendors/marketplace?search=${encodeURIComponent(q.trim())}`);
+  const handleVendorSelect = (cat) =>
+    navigate(`/vendors/marketplace/${cat.key}`);
+  const handleServiceSelect = (svc) => navigate(svc.href);
+
+  const handleSubmit = () => {
+    const trimmed = query.trim();
+    if (!trimmed || isPending) return;
+    const { vendors, services } = matchItems(trimmed);
+    if (services.length === 1 && vendors.length === 0) {
+      navigate(services[0].href);
+    } else if (vendors.length === 1 && services.length === 0) {
+      navigate(`/vendors/marketplace/${vendors[0].key}`);
+    } else {
+      handleSearchAll(trimmed);
+    }
+  };
 
   return (
     <motion.div
+      ref={wrapperRef}
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.4, ease: "easeOut" }}
       className="relative w-full max-w-lg"
     >
+      {/* Input */}
       <div className={`relative flex items-center transition-all duration-300 ${isFocused ? "scale-[1.02]" : ""}`}>
         <Search
-          className={`absolute left-4 w-[18px] h-[18px] transition-colors duration-300 ${isFocused ? "text-blue-500" : "text-gray-400 dark:text-gray-500"
-            }`}
+          className={`absolute left-4 w-[18px] h-[18px] transition-colors duration-300 ${
+            isFocused ? "text-blue-500" : "text-gray-400 dark:text-gray-500"
+          }`}
         />
         <input
+          ref={inputRef}
           type="text"
           placeholder="Search vendors, venues, services..."
-          readOnly
-          onClick={() => onOpen?.()}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setShowSuggestions(true);
+          }}
           onFocus={() => {
             setIsFocused(true);
-            onOpen?.();
+            setShowSuggestions(true);
           }}
-          onBlur={() => setIsFocused(false)}
-          className={`w-full pl-11 pr-4 py-2.5 bg-gray-50/80 dark:bg-gray-800/60 border rounded-2xl
+          onKeyDown={(e) => {
+            if (e.key === "Enter") { e.preventDefault(); handleSubmit(); }
+            if (e.key === "Escape") { setShowSuggestions(false); inputRef.current?.blur(); }
+          }}
+          className={`w-full pl-11 pr-16 py-2.5 bg-gray-50/80 dark:bg-gray-800/60 border rounded-2xl
             text-sm text-gray-800 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500
             transition-all duration-300 focus:outline-none cursor-text
-            ${isFocused
-              ? "border-blue-400/70 dark:border-blue-500/60 ring-[3px] ring-blue-500/10 shadow-lg shadow-blue-500/5"
-              : "border-gray-200/70 dark:border-gray-700/50 shadow-sm"
+            ${
+              isFocused
+                ? "border-blue-400/70 dark:border-blue-500/60 ring-[3px] ring-blue-500/10 shadow-lg shadow-blue-500/5"
+                : "border-gray-200/70 dark:border-gray-700/50 shadow-sm"
             }`}
         />
-        <div
-          className={`absolute right-3 px-2 py-1 rounded-lg text-[11px] font-medium tracking-wide transition-all duration-300 ${isFocused ? "bg-blue-500 text-white" : "bg-gray-200/80 dark:bg-gray-700/80 text-gray-400 dark:text-gray-500"
-            }`}
+        <button
+          type="button"
+          onClick={() => onOpen?.()}
+          className={`absolute right-3 px-2 py-1 rounded-lg text-[11px] font-medium tracking-wide transition-all duration-300 ${
+            isFocused
+              ? "bg-blue-500 text-white"
+              : "bg-gray-200/80 dark:bg-gray-700/80 text-gray-400 dark:text-gray-500"
+          }`}
         >
           ⌘K
-        </div>
+        </button>
       </div>
+
+      {/* Inline suggestion dropdown */}
+      <AnimatePresence>
+        {showSuggestions && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
+            className="absolute left-0 right-0 top-full mt-2 bg-white dark:bg-gray-900 border border-gray-200/80 dark:border-gray-700/80 rounded-2xl shadow-xl shadow-black/8 dark:shadow-black/30 z-50 overflow-hidden"
+          >
+            <div className="max-h-[60vh] overflow-y-auto overscroll-contain">
+              <SuggestionList
+                query={query}
+                onVendorSelect={handleVendorSelect}
+                onServiceSelect={handleServiceSelect}
+                onSearchAll={handleSearchAll}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
@@ -1016,16 +1097,16 @@ export default function DesktopHeader() {
   const profileRef = useRef(null);
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-        e.preventDefault();
-        e.stopPropagation();
-        setSearchOpen((prev) => !prev);
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown, { capture: true });
-    return () => document.removeEventListener("keydown", handleKeyDown, { capture: true });
-  }, []);
+  const handleKeyDown = (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+      e.preventDefault();
+      e.stopPropagation();
+      setSearchOpen((prev) => !prev);
+    }
+  };
+  document.addEventListener("keydown", handleKeyDown, { capture: true });
+  return () => document.removeEventListener("keydown", handleKeyDown, { capture: true });
+}, []);
 
   useEffect(() => {
     if (document.body) {
@@ -1141,7 +1222,7 @@ export default function DesktopHeader() {
                     transition={{ duration: 0.3 }}
                     className="w-full"
                   >
-                    <HomeSearchBar onOpen={() => setSearchOpen(true)} />
+                    <HomeSearchBar onOpen={() => setSearchOpen(!searchOpen)} />
                   </motion.div>
                 ) : (
                   <motion.div
