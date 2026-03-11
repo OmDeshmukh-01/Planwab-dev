@@ -4383,8 +4383,8 @@ export default function MarketplacePageWrapper() {
                 /* Sub-Phase A: Results found */
                 <>
                   <div className="relative">
-                    {isLoading && <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500 animate-pulse z-10" />}
-                    <div className={`grid gap-4 ${viewMode === "grid" ? "grid-cols-2" : "grid-cols-1"}`}>
+                    {isLoading && <div className="absolute top-0 left-0 right-0 h-2 bg-blue-500 animate-pulse z-10" />}
+                    <div className={`grid gap-4 ${viewMode === "grid" ? "grid-cols-2" : "grid-cols-1"} transition-all ${isLoading ? "pointer-events-none opacity-50 pt-5" : ""}`}>
                       {vendors.map((vendor, index) => (
                         <motion.div
                           key={vendor._id}
