@@ -1,20 +1,42 @@
 import mongoose from "mongoose";
 
-const highlightItemSchema = new mongoose.Schema({
-  url: { type: String, required: true },
-  type: { type: String, enum: ["image", "video"], default: "image" },
-  comments: [
-    {
-      userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      text: { type: String, required: true },
-      createdAt: { type: Date, default: Date.now },
-    },
-  ],
+const highlightTestimonialSchema = new mongoose.Schema({
+  videoUrl: { type: String, required: true },
+  storagePath: { type: String },
+  thumbnailUrl: { type: String },
+  thumbnailPath: { type: String },
+  personName: { type: String, default: "" },
+  createdAt: { type: Date, default: Date.now },
 });
 
 const highlightSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  items: [highlightItemSchema],
+  title: { type: String, required: true, trim: true },
+  description: { type: String, default: "", trim: true },
+  eventDate: { type: Date },
+  category: { type: String, default: "", trim: true },
+  subcategory: { type: String, default: "", trim: true },
+  coverImage: { type: String, default: "" },
+  images: [
+    {
+      url: { type: String, required: true },
+      storagePath: { type: String },
+      caption: { type: String, default: "" },
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
+  videos: [
+    {
+      url: { type: String, required: true },
+      storagePath: { type: String },
+      thumbnailUrl: { type: String },
+      thumbnailPath: { type: String },
+      caption: { type: String, default: "" },
+      duration: { type: String, default: "" },
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
+  testimonials: [highlightTestimonialSchema],
+  content: { type: Object, default: {} },
   createdAt: { type: Date, default: Date.now },
 });
 
