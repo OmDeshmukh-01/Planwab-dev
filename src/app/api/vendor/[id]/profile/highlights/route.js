@@ -5,7 +5,7 @@ import VendorProfile from "../../../../../../database/models/VendorProfileModel"
 export async function GET(request, { params }) {
   try {
     await connectToDatabase();
-    const { id } = params;
+    const { id } = await params;
     const profile = await VendorProfile.findOne({ vendorId: id }).select("highlights").lean();
     if (!profile) {
       return NextResponse.json({ success: false, error: "Profile not found" }, { status: 404 });
@@ -19,7 +19,7 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     await connectToDatabase();
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const { title, description, eventDate, category, subcategory, coverImage, images, videos, testimonials, content } = body;
 
@@ -61,7 +61,7 @@ export async function POST(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     await connectToDatabase();
-    const { id } = params;
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const highlightId = searchParams.get("highlightId");
 
@@ -103,7 +103,7 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     await connectToDatabase();
-    const { id } = params;
+    const { id } = await params;
     const { searchParams } = new URL(request.url);
     const highlightId = searchParams.get("highlightId");
 

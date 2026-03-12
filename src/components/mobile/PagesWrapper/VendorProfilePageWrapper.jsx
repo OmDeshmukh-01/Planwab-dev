@@ -8613,9 +8613,30 @@ const HighlightStoryViewer = ({
 }) => {
   const [currentIndex, setCurrentIndex] = useState(Math.max(0, initialIndex));
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [swipeDirection, setSwipeDirection] = useState(0);
+  const [showEndReached, setShowEndReached] = useState(null);
   const containerRef = useRef(null);
   const startXRef = useRef(0);
+  const endReachedTimerRef = useRef(null);
   const currentHighlight = highlights[currentIndex];
+
+  const navigateHighlight = useCallback(
+    (direction) => {
+      if (direction === 1 && currentIndex < highlights.length - 1) {
+        setSwipeDirection(1);
+        setCurrentIndex((p) => p + 1);
+      } else if (direction === -1 && currentIndex > 0) {
+        setSwipeDirection(-1);
+        setCurrentIndex((p) => p - 1);
+      } else {
+        const edge = direction === -1 ? "start" : "end";
+        setShowEndReached(edge);
+        if (endReachedTimerRef.current) clearTimeout(endReachedTimerRef.current);
+        endReachedTimerRef.current = setTimeout(() => setShowEndReached(null), 2000);
+      }
+    },
+    [currentIndex, highlights.length],
+  );
 
   const handleSwipeTouchStart = useCallback((e) => {
     startXRef.current = e.touches[0].clientX;
@@ -8625,32 +8646,32 @@ const HighlightStoryViewer = ({
     (e) => {
       const diff = startXRef.current - e.changedTouches[0].clientX;
       if (Math.abs(diff) > 60) {
-        if (diff > 0 && currentIndex < highlights.length - 1) {
-          setCurrentIndex((p) => p + 1);
-        } else if (diff < 0 && currentIndex > 0) {
-          setCurrentIndex((p) => p - 1);
-        } else if (diff < 0 && currentIndex === 0) {
-          onClose();
-        }
+        navigateHighlight(diff > 0 ? 1 : -1);
       }
     },
-    [currentIndex, highlights.length, onClose],
+    [navigateHighlight],
   );
 
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === "Escape") onClose();
-      if (e.key === "ArrowRight" && currentIndex < highlights.length - 1) setCurrentIndex((p) => p + 1);
-      if (e.key === "ArrowLeft" && currentIndex > 0) setCurrentIndex((p) => p - 1);
+      if (e.key === "ArrowRight") navigateHighlight(1);
+      if (e.key === "ArrowLeft") navigateHighlight(-1);
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [currentIndex, highlights.length, onClose]);
+  }, [navigateHighlight, onClose]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
       document.body.style.overflow = "";
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (endReachedTimerRef.current) clearTimeout(endReachedTimerRef.current);
     };
   }, []);
 
@@ -8670,16 +8691,15 @@ const HighlightStoryViewer = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3 }}
-      className="fixed inset-0 z-[100] bg-black flex items-center justify-center"
+      className="fixed inset-0 z-[100] bg-white dark:bg-black flex items-center justify-center"
       onTouchStart={handleSwipeTouchStart}
       onTouchEnd={handleSwipeTouchEnd}
     >
-      {/* Progress bars */}
       <div className="absolute top-0 left-0 right-0 z-30 flex gap-1 px-3 pt-3">
         {highlights.map((_, idx) => (
-          <div key={idx} className="flex-1 h-[3px] rounded-full overflow-hidden bg-white/20">
+          <div key={idx} className="flex-1 h-[3px] rounded-full overflow-hidden bg-gray-300 dark:bg-white/20">
             <motion.div
-              className="h-full rounded-full bg-white"
+              className="h-full rounded-full bg-gray-800 dark:bg-white"
               initial={{ width: idx < currentIndex ? "100%" : "0%" }}
               animate={{ width: idx <= currentIndex ? "100%" : "0%" }}
               transition={{ duration: 0.3 }}
@@ -8688,19 +8708,24 @@ const HighlightStoryViewer = ({
         ))}
       </div>
 
-      {/* Header */}
       <div className="absolute top-8 left-0 right-0 z-30 px-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/30">
+            <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-300 dark:ring-white/30">
               <img src={vendorImage} alt={vendorName} className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-white text-[13px] font-bold">{vendorUsername || vendorName}</span>
-                {formattedDate && <span className="text-white/50 text-[11px]">{formattedDate}</span>}
+                <span className="text-gray-900 dark:text-white text-[13px] font-bold">
+                  {vendorUsername || vendorName}
+                </span>
+                {formattedDate && (
+                  <span className="text-gray-400 dark:text-white/50 text-[11px]">{formattedDate}</span>
+                )}
               </div>
-              <span className="text-white/70 text-[12px] font-medium">{currentHighlight.title}</span>
+              <span className="text-gray-500 dark:text-white/70 text-[12px] font-medium">
+                {currentHighlight.title}
+              </span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -8709,14 +8734,14 @@ const HighlightStoryViewer = ({
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => onEdit?.(currentHighlight)}
-                  className="p-2 text-white/70 hover:text-white bg-white/10 rounded-full backdrop-blur-sm"
+                  className="p-2 text-gray-500 hover:text-gray-800 dark:text-white/70 dark:hover:text-white bg-gray-100 dark:bg-white/10 rounded-full backdrop-blur-sm"
                 >
                   <Edit2Icon size={16} />
                 </motion.button>
                 <motion.button
                   whileTap={{ scale: 0.9 }}
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="p-2 text-white/70 hover:text-red-400 bg-white/10 rounded-full backdrop-blur-sm"
+                  className="p-2 text-gray-500 hover:text-red-500 dark:text-white/70 dark:hover:text-red-400 bg-gray-100 dark:bg-white/10 rounded-full backdrop-blur-sm"
                 >
                   <Trash2 size={16} />
                 </motion.button>
@@ -8725,7 +8750,7 @@ const HighlightStoryViewer = ({
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={onClose}
-              className="p-2 text-white/70 hover:text-white bg-white/10 rounded-full backdrop-blur-sm"
+              className="p-2 text-gray-500 hover:text-gray-800 dark:text-white/70 dark:hover:text-white bg-gray-100 dark:bg-white/10 rounded-full backdrop-blur-sm"
             >
               <X size={18} />
             </motion.button>
@@ -8733,81 +8758,114 @@ const HighlightStoryViewer = ({
         </div>
       </div>
 
-            {/* Scrollable Content */}
       <div ref={containerRef} className="absolute inset-0 top-24 bottom-0 overflow-y-auto no-scrollbar px-4 pb-20">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" custom={swipeDirection}>
           <motion.div
             key={currentHighlight._id}
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -50 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            custom={swipeDirection}
+            initial={(dir) => ({
+              opacity: 0,
+              x: (dir || swipeDirection) > 0 ? 300 : -300,
+              scale: 0.92,
+            })}
+            animate={{
+              opacity: 1,
+              x: 0,
+              scale: 1,
+            }}
+            exit={(dir) => ({
+              opacity: 0,
+              x: (dir || swipeDirection) > 0 ? -300 : 300,
+              scale: 0.92,
+            })}
+            transition={{
+              type: "spring",
+              stiffness: 320,
+              damping: 30,
+              mass: 0.8,
+              opacity: { duration: 0.2 },
+            }}
             className="max-w-lg mx-auto space-y-5 pt-4"
           >
-            {/* ── Hero Info Card ── */}
-            <div className="bg-white/[0.08] backdrop-blur-xl rounded-2xl border border-white/[0.08] overflow-hidden">
-              {/* Cover image banner */}
-              {currentHighlight.coverImage && (
-                <div className="relative w-full h-32 overflow-hidden">
-                  <img
-                    src={currentHighlight.coverImage}
-                    alt={currentHighlight.title}
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                </div>
-              )}
-
+            <div className="bg-gray-50 dark:bg-white/[0.08] backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-white/[0.08] overflow-hidden shadow-sm">
               <div className="p-4 space-y-3">
-                {/* Title row */}
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="text-white text-[18px] font-bold leading-tight flex-1">
-                    {currentHighlight.title}
-                  </h2>
-                  {formattedDate && (
-                    <span className="text-white/40 text-[11px] font-medium whitespace-nowrap bg-white/5 px-2.5 py-1 rounded-full">
-                      {formattedDate}
-                    </span>
+                <div className="flex items-start gap-4">
+                  {currentHighlight.coverImage && (
+                    <motion.div
+                      initial={{ opacity: 0, scale: 0.85 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                      className="flex-shrink-0"
+                    >
+                      <div
+                        className="w-[72px] h-[72px] rounded-full overflow-hidden p-[3px]"
+                        style={{
+                          background: categoryColor
+                            ? `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`
+                            : "linear-gradient(135deg, #6366f1, #3b82f6)",
+                        }}
+                      >
+                        <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-gray-900 p-[2px]">
+                          <img
+                            src={currentHighlight.coverImage}
+                            alt={currentHighlight.title}
+                            className="w-full h-full object-cover rounded-full"
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
                   )}
+
+                  <div className="flex-1 min-w-0 pt-1">
+                    <div className="flex items-start justify-between gap-2">
+                      <h2 className="text-gray-900 dark:text-white text-[18px] font-bold leading-tight flex-1 truncate">
+                        {currentHighlight.title}
+                      </h2>
+                      {formattedDate && (
+                        <span className="text-gray-400 dark:text-white/40 text-[11px] font-medium whitespace-nowrap bg-gray-100 dark:bg-white/5 px-2.5 py-1 rounded-full flex-shrink-0">
+                          {formattedDate}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Tags */}
                 {(currentHighlight.category || currentHighlight.subcategory) && (
                   <div className="flex items-center gap-2 flex-wrap">
                     {currentHighlight.category && (
-                      <span className="px-3 py-1 bg-white/10 rounded-full text-[11px] text-white/80 font-medium">
+                      <span className="px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-[11px] text-gray-600 dark:text-white/80 font-medium">
                         {currentHighlight.category}
                       </span>
                     )}
                     {currentHighlight.subcategory && (
-                      <span className="px-3 py-1 bg-white/10 rounded-full text-[11px] text-white/70 font-medium">
+                      <span className="px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-[11px] text-gray-500 dark:text-white/70 font-medium">
                         {currentHighlight.subcategory}
                       </span>
                     )}
                   </div>
                 )}
 
-                {/* Description */}
                 {currentHighlight.description && (
-                  <p className="text-white/80 text-[13px] leading-relaxed">{currentHighlight.description}</p>
+                  <p className="text-gray-600 dark:text-white/80 text-[13px] leading-relaxed">
+                    {currentHighlight.description}
+                  </p>
                 )}
 
-                {/* Stats row */}
                 <div className="flex items-center gap-4 pt-1">
                   {currentHighlight.images?.length > 0 && (
-                    <div className="flex items-center gap-1.5 text-white/50 text-[11px]">
+                    <div className="flex items-center gap-1.5 text-gray-400 dark:text-white/50 text-[11px]">
                       <Image size={13} />
                       <span>{currentHighlight.images.length} photos</span>
                     </div>
                   )}
                   {currentHighlight.videos?.length > 0 && (
-                    <div className="flex items-center gap-1.5 text-white/50 text-[11px]">
+                    <div className="flex items-center gap-1.5 text-gray-400 dark:text-white/50 text-[11px]">
                       <Film size={13} />
                       <span>{currentHighlight.videos.length} videos</span>
                     </div>
                   )}
                   {currentHighlight.testimonials?.length > 0 && (
-                    <div className="flex items-center gap-1.5 text-white/50 text-[11px]">
+                    <div className="flex items-center gap-1.5 text-gray-400 dark:text-white/50 text-[11px]">
                       <MessageCircle size={13} />
                       <span>{currentHighlight.testimonials.length} reviews</span>
                     </div>
@@ -8816,10 +8874,9 @@ const HighlightStoryViewer = ({
               </div>
             </div>
 
-            {/* ── Content/Details Card ── */}
             {currentHighlight.content && Object.keys(currentHighlight.content).length > 0 && (
-              <div className="bg-white/[0.08] backdrop-blur-xl rounded-2xl p-4 border border-white/[0.08]">
-                <h4 className="text-white font-bold text-[13px] mb-3 uppercase tracking-wider flex items-center gap-2">
+              <div className="bg-gray-50 dark:bg-white/[0.08] backdrop-blur-xl rounded-2xl p-4 border border-gray-200 dark:border-white/[0.08] shadow-sm">
+                <h4 className="text-gray-800 dark:text-white font-bold text-[13px] mb-3 uppercase tracking-wider flex items-center gap-2">
                   <div className="w-1 h-4 rounded-full bg-gradient-to-b from-blue-400 to-purple-400" />
                   Event Details
                 </h4>
@@ -8828,13 +8885,13 @@ const HighlightStoryViewer = ({
                     <div
                       key={key}
                       className={`flex items-center justify-between py-2.5 ${
-                        idx < arr.length - 1 ? "border-b border-white/[0.06]" : ""
+                        idx < arr.length - 1 ? "border-b border-gray-200 dark:border-white/[0.06]" : ""
                       }`}
                     >
-                      <span className="text-white/50 text-[12px] capitalize font-medium">
+                      <span className="text-gray-400 dark:text-white/50 text-[12px] capitalize font-medium">
                         {key.replace(/_/g, " ")}
                       </span>
-                      <span className="text-white text-[12px] font-semibold bg-white/5 px-2.5 py-0.5 rounded-md">
+                      <span className="text-gray-800 dark:text-white text-[12px] font-semibold bg-gray-100 dark:bg-white/5 px-2.5 py-0.5 rounded-md">
                         {String(value)}
                       </span>
                     </div>
@@ -8843,12 +8900,11 @@ const HighlightStoryViewer = ({
               </div>
             )}
 
-            {/* ── Images ── */}
             {currentHighlight.images?.length > 0 && (
               <div>
-                <h4 className="text-white font-bold text-[13px] mb-3 uppercase tracking-wider flex items-center gap-2">
+                <h4 className="text-gray-800 dark:text-white font-bold text-[13px] mb-3 uppercase tracking-wider flex items-center gap-2">
                   <div className="w-1 h-4 rounded-full bg-gradient-to-b from-green-400 to-emerald-400" />
-                  <Image size={14} className="text-white/60" />
+                  <Image size={14} className="text-gray-400 dark:text-white/60" />
                   Photos ({currentHighlight.images.length})
                 </h4>
                 <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
@@ -8890,12 +8946,11 @@ const HighlightStoryViewer = ({
               </div>
             )}
 
-            {/* ── Videos ── */}
             {currentHighlight.videos?.length > 0 && (
               <div>
-                <h4 className="text-white font-bold text-[13px] mb-3 uppercase tracking-wider flex items-center gap-2">
+                <h4 className="text-gray-800 dark:text-white font-bold text-[13px] mb-3 uppercase tracking-wider flex items-center gap-2">
                   <div className="w-1 h-4 rounded-full bg-gradient-to-b from-red-400 to-orange-400" />
-                  <Film size={14} className="text-white/60" />
+                  <Film size={14} className="text-gray-400 dark:text-white/60" />
                   Videos ({currentHighlight.videos.length})
                 </h4>
                 <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
@@ -8922,12 +8977,11 @@ const HighlightStoryViewer = ({
               </div>
             )}
 
-            {/* ── Testimonials ── */}
             {currentHighlight.testimonials?.length > 0 && (
               <div>
-                <h4 className="text-white font-bold text-[13px] mb-3 uppercase tracking-wider flex items-center gap-2">
+                <h4 className="text-gray-800 dark:text-white font-bold text-[13px] mb-3 uppercase tracking-wider flex items-center gap-2">
                   <div className="w-1 h-4 rounded-full bg-gradient-to-b from-purple-400 to-pink-400" />
-                  <MessageCircle size={14} className="text-white/60" />
+                  <MessageCircle size={14} className="text-gray-400 dark:text-white/60" />
                   Testimonials ({currentHighlight.testimonials.length})
                 </h4>
                 <div className="flex gap-3 overflow-x-auto no-scrollbar pb-2">
@@ -8961,48 +9015,70 @@ const HighlightStoryViewer = ({
               </div>
             )}
 
-            {/* Empty state */}
             {!currentHighlight.description &&
               !currentHighlight.images?.length &&
               !currentHighlight.videos?.length &&
               !currentHighlight.testimonials?.length && (
                 <div className="flex flex-col items-center justify-center py-16 text-center">
-                  <div className="w-20 h-20 rounded-full bg-white/10 flex items-center justify-center mb-4">
-                    <Sparkles size={32} className="text-white/40" />
+                  <div className="w-20 h-20 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center mb-4">
+                    <Sparkles size={32} className="text-gray-300 dark:text-white/40" />
                   </div>
-                  <p className="text-white/60 text-[14px] font-medium">No content in this highlight yet</p>
+                  <p className="text-gray-400 dark:text-white/60 text-[14px] font-medium">
+                    No content in this highlight yet
+                  </p>
                 </div>
               )}
           </motion.div>
         </AnimatePresence>
       </div>
 
-      {/* Nav arrows */}
-      {currentIndex > 0 && (
-        <button
-          onClick={() => setCurrentIndex((p) => p - 1)}
-          className="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20"
-        >
-          <ChevronLeft size={20} className="text-white" />
-        </button>
-      )}
-      {currentIndex < highlights.length - 1 && (
-        <button
-          onClick={() => setCurrentIndex((p) => p + 1)}
-          className="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20"
-        >
-          <ChevronRight size={20} className="text-white" />
-        </button>
-      )}
+      <motion.button
+        onClick={() => navigateHighlight(-1)}
+        className="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-gray-100 dark:bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-white/20 shadow-md"
+        style={{ opacity: currentIndex > 0 ? 1 : 0.35 }}
+        whileTap={{ scale: 0.9 }}
+      >
+        <ChevronLeft size={20} className="text-gray-700 dark:text-white" />
+      </motion.button>
+      <motion.button
+        onClick={() => navigateHighlight(1)}
+        className="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 rounded-full bg-gray-100 dark:bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-white/20 shadow-md"
+        style={{ opacity: currentIndex < highlights.length - 1 ? 1 : 0.35 }}
+        whileTap={{ scale: 0.9 }}
+      >
+        <ChevronRight size={20} className="text-gray-700 dark:text-white" />
+      </motion.button>
 
-      {/* Delete confirm */}
+      <AnimatePresence>
+        {showEndReached && (
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="absolute bottom-24 left-1/2 -translate-x-1/2 z-40 px-5 py-3 bg-gray-900 dark:bg-white/15 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-700 dark:border-white/10 flex items-center gap-2.5"
+          >
+            {showEndReached === "start" ? (
+              <ChevronLeft size={16} className="text-gray-400" />
+            ) : (
+              <ChevronRight size={16} className="text-gray-400" />
+            )}
+            <span className="text-white text-[13px] font-semibold whitespace-nowrap">
+              {showEndReached === "start"
+                ? "You're at the first highlight"
+                : "You've reached the last highlight"}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence>
         {showDeleteConfirm && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 z-50 bg-black/70 flex items-center justify-center p-6"
+            className="absolute inset-0 z-50 bg-black/40 dark:bg-black/70 flex items-center justify-center p-6"
             onClick={() => setShowDeleteConfirm(false)}
           >
             <motion.div
@@ -9010,16 +9086,16 @@ const HighlightStoryViewer = ({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-slate-900 rounded-2xl p-6 max-w-sm w-full border border-slate-700"
+              className="bg-white dark:bg-slate-900 rounded-2xl p-6 max-w-sm w-full border border-gray-200 dark:border-slate-700 shadow-xl"
             >
-              <h3 className="text-white font-bold text-[16px] mb-2">Delete Highlight?</h3>
-              <p className="text-slate-400 text-[13px] mb-5">
+              <h3 className="text-gray-900 dark:text-white font-bold text-[16px] mb-2">Delete Highlight?</h3>
+              <p className="text-gray-500 dark:text-slate-400 text-[13px] mb-5">
                 This will permanently delete &quot;{currentHighlight.title}&quot; and all its content.
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 py-2.5 rounded-xl bg-slate-800 text-white font-semibold text-[13px]"
+                  className="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-white font-semibold text-[13px]"
                 >
                   Cancel
                 </button>
@@ -10919,7 +10995,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
       setIsLoadingAllInteractions(false);
     }
   }, [posts, reels, user?.id, id, profileLoading]);
-
+  
   const fetchHighlights = useCallback(async () => {
     if (!id) return;
     setHighlightsLoading(true);
@@ -10939,7 +11015,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
   useEffect(() => {
     if (profileLoading) return;
     fetchHighlights();
-  }, [profileLoading, fetchHighlights]);
+  }, [profileLoading, fetchHighlights, editingHighlight]);
 
   useEffect(() => {
     if (profileLoading) return;
