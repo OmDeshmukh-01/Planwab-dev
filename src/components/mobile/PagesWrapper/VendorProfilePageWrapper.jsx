@@ -156,7 +156,7 @@ import { QRCodeSVG } from "qrcode.react";
 import UpdateProfileDrawer from "../UpdateProfileDrawer";
 import SmartMedia from "@/components/mobile/SmartMediaLoader";
 import ImageKit from "imagekit-javascript";
-import {useVideoThumbnail, generateVideoThumbnail} from "../../../lib/video-thumbnail";
+import { useVideoThumbnail, generateVideoThumbnail } from "../../../lib/video-thumbnail";
 
 const SWIPE_THRESHOLD = 60;
 const VELOCITY_THRESHOLD = 400;
@@ -8719,13 +8719,9 @@ const HighlightStoryViewer = ({
                 <span className="text-gray-900 dark:text-white text-[13px] font-bold">
                   {vendorUsername || vendorName}
                 </span>
-                {formattedDate && (
-                  <span className="text-gray-400 dark:text-white/50 text-[11px]">{formattedDate}</span>
-                )}
+                {formattedDate && <span className="text-gray-400 dark:text-white/50 text-[11px]">{formattedDate}</span>}
               </div>
-              <span className="text-gray-500 dark:text-white/70 text-[12px] font-medium">
-                {currentHighlight.title}
-              </span>
+              <span className="text-gray-500 dark:text-white/70 text-[12px] font-medium">{currentHighlight.title}</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -8816,7 +8812,8 @@ const HighlightStoryViewer = ({
                     </motion.div>
                   )}
 
-                  <div className="flex-1 min-w-0 pt-1">
+                 <div className="flex flex-col gap-2 justify-center items-center w-full h-full">
+                   <div className="flex-1 min-w-0 pt-1">
                     <div className="flex items-start justify-between gap-2">
                       <h2 className="text-gray-900 dark:text-white text-[18px] font-bold leading-tight flex-1 truncate">
                         {currentHighlight.title}
@@ -8828,9 +8825,7 @@ const HighlightStoryViewer = ({
                       )}
                     </div>
                   </div>
-                </div>
-
-                {(currentHighlight.category || currentHighlight.subcategory) && (
+                  {(currentHighlight.category || currentHighlight.subcategory) && (
                   <div className="flex items-center gap-2 flex-wrap">
                     {currentHighlight.category && (
                       <span className="px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-[11px] text-gray-600 dark:text-white/80 font-medium">
@@ -8844,6 +8839,8 @@ const HighlightStoryViewer = ({
                     )}
                   </div>
                 )}
+                 </div>
+                </div>
 
                 {currentHighlight.description && (
                   <p className="text-gray-600 dark:text-white/80 text-[13px] leading-relaxed">
@@ -9064,9 +9061,7 @@ const HighlightStoryViewer = ({
               <ChevronRight size={16} className="text-gray-400" />
             )}
             <span className="text-white text-[13px] font-semibold whitespace-nowrap">
-              {showEndReached === "start"
-                ? "You're at the first highlight"
-                : "You've reached the last highlight"}
+              {showEndReached === "start" ? "You're at the first highlight" : "You've reached the last highlight"}
             </span>
           </motion.div>
         )}
@@ -9652,12 +9647,8 @@ const VideoThumbnailCard = ({ videoUrl, thumbnailUrl, caption, duration, onClick
 
       {/* Bottom info */}
       <div className="absolute bottom-0 left-0 right-0 p-2.5 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
-        {personName && (
-          <p className="text-white text-[11px] font-semibold truncate leading-tight">{personName}</p>
-        )}
-        {caption && (
-          <p className={`text-white/80 text-[10px] truncate ${personName ? "mt-0.5" : ""}`}>{caption}</p>
-        )}
+        {personName && <p className="text-white text-[11px] font-semibold truncate leading-tight">{personName}</p>}
+        {caption && <p className={`text-white/80 text-[10px] truncate ${personName ? "mt-0.5" : ""}`}>{caption}</p>}
       </div>
     </motion.div>
   );
@@ -10098,6 +10089,64 @@ const AddHighlightModal = ({
     { id: "content", label: "Content", icon: Layers },
   ];
 
+  // Sub-component to handle thumbnail per existing video
+  const ExistingVideoThumb = ({ vid, idx, onRemove, onCaptionChange }) => {
+    const { thumbnail, loading } = useVideoThumbnail(vid.url, vid.thumbnailUrl || "");
+
+    return (
+      <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-slate-800 group">
+        {loading ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />
+          </div>
+        ) : thumbnail ? (
+          <img src={thumbnail} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-slate-700">
+            <Film size={20} className="text-slate-500" />
+          </div>
+        )}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <Play size={18} className="text-white/70" />
+        </div>
+        <button
+          onClick={() => onRemove(idx)}
+          className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+        >
+          <X size={13} className="text-white" />
+        </button>
+        <input
+          type="text"
+          value={vid.caption || ""}
+          onChange={(e) => onCaptionChange(e.target.value)}
+          placeholder="Caption..."
+          className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[11px] px-2.5 py-1.5 focus:outline-none placeholder:text-white/50"
+          maxLength={100}
+        />
+      </div>
+    );
+  };
+
+  const ExistingTestimonialThumb = ({ videoUrl, thumbnailUrl }) => {
+  const { thumbnail, loading } = useVideoThumbnail(videoUrl, thumbnailUrl || "");
+
+  return (
+    <div className="w-14 h-20 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0 relative">
+      {loading ? (
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="w-4 h-4 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />
+        </div>
+      ) : thumbnail ? (
+        <img src={thumbnail} alt="" className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <Play size={14} className="text-slate-500" />
+        </div>
+      )}
+    </div>
+  );
+};
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -10112,7 +10161,7 @@ const AddHighlightModal = ({
         exit={{ y: "100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-t-3xl max-h-[92vh] flex flex-col overflow-hidden"
+        className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-t-3xl max-h-[80vh] flex flex-col overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
@@ -10327,14 +10376,30 @@ const AddHighlightModal = ({
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {existingImages.map((img, idx) => (
-                    <div key={`ei-${idx}`} className="relative aspect-square rounded-xl overflow-hidden">
-                      <img src={img.url} alt="" className="w-full h-full object-cover" />
+                    <div key={`ei-${idx}`} className="relative aspect-square rounded-xl overflow-hidden group">
+                      <img
+                        src={img.url}
+                        alt=""
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
                       <button
                         onClick={() => removeExistingImage(idx)}
-                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center"
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
                       >
-                        <X size={12} className="text-white" />
+                        <X size={13} className="text-white" />
                       </button>
+                      <input
+                        type="text"
+                        value={img.caption || ""}
+                        onChange={(e) => {
+                          setExistingImages((prev) =>
+                            prev.map((item, i) => (i === idx ? { ...item, caption: e.target.value } : item)),
+                          );
+                        }}
+                        placeholder="Caption..."
+                        className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[11px] px-2.5 py-1.5 focus:outline-none placeholder:text-white/50"
+                        maxLength={100}
+                      />
                     </div>
                   ))}
                   {imageFiles.map((img, idx) => (
@@ -10398,24 +10463,15 @@ const AddHighlightModal = ({
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {existingVideos.map((vid, idx) => (
-                    <div key={`ev-${idx}`} className="relative aspect-[9/16] rounded-xl overflow-hidden bg-slate-800">
-                      {vid.thumbnailUrl ? (
-                        <img src={vid.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Film size={20} className="text-slate-500" />
-                        </div>
-                      )}
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Play size={16} className="text-white/70" />
-                      </div>
-                      <button
-                        onClick={() => removeExistingVideo(idx)}
-                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center"
-                      >
-                        <X size={12} className="text-white" />
-                      </button>
-                    </div>
+                    <ExistingVideoThumb
+                      key={`ev-${idx}`}
+                      vid={vid}
+                      idx={idx}
+                      onRemove={removeExistingVideo}
+                      onCaptionChange={(caption) => {
+                        setExistingVideos((prev) => prev.map((item, i) => (i === idx ? { ...item, caption } : item)));
+                      }}
+                    />
                   ))}
                   {videoFiles.map((vid, idx) => (
                     <div key={`nv-${idx}`} className="relative aspect-[9/16] rounded-xl overflow-hidden bg-slate-800">
@@ -10483,33 +10539,39 @@ const AddHighlightModal = ({
               </div>
               <div className="space-y-3">
                 {existingTestimonials.map((t, idx) => (
-                  <div
-                    key={`et-${idx}`}
-                    className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700"
-                  >
-                    <div className="w-14 h-20 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0 relative">
-                      {t.thumbnailUrl ? (
-                        <img src={t.thumbnailUrl} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <Play size={14} className="text-slate-500" />
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[12px] font-medium text-slate-700 dark:text-slate-300 truncate">
-                        {t.personName || "Unnamed"}
-                      </p>
-                      <p className="text-[10px] text-slate-500">Existing</p>
-                    </div>
-                    <button
-                      onClick={() => removeExistingTestimonial(idx)}
-                      className="p-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700"
-                    >
-                      <X size={14} className="text-slate-500" />
-                    </button>
-                  </div>
-                ))}
+  <div
+    key={`et-${idx}`}
+    className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700"
+  >
+    {/* ✅ Use the same ExistingVideoThumb-style hook for thumbnail */}
+    <ExistingTestimonialThumb videoUrl={t.videoUrl} thumbnailUrl={t.thumbnailUrl} />
+
+    <div className="flex-1 min-w-0">
+      {/* ✅ Make personName editable, not just display text */}
+      <input
+        type="text"
+        value={t.personName || ""}
+        onChange={(e) =>
+          setExistingTestimonials((prev) =>
+            prev.map((item, i) =>
+              i === idx ? { ...item, personName: e.target.value } : item
+            )
+          )
+        }
+        placeholder="Person's name"
+        className="w-full px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-[12px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+        maxLength={50}
+      />
+      <p className="text-[10px] text-slate-500 mt-0.5">Existing</p>
+    </div>
+    <button
+      onClick={() => removeExistingTestimonial(idx)}
+      className="p-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700"
+    >
+      <X size={14} className="text-slate-500" />
+    </button>
+  </div>
+))}
                 {testimonialFiles.map((t, idx) => (
                   <div
                     key={`nt-${idx}`}
@@ -10622,7 +10684,7 @@ const VideoThumbnailRenderer = React.memo(({ post, videoThumbnails, videoRefs, p
   const { thumbnail: hookThumbnail, loading } = useVideoThumbnail(
     // Only use hook as secondary fallback if main generation hasn't produced a result yet
     !thumb && post.mediaType === "video" ? post.mediaUrl : null,
-    post.thumbnailUrl || null
+    post.thumbnailUrl || null,
   );
 
   // Priority: 1) pre-generated thumb from state, 2) hook-generated thumb, 3) post.thumbnailUrl, 4) video element fallback
@@ -10636,13 +10698,7 @@ const VideoThumbnailRenderer = React.memo(({ post, videoThumbnails, videoRefs, p
   if (resolvedThumbnail) {
     return (
       <div className="relative w-full h-full">
-        <img
-          src={resolvedThumbnail}
-          alt=""
-          className="w-full h-full object-cover"
-          loading="lazy"
-          decoding="async"
-        />
+        <img src={resolvedThumbnail} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
         {/* Hidden video element for play-on-long-press functionality */}
         <video
           ref={(el) => {
@@ -10693,7 +10749,7 @@ const ReelThumbnailRenderer = React.memo(({ reel }) => {
   const { thumbnail, loading } = useVideoThumbnail(
     // Only generate from video if no existing thumbnail
     reel.thumbnail ? null : reel.videoUrl,
-    reel.thumbnail || null
+    reel.thumbnail || null,
   );
 
   const resolvedSrc = reel.thumbnail || thumbnail;
@@ -10707,27 +10763,11 @@ const ReelThumbnailRenderer = React.memo(({ reel }) => {
   }
 
   if (resolvedSrc) {
-    return (
-      <img
-        src={resolvedSrc}
-        alt=""
-        className="w-full h-full object-cover"
-        loading="lazy"
-        decoding="async"
-      />
-    );
+    return <img src={resolvedSrc} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />;
   }
 
   // Last resort: show a frame from the video itself
-  return (
-    <video
-      src={reel.videoUrl}
-      className="w-full h-full object-cover"
-      muted
-      playsInline
-      preload="metadata"
-    />
-  );
+  return <video src={reel.videoUrl} className="w-full h-full object-cover" muted playsInline preload="metadata" />;
 });
 
 ReelThumbnailRenderer.displayName = "ReelThumbnailRenderer";
@@ -10995,7 +11035,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
       setIsLoadingAllInteractions(false);
     }
   }, [posts, reels, user?.id, id, profileLoading]);
-  
+
   const fetchHighlights = useCallback(async () => {
     if (!id) return;
     setHighlightsLoading(true);
@@ -11309,15 +11349,13 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
     }
   }, [showSignInPrompt]);
 
- useEffect(() => {
+  useEffect(() => {
     if (!posts.length) return;
 
     let cancelled = false;
 
     const generate = async () => {
-      const targetVideos = posts.filter(
-        (p) => p.mediaType === "video" && !p.thumbnailUrl && !videoThumbnails[p._id]
-      );
+      const targetVideos = posts.filter((p) => p.mediaType === "video" && !p.thumbnailUrl && !videoThumbnails[p._id]);
 
       for (const post of targetVideos) {
         if (cancelled) break;
@@ -12256,50 +12294,50 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                           className="aspect-[1/1.3] bg-gray-100 dark:bg-gray-800 overflow-hidden relative cursor-pointer select-none rounded-[10px] group"
                         >
                           {post.mediaType === "video" ? (
-    <div className="relative w-full h-full">
-      <VideoThumbnailRenderer
-        post={post}
-        videoThumbnails={videoThumbnails}
-        videoRefs={videoRefs}
-        playingVideoId={playingVideoId}
-      />
-      <AnimatePresence>
-        {playingVideoId !== post._id && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
-          >
-            <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-full p-1.5 shadow-lg">
-              <Play size={12} className="text-white fill-white" />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {playingVideoId === post._id && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8 }}
-            className="absolute inset-0 flex items-center justify-center pointer-events-none"
-          >
-            <div className="absolute inset-0 bg-black/10" />
-            <motion.div
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
-            >
-              <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
-                <Pause size={16} className="text-gray-900" />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-) : (
+                            <div className="relative w-full h-full">
+                              <VideoThumbnailRenderer
+                                post={post}
+                                videoThumbnails={videoThumbnails}
+                                videoRefs={videoRefs}
+                                playingVideoId={playingVideoId}
+                              />
+                              <AnimatePresence>
+                                {playingVideoId !== post._id && (
+                                  <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"
+                                  >
+                                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm rounded-full p-1.5 shadow-lg">
+                                      <Play size={12} className="text-white fill-white" />
+                                    </div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                              <AnimatePresence>
+                                {playingVideoId === post._id && (
+                                  <motion.div
+                                    initial={{ opacity: 0, scale: 0.8 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.8 }}
+                                    className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                                  >
+                                    <div className="absolute inset-0 bg-black/10" />
+                                    <motion.div
+                                      animate={{ scale: [1, 1.2, 1] }}
+                                      transition={{ duration: 1.5, repeat: Infinity }}
+                                      className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30"
+                                    >
+                                      <div className="w-8 h-8 rounded-full bg-white/90 flex items-center justify-center">
+                                        <Pause size={16} className="text-gray-900" />
+                                      </div>
+                                    </motion.div>
+                                  </motion.div>
+                                )}
+                              </AnimatePresence>
+                            </div>
+                          ) : (
                             <SmartMedia
                               key={`media-${post._id}`}
                               src={post?.mediaUrl}
