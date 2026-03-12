@@ -154,6 +154,7 @@ import UpdateProfileDrawer from "../UpdateProfileDrawer";
 import SmartMedia from "@/components/mobile/SmartMediaLoader";
 import { useNavigationState } from "../../../hooks/useNavigationState";
 import { toast } from "sonner";
+import { useVideoThumbnail, generateVideoThumbnail } from "../../../lib/video-thumbnail";
 
 const SWIPE_THRESHOLD = 60;
 const VELOCITY_THRESHOLD = 400;
@@ -847,8 +848,9 @@ const PasswordVerificationModal = ({ isOpen, onClose, onSuccess, vendorId, vendo
                     onKeyDown={handleKeyDown}
                     placeholder="Enter your password"
                     disabled={isVerifying}
-                    className={`w-full pl-12 pr-12 py-4 bg-slate-100 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all ${error ? "border-red-500 focus:border-red-500" : "border-transparent focus:border-blue-500"
-                      } ${isVerifying ? "opacity-60 cursor-not-allowed" : ""}`}
+                    className={`w-full pl-12 pr-12 py-4 bg-slate-100 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all ${
+                      error ? "border-red-500 focus:border-red-500" : "border-transparent focus:border-blue-500"
+                    } ${isVerifying ? "opacity-60 cursor-not-allowed" : ""}`}
                   />
                   <motion.button
                     type="button"
@@ -1005,7 +1007,7 @@ const StoryViewer = ({ highlight, onClose }) => {
     progressIntervalRef.current = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
-          if (currentIndex < highlight.items.length - 1) {
+          if (currentIndex < highlight?.items?.length - 1) {
             setCurrentIndex((i) => i + 1);
             return 0;
           } else {
@@ -1025,16 +1027,16 @@ const StoryViewer = ({ highlight, onClose }) => {
         clearInterval(progressIntervalRef.current);
       }
     };
-  }, [currentIndex, isPaused, showShareDrawer, highlight.items.length, onClose]);
+  }, [currentIndex, isPaused, showShareDrawer, highlight?.items?.length, onClose]);
 
   const goNext = useCallback(() => {
-    if (currentIndex < highlight.items.length - 1) {
+    if (currentIndex < highlight?.items?.length - 1) {
       setCurrentIndex((i) => i + 1);
       setProgress(0);
     } else {
       onClose();
     }
-  }, [currentIndex, highlight.items.length, onClose]);
+  }, [currentIndex, highlight?.items?.length, onClose]);
 
   const goPrev = useCallback(() => {
     if (currentIndex > 0) {
@@ -1092,7 +1094,7 @@ const StoryViewer = ({ highlight, onClose }) => {
       >
         {/* Progress bars */}
         <div className="absolute top-0 left-0 right-0 z-20 p-3 pt-4 flex gap-1 bg-gradient-to-b from-black/60 to-transparent">
-          {highlight.items.map((_, idx) => (
+          {highlight?.items?.map((_, idx) => (
             <div key={idx} className="flex-1 h-0.5 bg-white/30 rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-white rounded-full"
@@ -1111,7 +1113,7 @@ const StoryViewer = ({ highlight, onClose }) => {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white/50">
               <SmartMedia
-                src={highlight.image}
+                src={highlight?.image}
                 type="image"
                 className="w-full h-full object-cover"
                 loaderImage="/GlowLoadingGif.gif"
@@ -1120,7 +1122,7 @@ const StoryViewer = ({ highlight, onClose }) => {
             <div>
               <p className="text-white font-bold text-sm">{highlight.title}</p>
               <p className="text-white/60 text-xs">
-                {currentIndex + 1} of {highlight.items.length}
+                {currentIndex + 1} of {highlight?.items?.length || 0}
               </p>
             </div>
           </div>
@@ -1441,13 +1443,13 @@ const NoDataFallback = ({ postNumber, onUpdateClick }) => {
 
   return (
     <div className="flex flex-col items-center justify-center py-8 px-4 text-center bg-gray-50 border border-gray-200 border-dashed rounded-xl">
-      <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${config.color} flex items-center justify-center mb-4 opacity-80`}>
+      <div
+        className={`w-12 h-12 rounded-full bg-gradient-to-r ${config.color} flex items-center justify-center mb-4 opacity-80`}
+      >
         <IconComponent size={24} className="text-white" />
       </div>
       <h3 className="text-gray-800 font-medium mb-1">{config.title}</h3>
-      <p className="text-gray-500 text-xs mb-4 max-w-[200px]">
-        No details added for this post category yet.
-      </p>
+      <p className="text-gray-500 text-xs mb-4 max-w-[200px]">No details added for this post category yet.</p>
       {onUpdateClick && (
         <button
           onClick={onUpdateClick}
@@ -1459,7 +1461,6 @@ const NoDataFallback = ({ postNumber, onUpdateClick }) => {
     </div>
   );
 };
-
 
 // Validation function
 const validateField = (field, value) => {
@@ -1682,7 +1683,9 @@ const PostContentForm = ({ postNumber, initialData, onSubmit, onCancel, isSubmit
                     className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">Package {index + 1}</span>
+                      <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">
+                        Package {index + 1}
+                      </span>
                       <button
                         type="button"
                         onClick={() => handlePackageRemove(index)}
@@ -1772,7 +1775,6 @@ const PostContentForm = ({ postNumber, initialData, onSubmit, onCancel, isSubmit
     </motion.div>
   );
 };
-
 
 const WorkDetailsContent = ({ data }) => (
   <div className="space-y-4">
@@ -1969,7 +1971,6 @@ const TrustContent = ({ data }) => (
     )}
   </div>
 );
-
 
 const PostDetailModal = ({
   post,
@@ -2180,11 +2181,13 @@ const PostDetailModal = ({
 
   // ===== RENDER POST CONTENT =====
   const renderPostContent = useCallback(() => {
-    const hasContent = contentData && Object.values(contentData).some(val =>
-      Array.isArray(val) ? val.length > 0 : (val !== undefined && val !== null && val !== "")
-    );
+    const hasContent =
+      contentData &&
+      Object.values(contentData).some((val) =>
+        Array.isArray(val) ? val.length > 0 : val !== undefined && val !== null && val !== "",
+      );
     if (!hasContent) {
-      return <NoDataFallback postNumber={postNumber} onUpdateClick={isOwner ? (() => setShowContentForm(true)) : null} />;
+      return <NoDataFallback postNumber={postNumber} onUpdateClick={isOwner ? () => setShowContentForm(true) : null} />;
     }
 
     switch (postNumber) {
@@ -2246,7 +2249,7 @@ const PostDetailModal = ({
 
     const handleEnded = () => {
       video.currentTime = 0;
-      video.play().catch(() => { });
+      video.play().catch(() => {});
     };
 
     const handleError = () => {
@@ -2323,7 +2326,7 @@ const PostDetailModal = ({
     } else {
       // Resume video only if it was playing before drag started
       if (videoRef.current && isVideo && wasDragPlayingRef.current) {
-        videoRef.current.play().catch(() => { });
+        videoRef.current.play().catch(() => {});
       }
     }
 
@@ -3136,7 +3139,9 @@ const PostDetailModal = ({
                 <div>
                   <span className="text-gray-900 font-bold text-sm block">{vendorName}</span>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className={`text-xs font-semibold bg-gradient-to-r ${POST_CONFIGS[postNumber]?.color || "from-gray-500 to-gray-600"} bg-clip-text text-transparent`}>
+                    <span
+                      className={`text-xs font-semibold bg-gradient-to-r ${POST_CONFIGS[postNumber]?.color || "from-gray-500 to-gray-600"} bg-clip-text text-transparent`}
+                    >
                       {POST_CONFIGS[postNumber]?.title || "Details"}
                     </span>
                     <span className="text-gray-300 text-xs">•</span>
@@ -3191,11 +3196,7 @@ const PostDetailModal = ({
             </AnimatePresence>
 
             <div className="flex-1 overflow-y-auto px-6 py-5 space-y-6 no-scrollbar">
-              {!showContentForm && (
-                <div className="mb-6">
-                  {renderPostContent()}
-                </div>
-              )}
+              {!showContentForm && <div className="mb-6">{renderPostContent()}</div>}
               {currentPost.date && <p className="text-gray-500 text-xs">{currentPost.date}</p>}
 
               {(currentPost.caption || currentPost.description) && (
@@ -3261,7 +3262,11 @@ const PostDetailModal = ({
                         className="p-2.5 rounded-xl hover:bg-gray-100 transition-colors"
                         disabled={isInteracting}
                       >
-                        <motion.div animate={isLiked ? { scale: [1, 1.2, 1] } : {}} transition={{ duration: 0.3 }} className="flex items-center gap-1.5">
+                        <motion.div
+                          animate={isLiked ? { scale: [1, 1.2, 1] } : {}}
+                          transition={{ duration: 0.3 }}
+                          className="flex items-center gap-1.5"
+                        >
                           <Heart size={24} className={isLiked ? "text-red-500 fill-red-500" : "text-gray-700"} />
                           {likes > 0 && (
                             <span className="text-sm font-bold text-gray-800 dark:text-gray-200">{likes}</span>
@@ -3339,10 +3344,11 @@ const PostDetailModal = ({
                       }
                     }}
                     disabled={currentIndex === 0}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex === 0
-                      ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
-                      }`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                      currentIndex === 0
+                        ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
+                    }`}
                   >
                     <ChevronUp size={16} />
                     Previous
@@ -3354,10 +3360,11 @@ const PostDetailModal = ({
                       }
                     }}
                     disabled={currentIndex >= posts.length - 1}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex >= posts.length - 1
-                      ? "bg-gray-50 text-gray-400 cursor-not-allowed"
-                      : "bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
-                      }`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                      currentIndex >= posts.length - 1
+                        ? "bg-gray-50 text-gray-400 cursor-not-allowed"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
+                    }`}
                   >
                     Next
                     <ChevronDown size={16} />
@@ -3375,10 +3382,10 @@ const PostDetailModal = ({
         >
           <X size={20} className="text-white" />
         </button>
-      </motion.div >
+      </motion.div>
 
       {/* Options Drawer */}
-      < AnimatePresence >
+      <AnimatePresence>
         {showOptionsDrawer && (
           <PostOptionsDrawer
             isOpen={showOptionsDrawer}
@@ -3400,19 +3407,18 @@ const PostDetailModal = ({
               setShowOptionsDrawer(false);
             }}
           />
-        )
-        }
-      </AnimatePresence >
+        )}
+      </AnimatePresence>
 
       {/* Share Modal */}
-      < AnimatePresence >
+      <AnimatePresence>
         {showShareModal && (
           <ShareModal isOpen={showShareModal} onClose={() => setShowShareModal(false)} vendorName={vendorName} />
         )}
-      </AnimatePresence >
+      </AnimatePresence>
 
       {/* Comments Drawer */}
-      < CommentsDrawer
+      <CommentsDrawer
         isOpen={showCommentsDrawer}
         onClose={() => setShowCommentsDrawer(false)}
         reviews={reviews}
@@ -3671,7 +3677,7 @@ const ReelsViewer = ({
     const video = videoRef.current;
     if (video) {
       video.currentTime = 0;
-      video.play().catch(() => { });
+      video.play().catch(() => {});
     }
   };
 
@@ -3866,7 +3872,7 @@ const ReelsViewer = ({
       goToReel("down");
     } else {
       if (videoRef.current && isPlaying) {
-        videoRef.current.play().catch(() => { });
+        videoRef.current.play().catch(() => {});
       }
     }
 
@@ -4340,10 +4346,11 @@ const ReelsViewer = ({
                       }
                     }}
                     disabled={currentIndex === 0}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex === 0
-                      ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
-                      : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
-                      }`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                      currentIndex === 0
+                        ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
+                        : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
+                    }`}
                   >
                     <ChevronUp size={16} />
                     Previous
@@ -4358,10 +4365,11 @@ const ReelsViewer = ({
                       }
                     }}
                     disabled={currentIndex >= reels.length - 1}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex >= reels.length - 1
-                      ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
-                      : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
-                      }`}
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                      currentIndex >= reels.length - 1
+                        ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
+                        : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
+                    }`}
                   >
                     Next
                     <ChevronDown size={16} />
@@ -4501,8 +4509,9 @@ const PortfolioViewer = ({ portfolio, onClose, onBookService }) => {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsSaved(!isSaved)}
-            className={`py-3.5 px-5 rounded-2xl border transition-all ${isSaved ? "bg-red-500/20 border-red-500/50" : "bg-white/10 backdrop-blur-xl border-white/20"
-              }`}
+            className={`py-3.5 px-5 rounded-2xl border transition-all ${
+              isSaved ? "bg-red-500/20 border-red-500/50" : "bg-white/10 backdrop-blur-xl border-white/20"
+            }`}
           >
             <Heart size={20} className={isSaved ? "text-red-500 fill-red-500" : "text-white"} />
           </motion.button>
@@ -5359,14 +5368,16 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                     whileTap={{ scale: isPostsFull ? 1 : 0.98 }}
                     onClick={() => !isPostsFull && setUploadType("post")}
                     disabled={isPostsFull}
-                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${isPostsFull
-                      ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
-                      : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-100 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:shadow-blue-500/10"
-                      }`}
+                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${
+                      isPostsFull
+                        ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
+                        : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-100 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:shadow-blue-500/10"
+                    }`}
                   >
                     <div
-                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${isPostsFull ? "bg-gray-400" : "bg-gradient-to-br from-blue-500 to-purple-600"
-                        }`}
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${
+                        isPostsFull ? "bg-gray-400" : "bg-gradient-to-br from-blue-500 to-purple-600"
+                      }`}
                     >
                       <Image size={28} className="text-white" />
                     </div>
@@ -5387,14 +5398,16 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                     whileTap={{ scale: isReelsFull ? 1 : 0.98 }}
                     onClick={() => !isReelsFull && setUploadType("reel")}
                     disabled={isReelsFull}
-                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${isReelsFull
-                      ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
-                      : "bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-900/20 dark:to-orange-900/20 border-pink-100 dark:border-pink-800 hover:border-pink-300 dark:hover:border-pink-600 hover:shadow-lg hover:shadow-pink-500/10"
-                      }`}
+                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${
+                      isReelsFull
+                        ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
+                        : "bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-900/20 dark:to-orange-900/20 border-pink-100 dark:border-pink-800 hover:border-pink-300 dark:hover:border-pink-600 hover:shadow-lg hover:shadow-pink-500/10"
+                    }`}
                   >
                     <div
-                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${isReelsFull ? "bg-gray-400" : "bg-gradient-to-br from-pink-500 to-orange-500"
-                        }`}
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${
+                        isReelsFull ? "bg-gray-400" : "bg-gradient-to-br from-pink-500 to-orange-500"
+                      }`}
                     >
                       <Video size={28} className="text-white" />
                     </div>
@@ -5452,10 +5465,11 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                       whileTap={{ scale: isUploading ? 1 : 0.98 }}
                       onClick={handleFileSelect}
                       disabled={isUploading}
-                      className={`w-full ${uploadType === "reel" ? "aspect-[9/16] lg:aspect-[9/14]" : "aspect-square"} rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-4 overflow-hidden ${selectedFile
-                        ? "border-green-500 bg-green-50 dark:bg-green-900/20"
-                        : "border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
-                        } ${isUploading ? "pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
+                      className={`w-full ${uploadType === "reel" ? "aspect-[9/16] lg:aspect-[9/14]" : "aspect-square"} rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-4 overflow-hidden ${
+                        selectedFile
+                          ? "border-green-500 bg-green-50 dark:bg-green-900/20"
+                          : "border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
+                      } ${isUploading ? "pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
                     >
                       {selectedFile ? (
                         <div className="relative w-full h-full">
@@ -5834,12 +5848,14 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
 
 const InfoChip = memo(({ icon: Icon, label, value, color = "blue", size = "normal" }) => (
   <div
-    className={`flex items-center gap-2 p-2.5 bg-${color}-50 dark:bg-${color}-900/20 rounded-xl ${size === "small" ? "p-2" : ""
-      }`}
+    className={`flex items-center gap-2 p-2.5 bg-${color}-50 dark:bg-${color}-900/20 rounded-xl ${
+      size === "small" ? "p-2" : ""
+    }`}
   >
     <div
-      className={`w-8 h-8 rounded-lg bg-${color}-100 dark:bg-${color}-800/30 flex items-center justify-center ${size === "small" ? "w-7 h-7" : ""
-        }`}
+      className={`w-8 h-8 rounded-lg bg-${color}-100 dark:bg-${color}-800/30 flex items-center justify-center ${
+        size === "small" ? "w-7 h-7" : ""
+      }`}
     >
       <Icon size={size === "small" ? 14 : 16} className={`text-${color}-600 dark:text-${color}-400`} />
     </div>
@@ -5857,9 +5873,10 @@ const QuickStatCard = memo(({ icon: Icon, label, value, subtext, color = "blue",
   <motion.div
     whileHover={{ scale: 1.02, y: -2 }}
     whileTap={{ scale: 0.98 }}
-    className={`relative overflow-hidden p-3 rounded-2xl ${gradient ||
+    className={`relative overflow-hidden p-3 rounded-2xl ${
+      gradient ||
       `bg-gradient-to-br from-${color}-50 to-${color}-100/50 dark:from-${color}-900/30 dark:to-${color}-800/20`
-      } border border-${color}-100 dark:border-${color}-800/30`}
+    } border border-${color}-100 dark:border-${color}-800/30`}
   >
     <div className="flex items-start justify-between">
       <div>
@@ -5882,8 +5899,9 @@ const PackageCard = memo(({ pkg, isSelected, onSelect }) => (
     layout
     whileTap={{ scale: 0.98 }}
     onClick={() => onSelect(pkg.id || pkg._id)}
-    className={`bg-white dark:bg-gray-900 p-4 rounded-2xl border-2 transition-all shadow-sm ${isSelected ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-gray-100 dark:border-gray-800"
-      } ${pkg.isPopular ? "ring-2 ring-amber-400 ring-offset-2 dark:ring-offset-black" : ""}`}
+    className={`bg-white dark:bg-gray-900 p-4 rounded-2xl border-2 transition-all shadow-sm ${
+      isSelected ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-gray-100 dark:border-gray-800"
+    } ${pkg.isPopular ? "ring-2 ring-amber-400 ring-offset-2 dark:ring-offset-black" : ""}`}
   >
     {pkg.isPopular && (
       <div className="flex justify-center -mt-7 mb-3">
@@ -5942,10 +5960,11 @@ const PackageCard = memo(({ pkg, isSelected, onSelect }) => (
     )}
     <motion.button
       whileTap={{ scale: 0.97 }}
-      className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${isSelected
-        ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
-        : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-        }`}
+      className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${
+        isSelected
+          ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
+          : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+      }`}
     >
       {isSelected ? "✓ Selected" : "Select Package"}
     </motion.button>
@@ -6280,10 +6299,11 @@ const CategorySpecificSection = memo(({ vendor, formatPrice }) => {
             )}
             {vendor.destinationWeddings !== undefined && (
               <div
-                className={`p-3 rounded-xl flex items-center gap-3 ${vendor.destinationWeddings
-                  ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
-                  : "bg-gray-50 dark:bg-gray-800"
-                  }`}
+                className={`p-3 rounded-xl flex items-center gap-3 ${
+                  vendor.destinationWeddings
+                    ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
+                    : "bg-gray-50 dark:bg-gray-800"
+                }`}
               >
                 {vendor.destinationWeddings ? (
                   <CheckCircle size={18} className="text-green-500" />
@@ -6562,8 +6582,9 @@ const CollapsibleSection = memo(
           <div className="flex items-center gap-3">
             {Icon && (
               <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconBg || "bg-blue-50 dark:bg-blue-900/20"
-                  }`}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                  iconBg || "bg-blue-50 dark:bg-blue-900/20"
+                }`}
               >
                 <Icon className={iconColor || "text-blue-500"} size={18} />
               </div>
@@ -6938,8 +6959,9 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                   <motion.div
                     key={s}
                     animate={{ scaleX: s <= step ? 1 : 0.5 }}
-                    className={`flex-1 h-1.5 rounded-full transition-colors ${s <= step ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-gray-200 dark:bg-gray-700"
-                      }`}
+                    className={`flex-1 h-1.5 rounded-full transition-colors ${
+                      s <= step ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-gray-200 dark:bg-gray-700"
+                    }`}
                   />
                 ))}
               </div>
@@ -7006,10 +7028,11 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                       key={service.id}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setSelectedService(service)}
-                      className={`w-full p-5 rounded-2xl border-2 transition-all text-left cursor-pointer ${selectedService?.id === service.id
-                        ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/10"
-                        : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                        }`}
+                      className={`w-full p-5 rounded-2xl border-2 transition-all text-left cursor-pointer ${
+                        selectedService?.id === service.id
+                          ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/10"
+                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+                      }`}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -7060,10 +7083,11 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                               setSelectedDate(day.date);
                               setSelectedSlot(slot);
                             }}
-                            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${selectedDate === day.date && selectedSlot === slot
-                              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25"
-                              : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                              }`}
+                            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
+                              selectedDate === day.date && selectedSlot === slot
+                                ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25"
+                                : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
+                            }`}
                           >
                             {slot}
                           </motion.button>
@@ -7375,16 +7399,16 @@ const MoreOptionsDrawer = ({
     },
     ...(isVerified
       ? [
-        {
-          id: "updateProfile",
-          label: "Update Profile",
-          icon: Edit3,
-          action: () => {
-            setShowUpdateProfileDrawer(true);
-            onClose();
+          {
+            id: "updateProfile",
+            label: "Update Profile",
+            icon: Edit3,
+            action: () => {
+              setShowUpdateProfileDrawer(true);
+              onClose();
+            },
           },
-        },
-      ]
+        ]
       : []),
     {
       id: "notify",
@@ -7550,12 +7574,13 @@ const MoreOptionsDrawer = ({
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${option.danger
-                      ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      : option.verified
-                        ? "text-green-600 dark:text-green-400 active:bg-green-50 dark:active:bg-green-900/20 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-default"
-                        : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                      }`}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${
+                      option.danger
+                        ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        : option.verified
+                          ? "text-green-600 dark:text-green-400 active:bg-green-50 dark:active:bg-green-900/20 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-default"
+                          : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -8342,10 +8367,11 @@ const PostOptionsDrawer = ({ isOpen, onClose, post, onDelete, onShare, onEdit, o
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${option.danger
-                      ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                      }`}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${
+                      option.danger
+                        ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -8609,10 +8635,11 @@ const ReelOptionsDrawer = ({ isOpen, onClose, reel, onDelete, onShare, onEdit })
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${option.danger
-                      ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
-                      : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                      }`}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${
+                      option.danger
+                        ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
+                        : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
+                    }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -9017,10 +9044,7 @@ const RightSidebar = ({
                   </div>
 
                   {/* Info */}
-                  <div
-                    className="flex-1 min-w-0 cursor-pointer"
-                    onClick={() => handleSimilarprofileClick(profile)}
-                  >
+                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleSimilarprofileClick(profile)}>
                     <div className="flex items-center gap-1.5">
                       <h4 className="font-semibold text-[13px] text-slate-900 dark:text-white truncate">
                         {profile.vendorName}
@@ -9186,6 +9210,2241 @@ const RightSidebar = ({
   );
 };
 
+const HighlightStoryViewer = ({
+  highlight,
+  highlights,
+  initialIndex,
+  onClose,
+  vendorName,
+  vendorImage,
+  vendorUsername,
+  categoryColor,
+  onMediaClick,
+  isVerified,
+  onEdit,
+  onDelete,
+}) => {
+  const [currentIndex, setCurrentIndex] = useState(Math.max(0, initialIndex));
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [swipeDirection, setSwipeDirection] = useState(0);
+  const [showEndReached, setShowEndReached] = useState(null);
+  const containerRef = useRef(null);
+  const startXRef = useRef(0);
+  const endReachedTimerRef = useRef(null);
+  const currentHighlight = highlights[currentIndex];
+
+  const navigateHighlight = useCallback(
+    (direction) => {
+      if (direction === 1 && currentIndex < highlights.length - 1) {
+        setSwipeDirection(1);
+        setCurrentIndex((p) => p + 1);
+      } else if (direction === -1 && currentIndex > 0) {
+        setSwipeDirection(-1);
+        setCurrentIndex((p) => p - 1);
+      } else {
+        const edge = direction === -1 ? "start" : "end";
+        setShowEndReached(edge);
+        if (endReachedTimerRef.current) clearTimeout(endReachedTimerRef.current);
+        endReachedTimerRef.current = setTimeout(() => setShowEndReached(null), 2000);
+      }
+    },
+    [currentIndex, highlights.length],
+  );
+
+  const handleSwipeTouchStart = useCallback((e) => {
+    startXRef.current = e.touches[0].clientX;
+  }, []);
+
+  const handleSwipeTouchEnd = useCallback(
+    (e) => {
+      const diff = startXRef.current - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 60) {
+        navigateHighlight(diff > 0 ? 1 : -1);
+      }
+    },
+    [navigateHighlight],
+  );
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === "ArrowRight") navigateHighlight(1);
+      if (e.key === "ArrowLeft") navigateHighlight(-1);
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [navigateHighlight, onClose]);
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (endReachedTimerRef.current) clearTimeout(endReachedTimerRef.current);
+    };
+  }, []);
+
+  if (!currentHighlight) return null;
+
+  const formattedDate = currentHighlight.eventDate
+    ? new Date(currentHighlight.eventDate).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-sm flex items-center justify-center p-10"
+      onTouchStart={handleSwipeTouchStart}
+      onTouchEnd={handleSwipeTouchEnd}
+    >
+      {/* Navigation arrows — outside card, on viewport sides */}
+      <motion.button
+        onClick={() => navigateHighlight(-1)}
+        className="absolute left-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-white/20 transition-colors shadow-lg"
+        style={{ opacity: currentIndex > 0 ? 1 : 0.3 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.9 }}
+      >
+        <ChevronLeft size={22} className="text-white" />
+      </motion.button>
+      <motion.button
+        onClick={() => navigateHighlight(1)}
+        className="absolute right-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center hover:bg-white/20 transition-colors shadow-lg"
+        style={{ opacity: currentIndex < highlights.length - 1 ? 1 : 0.3 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.9 }}
+      >
+        <ChevronRight size={22} className="text-white" />
+      </motion.button>
+
+      {/* Main Card Modal */}
+      <motion.div
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.95, opacity: 0 }}
+        transition={{ duration: 0.25 }}
+        className="relative bg-white dark:bg-gray-950 rounded-3xl max-w-5xl w-full max-h-[88vh] flex flex-col overflow-hidden shadow-2xl border border-gray-200 dark:border-white/10"
+      >
+        {/* Progress bar */}
+        <div className="flex gap-1.5 px-6 pt-5 shrink-0">
+          {highlights.map((_, idx) => (
+            <div key={idx} className="flex-1 h-[3px] rounded-full overflow-hidden bg-gray-200 dark:bg-white/15">
+              <motion.div
+                className="h-full rounded-full bg-gray-800 dark:bg-white"
+                initial={{ width: idx < currentIndex ? "100%" : "0%" }}
+                animate={{ width: idx <= currentIndex ? "100%" : "0%" }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+          ))}
+        </div>
+
+        {/* Header */}
+        <div className="px-6 py-4 shrink-0 border-b border-gray-100 dark:border-white/5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-white/20">
+                <img src={vendorImage} alt={vendorName} className="w-full h-full object-cover" />
+              </div>
+              <div>
+                <div className="flex items-center gap-3">
+                  <span className="text-gray-900 dark:text-white text-[14px] font-bold">
+                    {vendorUsername || vendorName}
+                  </span>
+                  {formattedDate && (
+                    <span className="text-gray-400 dark:text-white/50 text-[12px]">{formattedDate}</span>
+                  )}
+                </div>
+                <span className="text-gray-500 dark:text-white/70 text-[13px] font-medium">
+                  {currentHighlight.title}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {isVerified && (
+                <>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => onEdit?.(currentHighlight)}
+                    className="p-2.5 text-gray-500 hover:text-gray-800 dark:text-white/70 dark:hover:text-white bg-gray-100 dark:bg-white/10 rounded-full transition-colors"
+                  >
+                    <Edit2Icon size={16} />
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="p-2.5 text-gray-500 hover:text-red-500 dark:text-white/70 dark:hover:text-red-400 bg-gray-100 dark:bg-white/10 rounded-full transition-colors"
+                  >
+                    <Trash2 size={16} />
+                  </motion.button>
+                </>
+              )}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={onClose}
+                className="p-2.5 text-gray-500 hover:text-gray-800 dark:text-white/70 dark:hover:text-white bg-gray-100 dark:bg-white/10 rounded-full transition-colors"
+              >
+                <X size={18} />
+              </motion.button>
+            </div>
+          </div>
+        </div>
+
+        {/* Scrollable Content */}
+        <div ref={containerRef} className="flex-1 overflow-y-auto px-8 pb-10">
+          <AnimatePresence mode="wait" custom={swipeDirection}>
+            <motion.div
+              key={currentHighlight._id}
+              custom={swipeDirection}
+              initial={(dir) => ({
+                opacity: 0,
+                x: (dir || swipeDirection) > 0 ? 300 : -300,
+                scale: 0.96,
+              })}
+              animate={{
+                opacity: 1,
+                x: 0,
+                scale: 1,
+              }}
+              exit={(dir) => ({
+                opacity: 0,
+                x: (dir || swipeDirection) > 0 ? -300 : 300,
+                scale: 0.96,
+              })}
+              transition={{
+                type: "spring",
+                stiffness: 320,
+                damping: 30,
+                mass: 0.8,
+                opacity: { duration: 0.2 },
+              }}
+              className="max-w-4xl mx-auto space-y-6 pt-6"
+            >
+              {/* Info Card */}
+              <div className="bg-gray-50 dark:bg-white/[0.06] backdrop-blur-xl rounded-2xl border border-gray-200 dark:border-white/[0.08] overflow-hidden shadow-sm">
+                <div className="p-6 space-y-4">
+                  <div className="flex items-start gap-5">
+                    {currentHighlight.coverImage && (
+                      <motion.div
+                        initial={{ opacity: 0, scale: 0.85 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                        className="flex-shrink-0"
+                      >
+                        <div
+                          className="w-[88px] h-[88px] rounded-full overflow-hidden p-[3px]"
+                          style={{
+                            background: categoryColor
+                              ? `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`
+                              : "linear-gradient(135deg, #6366f1, #3b82f6)",
+                          }}
+                        >
+                          <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-gray-900 p-[2px]">
+                            <img
+                              src={currentHighlight.coverImage}
+                              alt={currentHighlight.title}
+                              className="w-full h-full object-cover rounded-full"
+                            />
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
+                    <div className="flex-1 min-w-0 pt-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <h2 className="text-gray-900 dark:text-white text-[22px] font-bold leading-tight flex-1 truncate">
+                          {currentHighlight.title}
+                        </h2>
+                        {formattedDate && (
+                          <span className="text-gray-400 dark:text-white/40 text-[12px] font-medium whitespace-nowrap bg-gray-100 dark:bg-white/5 px-3 py-1.5 rounded-full flex-shrink-0">
+                            {formattedDate}
+                          </span>
+                        )}
+                      </div>
+
+                      {currentHighlight.description && (
+                        <p className="text-gray-600 dark:text-white/80 text-[14px] leading-relaxed mt-2">
+                          {currentHighlight.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {(currentHighlight.category || currentHighlight.subcategory) && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {currentHighlight.category && (
+                        <span className="px-3 py-1.5 bg-gray-100 dark:bg-white/10 rounded-full text-[12px] text-gray-600 dark:text-white/80 font-medium">
+                          {currentHighlight.category}
+                        </span>
+                      )}
+                      {currentHighlight.subcategory && (
+                        <span className="px-3 py-1.5 bg-gray-100 dark:bg-white/10 rounded-full text-[12px] text-gray-500 dark:text-white/70 font-medium">
+                          {currentHighlight.subcategory}
+                        </span>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-5 pt-1">
+                    {currentHighlight.images?.length > 0 && (
+                      <div className="flex items-center gap-2 text-gray-400 dark:text-white/50 text-[12px]">
+                        <Image size={14} />
+                        <span>{currentHighlight.images.length} photos</span>
+                      </div>
+                    )}
+                    {currentHighlight.videos?.length > 0 && (
+                      <div className="flex items-center gap-2 text-gray-400 dark:text-white/50 text-[12px]">
+                        <Film size={14} />
+                        <span>{currentHighlight.videos.length} videos</span>
+                      </div>
+                    )}
+                    {currentHighlight.testimonials?.length > 0 && (
+                      <div className="flex items-center gap-2 text-gray-400 dark:text-white/50 text-[12px]">
+                        <MessageCircle size={14} />
+                        <span>{currentHighlight.testimonials.length} reviews</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Details */}
+              {currentHighlight.content && Object.keys(currentHighlight.content).length > 0 && (
+                <div className="bg-gray-50 dark:bg-white/[0.06] backdrop-blur-xl rounded-2xl p-6 border border-gray-200 dark:border-white/[0.08] shadow-sm">
+                  <h4 className="text-gray-800 dark:text-white font-bold text-[14px] mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <div className="w-1 h-4 rounded-full bg-gradient-to-b from-blue-400 to-purple-400" />
+                    Event Details
+                  </h4>
+                  <div className="grid grid-cols-2 gap-x-8 gap-y-0">
+                    {Object.entries(currentHighlight.content).map(([key, value], idx, arr) => (
+                      <div
+                        key={key}
+                        className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-white/[0.06]"
+                      >
+                        <span className="text-gray-400 dark:text-white/50 text-[13px] capitalize font-medium">
+                          {key.replace(/_/g, " ")}
+                        </span>
+                        <span className="text-gray-800 dark:text-white text-[13px] font-semibold bg-gray-100 dark:bg-white/5 px-3 py-1 rounded-md">
+                          {String(value)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Photos Grid */}
+              {currentHighlight.images?.length > 0 && (
+                <div>
+                  <h4 className="text-gray-800 dark:text-white font-bold text-[14px] mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <div className="w-1 h-4 rounded-full bg-gradient-to-b from-green-400 to-emerald-400" />
+                    <Image size={15} className="text-gray-400 dark:text-white/60" />
+                    Photos ({currentHighlight.images.length})
+                  </h4>
+                  <div className="grid grid-cols-4 gap-3">
+                    {currentHighlight.images.map((img, idx) => (
+                      <motion.div
+                        key={idx}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() =>
+                          onMediaClick?.({
+                            type: "image",
+                            url: img.url,
+                            caption: img.caption,
+                            allImages: currentHighlight.images,
+                            currentIndex: idx,
+                          })
+                        }
+                        className="aspect-square rounded-2xl overflow-hidden cursor-pointer relative group"
+                      >
+                        <img
+                          src={img.url}
+                          alt={img.caption || ""}
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                          <ZoomIn
+                            size={24}
+                            className="text-white opacity-0 group-hover:opacity-100 transition-opacity drop-shadow-lg"
+                          />
+                        </div>
+                        {img.caption && (
+                          <div className="absolute bottom-0 left-0 right-0 p-2.5 bg-gradient-to-t from-black/60 to-transparent">
+                            <p className="text-white text-[12px] truncate font-medium">{img.caption}</p>
+                          </div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Videos Grid */}
+              {currentHighlight.videos?.length > 0 && (
+                <div>
+                  <h4 className="text-gray-800 dark:text-white font-bold text-[14px] mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <div className="w-1 h-4 rounded-full bg-gradient-to-b from-red-400 to-orange-400" />
+                    <Film size={15} className="text-gray-400 dark:text-white/60" />
+                    Videos ({currentHighlight.videos.length})
+                  </h4>
+                  <div className="grid grid-cols-4 gap-3">
+                    {currentHighlight.videos.map((video, idx) => (
+                      <VideoThumbnailCard
+                        key={idx}
+                        videoUrl={video.url}
+                        thumbnailUrl={video.thumbnailUrl}
+                        caption={video.caption}
+                        duration={video.duration}
+                        onClick={() =>
+                          onMediaClick?.({
+                            type: "video",
+                            url: video.url,
+                            thumbnailUrl: video.thumbnailUrl,
+                            caption: video.caption,
+                            allVideos: currentHighlight.videos,
+                            currentIndex: idx,
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Testimonials Grid */}
+              {currentHighlight.testimonials?.length > 0 && (
+                <div>
+                  <h4 className="text-gray-800 dark:text-white font-bold text-[14px] mb-4 uppercase tracking-wider flex items-center gap-2">
+                    <div className="w-1 h-4 rounded-full bg-gradient-to-b from-purple-400 to-pink-400" />
+                    <MessageCircle size={15} className="text-gray-400 dark:text-white/60" />
+                    Testimonials ({currentHighlight.testimonials.length})
+                  </h4>
+                  <div className="grid grid-cols-4 gap-3">
+                    {currentHighlight.testimonials.map((testimonial, idx) => (
+                      <VideoThumbnailCard
+                        key={idx}
+                        videoUrl={testimonial.videoUrl}
+                        thumbnailUrl={testimonial.thumbnailUrl}
+                        caption=""
+                        personName={testimonial.personName}
+                        isTestimonial
+                        onClick={() =>
+                          onMediaClick?.({
+                            type: "video",
+                            url: testimonial.videoUrl,
+                            thumbnailUrl: testimonial.thumbnailUrl,
+                            personName: testimonial.personName,
+                            allVideos: currentHighlight.testimonials.map((t) => ({
+                              url: t.videoUrl,
+                              thumbnailUrl: t.thumbnailUrl,
+                              personName: t.personName,
+                              caption: t.personName,
+                            })),
+                            currentIndex: idx,
+                            isTestimonial: true,
+                          })
+                        }
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Empty State */}
+              {!currentHighlight.description &&
+                !currentHighlight.images?.length &&
+                !currentHighlight.videos?.length &&
+                !currentHighlight.testimonials?.length && (
+                  <div className="flex flex-col items-center justify-center py-20 text-center">
+                    <div className="w-24 h-24 rounded-full bg-gray-100 dark:bg-white/10 flex items-center justify-center mb-5">
+                      <Sparkles size={36} className="text-gray-300 dark:text-white/40" />
+                    </div>
+                    <p className="text-gray-400 dark:text-white/60 text-[15px] font-medium">
+                      No content in this highlight yet
+                    </p>
+                  </div>
+                )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </motion.div>
+
+      {/* End Reached Toast */}
+      <AnimatePresence>
+        {showEndReached && (
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 25 }}
+            className="absolute bottom-10 left-1/2 -translate-x-1/2 z-40 px-6 py-3 bg-gray-900 dark:bg-white/15 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-700 dark:border-white/10 flex items-center gap-2.5"
+          >
+            {showEndReached === "start" ? (
+              <ChevronLeft size={16} className="text-gray-400" />
+            ) : (
+              <ChevronRight size={16} className="text-gray-400" />
+            )}
+            <span className="text-white text-[13px] font-semibold whitespace-nowrap">
+              {showEndReached === "start" ? "You're at the first highlight" : "You've reached the last highlight"}
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirm Modal */}
+      <AnimatePresence>
+        {showDeleteConfirm && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 z-50 bg-black/50 dark:bg-black/70 flex items-center justify-center p-6"
+            onClick={() => setShowDeleteConfirm(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-slate-900 rounded-2xl p-8 max-w-md w-full border border-gray-200 dark:border-slate-700 shadow-2xl"
+            >
+              <h3 className="text-gray-900 dark:text-white font-bold text-[18px] mb-2">Delete Highlight?</h3>
+              <p className="text-gray-500 dark:text-slate-400 text-[14px] mb-6">
+                This will permanently delete &quot;{currentHighlight.title}&quot; and all its content.
+              </p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="px-6 py-2.5 rounded-xl bg-gray-100 text-gray-700 dark:bg-slate-800 dark:text-white font-semibold text-[14px] hover:bg-gray-200 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowDeleteConfirm(false);
+                    onDelete?.(currentHighlight._id);
+                  }}
+                  className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-semibold text-[14px] transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+};
+
+const HighlightMediaFullscreen = ({ media, onClose }) => {
+  const videoRef = useRef(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [currentIndex, setCurrentIndex] = useState(media.currentIndex || 0);
+  const controlsTimer = useRef(null);
+
+  const touchStartRef = useRef({ x: 0, y: 0 });
+  const touchDeltaRef = useRef({ x: 0, y: 0 });
+  const [swipeOffset, setSwipeOffset] = useState({ x: 0, y: 0 });
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [slideDirection, setSlideDirection] = useState(0);
+
+  const isImage = media.type === "image";
+  const isVideo = media.type === "video";
+
+  const allItems = isImage ? media.allImages : media.allVideos;
+  const hasMultiple = allItems && allItems.length > 1;
+  const currentItem = allItems ? allItems[currentIndex] : media;
+  const currentUrl = isImage ? currentItem?.url : currentItem?.url || currentItem?.videoUrl;
+  const currentCaption = currentItem?.caption || "";
+  const currentPersonName = currentItem?.personName || media.personName || "";
+
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
+  useEffect(() => {
+    setIsPlaying(false);
+    setShowControls(true);
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+  }, [currentIndex]);
+
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (e.key === "Escape") onClose();
+      if (e.key === " " && isVideo) {
+        e.preventDefault();
+        togglePlay();
+      }
+      if (!hasMultiple) return;
+      if (isImage) {
+        if (e.key === "ArrowRight" && currentIndex < allItems.length - 1) {
+          navigateTo(currentIndex + 1, 1);
+        }
+        if (e.key === "ArrowLeft" && currentIndex > 0) {
+          navigateTo(currentIndex - 1, -1);
+        }
+      }
+      if (isVideo) {
+        if (e.key === "ArrowDown" && currentIndex < allItems.length - 1) {
+          navigateTo(currentIndex + 1, 1);
+        }
+        if (e.key === "ArrowUp" && currentIndex > 0) {
+          navigateTo(currentIndex - 1, -1);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [currentIndex, allItems?.length, isImage, isVideo, hasMultiple]);
+
+  const navigateTo = useCallback(
+    (newIndex, direction) => {
+      if (isAnimating || !allItems || newIndex < 0 || newIndex >= allItems.length) return;
+      setIsAnimating(true);
+      setSlideDirection(direction);
+      setTimeout(() => {
+        setCurrentIndex(newIndex);
+        setSlideDirection(0);
+        setSwipeOffset({ x: 0, y: 0 });
+        setTimeout(() => setIsAnimating(false), 50);
+      }, 200);
+    },
+    [isAnimating, allItems],
+  );
+
+  const togglePlay = useCallback(() => {
+    if (!videoRef.current) return;
+    if (videoRef.current.paused) {
+      videoRef.current.play();
+      setIsPlaying(true);
+      controlsTimer.current = setTimeout(() => setShowControls(false), 2500);
+    } else {
+      videoRef.current.pause();
+      setIsPlaying(false);
+      setShowControls(true);
+      if (controlsTimer.current) clearTimeout(controlsTimer.current);
+    }
+  }, []);
+
+  const handleTap = useCallback(() => {
+    if (isVideo) {
+      setShowControls(true);
+      if (controlsTimer.current) clearTimeout(controlsTimer.current);
+      controlsTimer.current = setTimeout(() => {
+        if (isPlaying) setShowControls(false);
+      }, 2500);
+    }
+  }, [isVideo, isPlaying]);
+
+  const handleTouchStart = useCallback(
+    (e) => {
+      if (zoomLevel > 1) return;
+      touchStartRef.current = {
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY,
+      };
+      touchDeltaRef.current = { x: 0, y: 0 };
+    },
+    [zoomLevel],
+  );
+
+  const handleTouchMove = useCallback(
+    (e) => {
+      if (zoomLevel > 1 || !hasMultiple) return;
+      const deltaX = e.touches[0].clientX - touchStartRef.current.x;
+      const deltaY = e.touches[0].clientY - touchStartRef.current.y;
+      touchDeltaRef.current = { x: deltaX, y: deltaY };
+
+      if (isImage) {
+        if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 10) {
+          setSwipeOffset({ x: deltaX * 0.4, y: 0 });
+        }
+      } else {
+        if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 10) {
+          setSwipeOffset({ x: 0, y: deltaY * 0.4 });
+        }
+      }
+    },
+    [zoomLevel, hasMultiple, isImage],
+  );
+
+  const handleTouchEnd = useCallback(() => {
+    if (zoomLevel > 1 || !hasMultiple) return;
+    const { x, y } = touchDeltaRef.current;
+
+    if (isImage && Math.abs(x) > 60) {
+      if (x < 0 && currentIndex < allItems.length - 1) {
+        navigateTo(currentIndex + 1, 1);
+        return;
+      }
+      if (x > 0 && currentIndex > 0) {
+        navigateTo(currentIndex - 1, -1);
+        return;
+      }
+    }
+
+    if (isVideo && Math.abs(y) > 60) {
+      if (y < 0 && currentIndex < allItems.length - 1) {
+        navigateTo(currentIndex + 1, 1);
+        return;
+      }
+      if (y > 0 && currentIndex > 0) {
+        navigateTo(currentIndex - 1, -1);
+        return;
+      }
+    }
+
+    setSwipeOffset({ x: 0, y: 0 });
+  }, [zoomLevel, hasMultiple, isImage, isVideo, currentIndex, allItems?.length, navigateTo]);
+
+  const getSlideStyle = () => {
+    if (isImage) {
+      return {
+        x: slideDirection !== 0 ? slideDirection * -100 : swipeOffset.x,
+        opacity: slideDirection !== 0 ? 0 : 1 - Math.abs(swipeOffset.x) / 500,
+      };
+    }
+    return {
+      y: slideDirection !== 0 ? slideDirection * -100 : swipeOffset.y,
+      opacity: slideDirection !== 0 ? 0 : 1 - Math.abs(swipeOffset.y) / 500,
+    };
+  };
+
+  const VideoThumbnailInline = ({ src, poster }) => {
+    const { thumbnail } = useVideoThumbnail(src, poster);
+    return thumbnail;
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[110] bg-black flex items-center justify-center"
+      onClick={handleTap}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Top bar */}
+      <AnimatePresence>
+        {showControls && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between px-6 py-5 bg-gradient-to-b from-black/60 to-transparent"
+          >
+            <div className="flex items-center gap-4 flex-1 min-w-0">
+              {hasMultiple && (
+                <span className="text-white/60 text-[13px] font-bold bg-white/10 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                  {currentIndex + 1} / {allItems.length}
+                </span>
+              )}
+              {(currentPersonName || currentCaption) && (
+                <span className="text-white/80 text-[14px] font-medium truncate">
+                  {currentPersonName || currentCaption}
+                </span>
+              )}
+            </div>
+
+            <div className="flex gap-3 shrink-0">
+              {isImage && (
+                <>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setZoomLevel((z) => Math.min(z + 0.5, 3));
+                    }}
+                    className="p-3 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-sm transition-colors"
+                  >
+                    <ZoomIn size={20} />
+                  </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setZoomLevel(1);
+                    }}
+                    className="p-3 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-sm transition-colors"
+                  >
+                    <RotateCcw size={20} />
+                  </motion.button>
+                </>
+              )}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClose();
+                }}
+                className="p-3 text-white/80 hover:text-white bg-white/10 hover:bg-white/20 rounded-full backdrop-blur-sm transition-colors"
+              >
+                <X size={20} />
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* IMAGE VIEW */}
+      {isImage && (
+        <AnimatePresence mode="wait">
+          <motion.img
+            key={`img-${currentIndex}`}
+            src={currentUrl}
+            alt={currentCaption || "Full view"}
+            className="max-w-[85vw] max-h-[85vh] object-contain select-none rounded-lg"
+            initial={{ opacity: 0, x: slideDirection * 300, scale: 0.92 }}
+            animate={{
+              opacity: 1,
+              x: swipeOffset.x,
+              scale: zoomLevel,
+            }}
+            exit={{ opacity: 0, x: slideDirection * -300, scale: 0.92 }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 30,
+              opacity: { duration: 0.2 },
+            }}
+            draggable={false}
+          />
+        </AnimatePresence>
+      )}
+
+      {/* Image caption */}
+      {isImage && currentCaption && showControls && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          className="absolute bottom-8 left-0 right-0 flex justify-center z-30"
+        >
+          <div className="bg-black/50 backdrop-blur-md px-5 py-2.5 rounded-full">
+            <p className="text-white text-[14px] font-medium">{currentCaption}</p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Image nav arrows */}
+      {isImage && hasMultiple && currentIndex > 0 && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            navigateTo(currentIndex - 1, -1);
+          }}
+          className="absolute left-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+        >
+          <ChevronLeft size={22} className="text-white" />
+        </button>
+      )}
+      {isImage && hasMultiple && currentIndex < allItems.length - 1 && (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            navigateTo(currentIndex + 1, 1);
+          }}
+          className="absolute right-6 top-1/2 -translate-y-1/2 z-30 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+        >
+          <ChevronRight size={22} className="text-white" />
+        </button>
+      )}
+
+      {/* Image dots */}
+      {isImage && hasMultiple && (
+        <div className="absolute bottom-20 left-0 right-0 flex justify-center gap-2 z-30">
+          {allItems.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigateTo(idx, idx > currentIndex ? 1 : -1);
+              }}
+              className={`rounded-full transition-all duration-300 ${
+                idx === currentIndex ? "w-7 h-2.5 bg-white" : "w-2.5 h-2.5 bg-white/40 hover:bg-white/60"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* VIDEO VIEW */}
+      {isVideo && (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`vid-${currentIndex}`}
+            className="relative w-full h-full flex items-center justify-center"
+            initial={{ opacity: 0, y: slideDirection * 300, scale: 0.92 }}
+            animate={{ opacity: 1, y: swipeOffset.y, scale: 1 }}
+            exit={{ opacity: 0, y: slideDirection * -300, scale: 0.92 }}
+            transition={{
+              type: "spring",
+              stiffness: 300,
+              damping: 30,
+              opacity: { duration: 0.2 },
+            }}
+          >
+            <video
+              ref={videoRef}
+              src={currentUrl}
+              poster={currentItem?.thumbnailUrl || undefined}
+              className="max-w-[75vw] max-h-[85vh] object-contain rounded-lg"
+              playsInline
+              loop
+              onClick={(e) => {
+                e.stopPropagation();
+                togglePlay();
+              }}
+            />
+
+            <AnimatePresence>
+              {showControls && !isPlaying && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                >
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      togglePlay();
+                    }}
+                    className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30 pointer-events-auto cursor-pointer hover:bg-white/30 transition-colors"
+                  >
+                    <Play size={32} className="text-white fill-white ml-1" />
+                  </motion.button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
+        </AnimatePresence>
+      )}
+
+      {/* Video person name / testimonial overlay */}
+      {isVideo && (currentPersonName || (media.isTestimonial && currentCaption)) && showControls && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          className="absolute bottom-10 left-0 right-0 flex justify-center z-30 px-6"
+        >
+          <div className="bg-black/50 backdrop-blur-md px-6 py-3.5 rounded-2xl max-w-md text-center">
+            {media.isTestimonial && (
+              <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                <MessageCircle size={13} className="text-purple-300" />
+                <span className="text-purple-300 text-[11px] font-bold uppercase tracking-wider">Testimonial</span>
+              </div>
+            )}
+            <p className="text-white text-[15px] font-semibold">{currentPersonName || currentCaption}</p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Video vertical nav arrows */}
+      {isVideo && hasMultiple && (
+        <>
+          {currentIndex > 0 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigateTo(currentIndex - 1, -1);
+              }}
+              className="absolute top-28 left-1/2 -translate-x-1/2 z-30 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+            >
+              <ChevronUp size={22} className="text-white" />
+            </button>
+          )}
+          {currentIndex < allItems.length - 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                navigateTo(currentIndex + 1, 1);
+              }}
+              className="absolute bottom-28 left-1/2 -translate-x-1/2 z-30 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-white/20 transition-colors"
+            >
+              <ChevronDown size={22} className="text-white" />
+            </button>
+          )}
+        </>
+      )}
+
+      {/* Video vertical dots */}
+      {isVideo && hasMultiple && (
+        <div className="absolute right-5 top-1/2 -translate-y-1/2 flex flex-col gap-2 z-30">
+          {allItems.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={(e) => {
+                e.stopPropagation();
+                navigateTo(idx, idx > currentIndex ? 1 : -1);
+              }}
+              className={`rounded-full transition-all duration-300 ${
+                idx === currentIndex ? "w-2.5 h-7 bg-white" : "w-2.5 h-2.5 bg-white/40 hover:bg-white/60"
+              }`}
+            />
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
+const VideoThumbnailCard = ({ videoUrl, thumbnailUrl, caption, duration, onClick, personName, isTestimonial }) => {
+  const { thumbnail, loading } = useVideoThumbnail(videoUrl, thumbnailUrl);
+
+  return (
+    <motion.div
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick}
+      className="w-full aspect-[9/16] rounded-2xl overflow-hidden cursor-pointer relative group"
+    >
+      {loading ? (
+        <div className="w-full h-full bg-slate-800 animate-pulse flex items-center justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <div className="w-8 h-8 rounded-full border-2 border-white/30 border-t-white/80 animate-spin" />
+            <span className="text-white/40 text-[10px]">Loading...</span>
+          </div>
+        </div>
+      ) : thumbnail ? (
+        <img
+          src={thumbnail}
+          alt={caption || ""}
+          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+        />
+      ) : (
+        <div
+          className={`w-full h-full flex items-center justify-center ${
+            isTestimonial
+              ? "bg-gradient-to-br from-purple-900/80 to-pink-900/80"
+              : "bg-gradient-to-br from-slate-800 to-slate-700"
+          }`}
+        >
+          {isTestimonial ? (
+            <MessageCircle size={32} className="text-white/30" />
+          ) : (
+            <Film size={32} className="text-white/30" />
+          )}
+        </div>
+      )}
+
+      <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+        <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30 group-hover:bg-white/30 transition-colors">
+          <Play size={20} className="text-white fill-white ml-0.5" />
+        </div>
+      </div>
+
+      {duration && (
+        <div className="absolute top-2.5 right-2.5 bg-black/60 backdrop-blur-sm px-2.5 py-1 rounded-md text-white text-[11px] font-bold">
+          {duration}
+        </div>
+      )}
+
+      <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/70 via-black/30 to-transparent">
+        {personName && <p className="text-white text-[12px] font-semibold truncate leading-tight">{personName}</p>}
+        {caption && <p className={`text-white/80 text-[11px] truncate ${personName ? "mt-0.5" : ""}`}>{caption}</p>}
+      </div>
+    </motion.div>
+  );
+};
+
+const HIGHLIGHT_CATEGORIES = [
+  "Wedding",
+  "Reception",
+  "Engagement",
+  "Pre-Wedding",
+  "Birthday",
+  "Corporate",
+  "Festival",
+  "Portfolio",
+  "Behind the Scenes",
+  "Other",
+];
+const AddHighlightModal = ({
+  isOpen,
+  onClose,
+  vendorId,
+  editingHighlight,
+  onHighlightAdded,
+  onHighlightUpdated,
+  categoryColor,
+}) => {
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [eventDate, setEventDate] = useState("");
+  const [hlCategory, setHlCategory] = useState("");
+  const [subcategory, setSubcategory] = useState("");
+  const [coverImageFile, setCoverImageFile] = useState(null);
+  const [coverImagePreview, setCoverImagePreview] = useState("");
+  const [imageFiles, setImageFiles] = useState([]);
+  const [videoFiles, setVideoFiles] = useState([]);
+  const [testimonialFiles, setTestimonialFiles] = useState([]);
+  const [contentFields, setContentFields] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadStatus, setUploadStatus] = useState("");
+  const [error, setError] = useState("");
+  const [activeSection, setActiveSection] = useState("details");
+  const [bunnyConfig, setBunnyConfig] = useState(null);
+  const [isLoadingConfig, setIsLoadingConfig] = useState(false);
+  const [configError, setConfigError] = useState(false);
+
+  const [existingImages, setExistingImages] = useState([]);
+  const [existingVideos, setExistingVideos] = useState([]);
+  const [existingTestimonials, setExistingTestimonials] = useState([]);
+
+  const imageInputRef = useRef(null);
+  const videoInputRef = useRef(null);
+  const testimonialInputRef = useRef(null);
+  const coverInputRef = useRef(null);
+  const mountedRef = useRef(true);
+  const objectUrlsRef = useRef([]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      objectUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      objectUrlsRef.current = [];
+    };
+  }, []);
+
+  useEffect(() => {
+    if (editingHighlight) {
+      setTitle(editingHighlight.title || "");
+      setDescription(editingHighlight.description || "");
+      setEventDate(editingHighlight.eventDate ? new Date(editingHighlight.eventDate).toISOString().split("T")[0] : "");
+      setHlCategory(editingHighlight.category || "");
+      setSubcategory(editingHighlight.subcategory || "");
+      setCoverImagePreview(editingHighlight.coverImage || "");
+      setExistingImages(editingHighlight.images || []);
+      setExistingVideos(editingHighlight.videos || []);
+      setExistingTestimonials(editingHighlight.testimonials || []);
+      if (editingHighlight.content && typeof editingHighlight.content === "object") {
+        setContentFields(
+          Object.entries(editingHighlight.content).map(([key, value]) => ({ key, value: String(value) })),
+        );
+      }
+    } else {
+      setTitle("");
+      setDescription("");
+      setEventDate("");
+      setHlCategory("");
+      setSubcategory("");
+      setCoverImageFile(null);
+      setCoverImagePreview("");
+      setImageFiles([]);
+      setVideoFiles([]);
+      setTestimonialFiles([]);
+      setContentFields([]);
+      setExistingImages([]);
+      setExistingVideos([]);
+      setExistingTestimonials([]);
+    }
+  }, [editingHighlight]);
+
+  useEffect(() => {
+    if (isOpen) document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen && !bunnyConfig && !isLoadingConfig && !configError) {
+      const fetchBunnyConfig = async () => {
+        setIsLoadingConfig(true);
+        setConfigError(false);
+        try {
+          const response = await fetch(`/api/vendor/${vendorId}/profile/upload-config`);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const result = await response.json();
+          if (result.success && result.data) {
+            if (mountedRef.current) setBunnyConfig(result.data);
+          } else {
+            throw new Error(result.error || "Invalid config response");
+          }
+        } catch (error) {
+          console.error("Config fetch error:", error);
+          if (mountedRef.current) {
+            setConfigError(true);
+            setError("Failed to initialize upload service. Please reopen and try again.");
+          }
+        } finally {
+          if (mountedRef.current) setIsLoadingConfig(false);
+        }
+      };
+      fetchBunnyConfig();
+    }
+  }, [isOpen, bunnyConfig, isLoadingConfig, configError, vendorId]);
+
+  const uploadImageToImageKit = useCallback(async (file, folder) => {
+    const authRes = await fetch("/api/imagekit/auth");
+    const authData = await authRes.json();
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("publicKey", process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY);
+    formData.append("signature", authData.signature);
+    formData.append("expire", authData.expire);
+    formData.append("token", authData.token);
+    formData.append(
+      "fileName",
+      `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${file.name.split(".").pop()}`,
+    );
+    formData.append("folder", folder);
+
+    const res = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!res.ok) throw new Error("Image upload failed");
+    const data = await res.json();
+    return { url: data.url, storagePath: data.filePath || "" };
+  }, []);
+
+  const uploadVideoToBunny = useCallback(
+    async (file, path) => {
+      if (!bunnyConfig) throw new Error("Upload service not initialized");
+
+      const url = `${bunnyConfig.storageEndpoint}/${path}`;
+
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+
+        xhr.addEventListener("load", () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve(`${bunnyConfig.pullZoneUrl}/${path}`);
+          } else {
+            reject(new Error(`Video upload failed (${xhr.status})`));
+          }
+        });
+        xhr.addEventListener("error", () => reject(new Error("Video upload network error")));
+        xhr.addEventListener("abort", () => reject(new Error("Video upload cancelled")));
+        xhr.timeout = 600000;
+        xhr.open("PUT", url);
+        xhr.setRequestHeader("AccessKey", bunnyConfig.storageZonePassword);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+        xhr.send(file);
+      });
+    },
+    [bunnyConfig],
+  );
+
+  const createObjectUrl = useCallback((file) => {
+    const url = URL.createObjectURL(file);
+    objectUrlsRef.current.push(url);
+    return url;
+  }, []);
+
+  const handleAddImages = useCallback(
+    (e) => {
+      const files = Array.from(e.target.files || []);
+      const newImages = files
+        .filter((f) => f.type.startsWith("image/") && f.size <= 10 * 1024 * 1024)
+        .map((file) => ({ file, preview: createObjectUrl(file), caption: "" }));
+      setImageFiles((prev) => [...prev, ...newImages]);
+      e.target.value = "";
+    },
+    [createObjectUrl],
+  );
+
+  const handleAddVideos = useCallback(
+    (e) => {
+      const files = Array.from(e.target.files || []);
+      const newVideos = files
+        .filter((f) => f.type.startsWith("video/") && f.size <= 100 * 1024 * 1024)
+        .map((file) => ({
+          file,
+          preview: createObjectUrl(file),
+          caption: "",
+          thumbnailFile: null,
+          thumbnailPreview: "",
+        }));
+      setVideoFiles((prev) => [...prev, ...newVideos]);
+      e.target.value = "";
+    },
+    [createObjectUrl],
+  );
+
+  const handleAddTestimonials = useCallback(
+    (e) => {
+      const files = Array.from(e.target.files || []);
+      const newT = files
+        .filter((f) => f.type.startsWith("video/") && f.size <= 100 * 1024 * 1024)
+        .map((file) => ({
+          file,
+          preview: createObjectUrl(file),
+          personName: "",
+          thumbnailFile: null,
+          thumbnailPreview: "",
+        }));
+      setTestimonialFiles((prev) => [...prev, ...newT]);
+      e.target.value = "";
+    },
+    [createObjectUrl],
+  );
+
+  const handleCoverImage = useCallback(
+    (e) => {
+      const file = e.target.files?.[0];
+      if (!file || !file.type.startsWith("image/")) return;
+      setCoverImageFile(file);
+      setCoverImagePreview(createObjectUrl(file));
+      e.target.value = "";
+    },
+    [createObjectUrl],
+  );
+
+  const removeImage = useCallback((index) => {
+    setImageFiles((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+  const removeVideo = useCallback((index) => {
+    setVideoFiles((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+  const removeTestimonial = useCallback((index) => {
+    setTestimonialFiles((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+  const removeExistingImage = useCallback((index) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+  const removeExistingVideo = useCallback((index) => {
+    setExistingVideos((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+  const removeExistingTestimonial = useCallback((index) => {
+    setExistingTestimonials((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  const handleSubmit = useCallback(async () => {
+    if (!title.trim()) {
+      setError("Title is required");
+      return;
+    }
+    const hasVideos = videoFiles.length > 0 || testimonialFiles.length > 0;
+    if (hasVideos && !bunnyConfig) {
+      setError("Upload service not ready. Please wait a moment and try again.");
+      return;
+    }
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setError("");
+    setUploadProgress(0);
+    setUploadStatus("Preparing...");
+
+    try {
+      const totalUploads = (coverImageFile ? 1 : 0) + imageFiles.length + videoFiles.length + testimonialFiles.length;
+      let completed = 0;
+      const tick = () => {
+        completed++;
+        if (mountedRef.current) setUploadProgress(Math.floor((completed / Math.max(totalUploads, 1)) * 90));
+      };
+
+      let coverImageUrl = coverImagePreview && !coverImageFile ? coverImagePreview : "";
+      if (coverImageFile) {
+        setUploadStatus("Uploading cover...");
+        const r = await uploadImageToImageKit(coverImageFile, `/highlights/${vendorId}/covers`);
+        coverImageUrl = r.url;
+        tick();
+      }
+
+      setUploadStatus("Uploading photos...");
+      const uploadedImages = [...existingImages];
+      for (const img of imageFiles) {
+        const r = await uploadImageToImageKit(img.file, `/highlights/${vendorId}/images`);
+        uploadedImages.push({ url: r.url, storagePath: r.storagePath, caption: img.caption });
+        tick();
+      }
+
+      setUploadStatus("Uploading videos...");
+      const uploadedVideos = [...existingVideos];
+      for (const vid of videoFiles) {
+        const fname = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${vid.file.name.split(".").pop()}`;
+        const path = `highlights/${vendorId}/videos/${fname}`;
+        const videoUrl = await uploadVideoToBunny(vid.file, path);
+        let thumbnailUrl = "",
+          thumbnailPath = "";
+        if (vid.thumbnailFile) {
+          const thumbR = await uploadImageToImageKit(vid.thumbnailFile, `/highlights/${vendorId}/thumbnails`);
+          thumbnailUrl = thumbR.url;
+          thumbnailPath = thumbR.storagePath;
+        }
+        uploadedVideos.push({ url: videoUrl, storagePath: path, thumbnailUrl, thumbnailPath, caption: vid.caption });
+        tick();
+      }
+
+      setUploadStatus("Uploading testimonials...");
+      const uploadedTestimonials = [...existingTestimonials];
+      for (const t of testimonialFiles) {
+        const fname = `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${t.file.name.split(".").pop()}`;
+        const path = `highlights/${vendorId}/testimonials/${fname}`;
+        const videoUrl = await uploadVideoToBunny(t.file, path);
+        let thumbnailUrl = "";
+        if (t.thumbnailFile) {
+          const thumbR = await uploadImageToImageKit(t.thumbnailFile, `/highlights/${vendorId}/test-thumbs`);
+          thumbnailUrl = thumbR.url;
+        }
+        uploadedTestimonials.push({ videoUrl, storagePath: path, thumbnailUrl, personName: t.personName });
+        tick();
+      }
+
+      const content = {};
+      contentFields.forEach((f) => {
+        if (f.key.trim() && f.value.trim()) content[f.key.trim()] = f.value.trim();
+      });
+
+      setUploadProgress(95);
+      setUploadStatus("Saving...");
+
+      const highlightData = {
+        title: title.trim(),
+        description: description.trim(),
+        eventDate: eventDate || null,
+        category: hlCategory,
+        subcategory,
+        coverImage: coverImageUrl,
+        images: uploadedImages,
+        videos: uploadedVideos,
+        testimonials: uploadedTestimonials,
+        content,
+      };
+
+      if (editingHighlight) {
+        const res = await fetch(`/api/vendor/${vendorId}/profile/highlights?highlightId=${editingHighlight._id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(highlightData),
+        });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || "Update failed");
+        setUploadProgress(100);
+        await new Promise((r) => setTimeout(r, 400));
+        onHighlightUpdated?.(result.data);
+      } else {
+        const res = await fetch(`/api/vendor/${vendorId}/profile/highlights`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(highlightData),
+        });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || "Create failed");
+        setUploadProgress(100);
+        await new Promise((r) => setTimeout(r, 400));
+        onHighlightAdded?.(result.data);
+      }
+    } catch (err) {
+      if (mountedRef.current) setError(err.message || "Something went wrong");
+    } finally {
+      if (mountedRef.current) {
+        setIsSubmitting(false);
+        setUploadStatus("");
+        setUploadProgress(0);
+      }
+    }
+  }, [
+    title,
+    description,
+    eventDate,
+    hlCategory,
+    subcategory,
+    coverImageFile,
+    coverImagePreview,
+    imageFiles,
+    videoFiles,
+    testimonialFiles,
+    contentFields,
+    existingImages,
+    existingVideos,
+    existingTestimonials,
+    editingHighlight,
+    vendorId,
+    isSubmitting,
+    uploadImageToImageKit,
+    uploadVideoToBunny,
+    bunnyConfig,
+    onHighlightAdded,
+    onHighlightUpdated,
+  ]);
+
+  if (!isOpen) return null;
+
+  const sections = [
+    { id: "details", label: "Details", icon: FileText },
+    { id: "media", label: "Media", icon: Image },
+    { id: "testimonials", label: "Testimonials", icon: MessageCircle },
+    { id: "content", label: "Content", icon: Layers },
+  ];
+
+  // Sub-component to handle thumbnail per existing video
+  const ExistingVideoThumb = ({ vid, idx, onRemove, onCaptionChange }) => {
+    const { thumbnail, loading } = useVideoThumbnail(vid.url, vid.thumbnailUrl || "");
+
+    return (
+      <div className="relative aspect-[9/16] rounded-xl overflow-hidden bg-slate-800 group">
+        {loading ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />
+          </div>
+        ) : thumbnail ? (
+          <img src={thumbnail} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-slate-700">
+            <Film size={20} className="text-slate-500" />
+          </div>
+        )}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <Play size={18} className="text-white/70" />
+        </div>
+        <button
+          onClick={() => onRemove(idx)}
+          className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+        >
+          <X size={13} className="text-white" />
+        </button>
+        <input
+          type="text"
+          value={vid.caption || ""}
+          onChange={(e) => onCaptionChange(e.target.value)}
+          placeholder="Caption..."
+          className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[11px] px-2.5 py-1.5 focus:outline-none placeholder:text-white/50"
+          maxLength={100}
+        />
+      </div>
+    );
+  };
+
+  const ExistingTestimonialThumb = ({ videoUrl, thumbnailUrl }) => {
+  const { thumbnail, loading } = useVideoThumbnail(videoUrl, thumbnailUrl || "");
+
+  return (
+    <div className="w-14 h-20 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0 relative">
+      {loading ? (
+        <div className="w-full h-full flex items-center justify-center">
+          <div className="w-4 h-4 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />
+        </div>
+      ) : thumbnail ? (
+        <img src={thumbnail} alt="" className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <Play size={14} className="text-slate-500" />
+        </div>
+      )}
+    </div>
+  );
+};
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-stretch justify-end"
+      onClick={onClose}
+    >
+      {/* Right-side Drawer */}
+      <motion.div
+        initial={{ x: "100%" }}
+        animate={{ x: 0 }}
+        exit={{ x: "100%" }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white dark:bg-slate-900 w-full max-w-2xl h-full flex flex-col overflow-hidden shadow-2xl border-l border-slate-200 dark:border-slate-800"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200 dark:border-slate-800 shrink-0">
+          <div className="flex items-center gap-3">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={onClose}
+              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            >
+              <X size={20} className="text-slate-500" />
+            </motion.button>
+            <h2 className="text-[18px] font-bold text-slate-900 dark:text-white">
+              {editingHighlight ? "Edit Highlight" : "Add Highlight"}
+            </h2>
+          </div>
+          {!isSubmitting && (
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleSubmit}
+              disabled={!title.trim()}
+              className="px-6 py-2.5 rounded-xl text-white text-[14px] font-bold disabled:opacity-40 transition-opacity"
+              style={{ background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})` }}
+            >
+              {editingHighlight ? "Update" : "Create"}
+            </motion.button>
+          )}
+        </div>
+
+        {/* Progress */}
+        {isSubmitting && (
+          <div className="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[13px] font-medium text-slate-600 dark:text-slate-400">{uploadStatus}</span>
+              <span className="text-[13px] font-bold" style={{ color: categoryColor.primary }}>
+                {uploadProgress}%
+              </span>
+            </div>
+            <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full rounded-full"
+                style={{ background: `linear-gradient(90deg, ${categoryColor.primary}, ${categoryColor.secondary})` }}
+                animate={{ width: `${uploadProgress}%` }}
+                transition={{ duration: 0.3 }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Error */}
+        {error && (
+          <div className="px-6 py-3 bg-red-50 dark:bg-red-900/20 border-b border-red-200 dark:border-red-800/40">
+            <div className="flex items-center gap-2 text-red-600 dark:text-red-400">
+              <AlertCircle size={15} />
+              <span className="text-[13px] font-medium">{error}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Section tabs — vertical sidebar style */}
+        <div className="flex border-b border-slate-100 dark:border-slate-800/50 shrink-0">
+          {sections.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setActiveSection(s.id)}
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 text-[13px] font-bold whitespace-nowrap transition-all border-b-2 ${
+                activeSection === s.id
+                  ? "border-slate-900 dark:border-white text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/30"
+                  : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/20"
+              }`}
+            >
+              <s.icon size={14} />
+              {s.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Form Content */}
+        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-5">
+          {activeSection === "details" && (
+            <>
+              {/* Title + Date row */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">
+                    Title <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g., Summer Wedding 2024"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 transition-shadow"
+                    maxLength={60}
+                  />
+                </div>
+                <div>
+                  <label className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">
+                    Event Date
+                  </label>
+                  <input
+                    type="date"
+                    value={eventDate}
+                    onChange={(e) => setEventDate(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[14px] text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 transition-shadow"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">
+                  Description
+                </label>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Describe this highlight..."
+                  rows={4}
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 transition-shadow resize-none"
+                  maxLength={500}
+                />
+              </div>
+
+              <div>
+                <label className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">
+                  Category
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {HIGHLIGHT_CATEGORIES.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setHlCategory(hlCategory === cat ? "" : cat)}
+                      className={`px-4 py-2 rounded-full text-[12px] font-semibold transition-all ${hlCategory === cat ? "text-white shadow-md" : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"}`}
+                      style={
+                        hlCategory === cat
+                          ? {
+                              background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                            }
+                          : {}
+                      }
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Subcategory + Cover row */}
+              <div className="grid grid-cols-2 gap-4 items-start">
+                <div>
+                  <label className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">
+                    Subcategory
+                  </label>
+                  <input
+                    type="text"
+                    value={subcategory}
+                    onChange={(e) => setSubcategory(e.target.value)}
+                    placeholder="e.g., Outdoor, Beach"
+                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[14px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 transition-shadow"
+                    maxLength={50}
+                  />
+                </div>
+                <div>
+                  <label className="text-[12px] font-semibold text-slate-700 dark:text-slate-300 mb-1.5 block">
+                    Cover Image
+                  </label>
+                  <input
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleCoverImage}
+                    className="hidden"
+                  />
+                  {coverImagePreview ? (
+                    <div className="relative w-24 h-24 rounded-xl overflow-hidden">
+                      <img src={coverImagePreview} alt="Cover" className="w-full h-full object-cover" />
+                      <button
+                        onClick={() => {
+                          setCoverImageFile(null);
+                          setCoverImagePreview("");
+                        }}
+                        className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 flex items-center justify-center hover:bg-black/80 transition-colors"
+                      >
+                        <X size={12} className="text-white" />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => coverInputRef.current?.click()}
+                      className="w-24 h-24 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 flex flex-col items-center justify-center gap-1 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    >
+                      <Camera size={18} className="text-slate-400" />
+                      <span className="text-[10px] text-slate-400">Add Cover</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeSection === "media" && (
+            <>
+              {/* Images */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <label className="text-[14px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                    <Image size={17} /> Photos ({existingImages.length + imageFiles.length})
+                  </label>
+                  <input
+                    ref={imageInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleAddImages}
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => imageInputRef.current?.click()}
+                    className="px-4 py-2 rounded-full text-[12px] font-bold text-white hover:opacity-90 transition-opacity"
+                    style={{
+                      background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                    }}
+                  >
+                    + Add Photos
+                  </button>
+                </div>
+                <div className="grid grid-cols-4 gap-3">
+                  {existingImages.map((img, idx) => (
+                    <div key={`ei-${idx}`} className="relative aspect-square rounded-xl overflow-hidden group">
+                      <img
+                        src={img.url}
+                        alt=""
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <button
+                        onClick={() => removeExistingImage(idx)}
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                      >
+                        <X size={13} className="text-white" />
+                      </button>
+                      <input
+                        type="text"
+                        value={img.caption || ""}
+                        onChange={(e) => {
+                          setExistingImages((prev) =>
+                            prev.map((item, i) => (i === idx ? { ...item, caption: e.target.value } : item)),
+                          );
+                        }}
+                        placeholder="Caption..."
+                        className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[11px] px-2.5 py-1.5 focus:outline-none placeholder:text-white/50"
+                        maxLength={100}
+                      />
+                    </div>
+                  ))}
+                  {imageFiles.map((img, idx) => (
+                    <div key={`ni-${idx}`} className="relative aspect-square rounded-xl overflow-hidden group">
+                      <img
+                        src={img.preview}
+                        alt=""
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                      <button
+                        onClick={() => removeImage(idx)}
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                      >
+                        <X size={13} className="text-white" />
+                      </button>
+                      <input
+                        type="text"
+                        value={img.caption}
+                        onChange={(e) => {
+                          setImageFiles((prev) =>
+                            prev.map((item, i) => (i === idx ? { ...item, caption: e.target.value } : item)),
+                          );
+                        }}
+                        placeholder="Caption..."
+                        className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[11px] px-2.5 py-1.5 focus:outline-none placeholder:text-white/50"
+                        maxLength={100}
+                      />
+                    </div>
+                  ))}
+                  {existingImages.length + imageFiles.length === 0 && (
+                    <button
+                      onClick={() => imageInputRef.current?.click()}
+                      className="aspect-square rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 flex flex-col items-center justify-center gap-2 col-span-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors py-12"
+                    >
+                      <Image size={28} className="text-slate-400" />
+                      <span className="text-[12px] text-slate-400">Click to add photos</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Videos */}
+              <div className="pt-5 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center justify-between mb-4">
+                  <label className="text-[14px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                    <Film size={17} /> Videos ({existingVideos.length + videoFiles.length})
+                  </label>
+                  <input
+                    ref={videoInputRef}
+                    type="file"
+                    accept="video/*"
+                    multiple
+                    onChange={handleAddVideos}
+                    className="hidden"
+                  />
+                  <button
+                    onClick={() => videoInputRef.current?.click()}
+                    className="px-4 py-2 rounded-full text-[12px] font-bold text-white hover:opacity-90 transition-opacity"
+                    style={{
+                      background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                    }}
+                  >
+                    + Add Videos
+                  </button>
+                </div>
+                <div className="grid grid-cols-4 gap-3">
+                  {existingVideos.map((vid, idx) => (
+                    <ExistingVideoThumb
+                      key={`ev-${idx}`}
+                      vid={vid}
+                      idx={idx}
+                      onRemove={removeExistingVideo}
+                      onCaptionChange={(caption) => {
+                        setExistingVideos((prev) => prev.map((item, i) => (i === idx ? { ...item, caption } : item)));
+                      }}
+                    />
+                  ))}
+                  {videoFiles.map((vid, idx) => (
+                    <div
+                      key={`nv-${idx}`}
+                      className="relative aspect-[9/16] rounded-xl overflow-hidden bg-slate-800 group"
+                    >
+                      <video src={vid.preview} className="w-full h-full object-cover" muted preload="metadata" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Play size={18} className="text-white/70" />
+                      </div>
+                      <button
+                        onClick={() => removeVideo(idx)}
+                        className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80"
+                      >
+                        <X size={13} className="text-white" />
+                      </button>
+                      <input
+                        type="text"
+                        value={vid.caption}
+                        onChange={(e) => {
+                          setVideoFiles((prev) =>
+                            prev.map((item, i) => (i === idx ? { ...item, caption: e.target.value } : item)),
+                          );
+                        }}
+                        placeholder="Caption..."
+                        className="absolute bottom-0 left-0 right-0 bg-black/60 text-white text-[11px] px-2.5 py-1.5 focus:outline-none placeholder:text-white/50"
+                        maxLength={100}
+                      />
+                    </div>
+                  ))}
+                  {existingVideos.length + videoFiles.length === 0 && (
+                    <button
+                      onClick={() => videoInputRef.current?.click()}
+                      className="aspect-[9/16] rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 flex flex-col items-center justify-center gap-2 col-span-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors py-12"
+                    >
+                      <Film size={28} className="text-slate-400" />
+                      <span className="text-[12px] text-slate-400">Click to add videos</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </>
+          )}
+
+          {activeSection === "testimonials" && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <label className="text-[14px] font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                  <MessageCircle size={17} /> Testimonials ({existingTestimonials.length + testimonialFiles.length})
+                </label>
+                <input
+                  ref={testimonialInputRef}
+                  type="file"
+                  accept="video/*"
+                  multiple
+                  onChange={handleAddTestimonials}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => testimonialInputRef.current?.click()}
+                  className="px-4 py-2 rounded-full text-[12px] font-bold text-white hover:opacity-90 transition-opacity"
+                  style={{
+                    background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                  }}
+                >
+                  + Add
+                </button>
+              </div>
+              <div className="space-y-3">
+               {existingTestimonials.map((t, idx) => (
+  <div
+    key={`et-${idx}`}
+    className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700"
+  >
+    {/* ✅ Use the same ExistingVideoThumb-style hook for thumbnail */}
+    <ExistingTestimonialThumb videoUrl={t.videoUrl} thumbnailUrl={t.thumbnailUrl} />
+
+    <div className="flex-1 min-w-0">
+      {/* ✅ Make personName editable, not just display text */}
+      <input
+        type="text"
+        value={t.personName || ""}
+        onChange={(e) =>
+          setExistingTestimonials((prev) =>
+            prev.map((item, i) =>
+              i === idx ? { ...item, personName: e.target.value } : item
+            )
+          )
+        }
+        placeholder="Person's name"
+        className="w-full px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-[12px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+        maxLength={50}
+      />
+      <p className="text-[10px] text-slate-500 mt-0.5">Existing</p>
+    </div>
+    <button
+      onClick={() => removeExistingTestimonial(idx)}
+      className="p-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700"
+    >
+      <X size={14} className="text-slate-500" />
+    </button>
+  </div>
+))}
+                {testimonialFiles.map((t, idx) => (
+                  <div
+                    key={`nt-${idx}`}
+                    className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors"
+                  >
+                    <div className="w-16 h-24 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0">
+                      <video src={t.preview} className="w-full h-full object-cover" muted preload="metadata" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <input
+                        type="text"
+                        value={t.personName}
+                        onChange={(e) => {
+                          setTestimonialFiles((prev) =>
+                            prev.map((item, i) => (i === idx ? { ...item, personName: e.target.value } : item)),
+                          );
+                        }}
+                        placeholder="Person's name"
+                        className="w-full px-4 py-2 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-[13px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 transition-shadow"
+                        maxLength={50}
+                      />
+                    </div>
+                    <button
+                      onClick={() => removeTestimonial(idx)}
+                      className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                    >
+                      <X size={16} className="text-slate-500" />
+                    </button>
+                  </div>
+                ))}
+                {existingTestimonials.length + testimonialFiles.length === 0 && (
+                  <button
+                    onClick={() => testimonialInputRef.current?.click()}
+                    className="w-full py-14 rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-600 flex flex-col items-center justify-center gap-3 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    <MessageCircle size={32} className="text-slate-400" />
+                    <span className="text-[13px] text-slate-400">Add video testimonials from clients</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeSection === "content" && (
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <label className="text-[14px] font-bold text-slate-800 dark:text-slate-200">Custom Fields</label>
+                <button
+                  onClick={() => setContentFields((prev) => [...prev, { key: "", value: "" }])}
+                  className="px-4 py-2 rounded-full text-[12px] font-bold text-white hover:opacity-90 transition-opacity"
+                  style={{
+                    background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                  }}
+                >
+                  + Add Field
+                </button>
+              </div>
+              <p className="text-[12px] text-slate-500 dark:text-slate-400 mb-4">
+                Add custom details like "Venue", "Guest Count", "Theme", etc.
+              </p>
+              <div className="space-y-3">
+                {contentFields.map((field, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <input
+                      type="text"
+                      value={field.key}
+                      onChange={(e) => {
+                        setContentFields((prev) =>
+                          prev.map((item, i) => (i === idx ? { ...item, key: e.target.value } : item)),
+                        );
+                      }}
+                      placeholder="Key"
+                      className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[13px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 transition-shadow"
+                    />
+                    <input
+                      type="text"
+                      value={field.value}
+                      onChange={(e) => {
+                        setContentFields((prev) =>
+                          prev.map((item, i) => (i === idx ? { ...item, value: e.target.value } : item)),
+                        );
+                      }}
+                      placeholder="Value"
+                      className="flex-1 px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-[13px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-slate-300 dark:focus:ring-slate-600 transition-shadow"
+                    />
+                    <button
+                      onClick={() => setContentFields((prev) => prev.filter((_, i) => i !== idx))}
+                      className="p-2.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    >
+                      <X size={16} className="text-red-500" />
+                    </button>
+                  </div>
+                ))}
+                {contentFields.length === 0 && (
+                  <div className="text-center py-12 text-slate-400 text-[13px]">
+                    No custom fields. Click &quot;+ Add Field&quot; to start.
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+};
+
+const VideoThumbnailRenderer = React.memo(({ post, videoThumbnails, videoRefs, playingVideoId }) => {
+  const thumb = videoThumbnails[post._id];
+  const { thumbnail: hookThumbnail, loading } = useVideoThumbnail(
+    !thumb && post.mediaType === "video" ? post.mediaUrl : null,
+    post.thumbnailUrl || null,
+  );
+
+  const resolvedThumbnail = (() => {
+    if (thumb && thumb !== "FALLBACK") return thumb;
+    if (hookThumbnail) return hookThumbnail;
+    if (post.thumbnailUrl) return post.thumbnailUrl;
+    return null;
+  })();
+
+  if (resolvedThumbnail) {
+    return (
+      <div className="relative w-full h-full">
+        <img src={resolvedThumbnail} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />
+        <video
+          ref={(el) => {
+            if (el) videoRefs.current[post._id] = el;
+          }}
+          src={post.mediaUrl}
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{
+            opacity: playingVideoId === post._id ? 1 : 0,
+            pointerEvents: "none",
+          }}
+          muted
+          playsInline
+          loop
+          preload="none"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-full h-full">
+      {loading && (
+        <div className="absolute inset-0 z-10 bg-gray-200 dark:bg-gray-800 animate-pulse flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
+        </div>
+      )}
+      <video
+        ref={(el) => {
+          if (el) videoRefs.current[post._id] = el;
+        }}
+        src={post.mediaUrl}
+        poster={post.thumbnailUrl || undefined}
+        className="w-full h-full object-cover"
+        muted
+        playsInline
+        loop
+        preload="metadata"
+      />
+    </div>
+  );
+});
+
+VideoThumbnailRenderer.displayName = "VideoThumbnailRenderer";
+
+const ReelThumbnailRenderer = React.memo(({ reel }) => {
+  const { thumbnail, loading } = useVideoThumbnail(reel.thumbnail ? null : reel.videoUrl, reel.thumbnail || null);
+
+  const resolvedSrc = reel.thumbnail || thumbnail;
+
+  if (loading && !resolvedSrc) {
+    return (
+      <div className="w-full h-full bg-gray-200 dark:bg-gray-800 animate-pulse flex items-center justify-center">
+        <div className="w-8 h-8 rounded-full border-2 border-gray-400 border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  if (resolvedSrc) {
+    return <img src={resolvedSrc} alt="" className="w-full h-full object-cover" loading="lazy" decoding="async" />;
+  }
+
+  return <video src={reel.videoUrl} className="w-full h-full object-cover" muted playsInline preload="metadata" />;
+});
+
+ReelThumbnailRenderer.displayName = "ReelThumbnailRenderer";
+
+const ReelCard = ({ reel, index, onSelect }) => {
+  const [duration, setDuration] = useState(reel.duration || "0:00");
+
+  return (
+    <motion.div
+      whileTap={{ scale: 0.97 }}
+      onClick={() => onSelect(index)}
+      className="aspect-[9/16] bg-gray-100 dark:bg-gray-800 overflow-hidden relative cursor-pointer rounded-[10px]"
+    >
+      <SmartMedia
+        src={reel.thumbnail}
+        type="image"
+        className="w-full h-full object-cover"
+        loaderImage="/GlowLoadingGif.gif"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+      <div className="absolute bottom-2 left-2 flex items-center gap-1 text-white text-xs font-bold">
+        <Play size={12} className="fill-white" />
+        {reel.views || 0}
+      </div>
+      {!reel.duration && reel.videoUrl && (
+        <video
+          src={reel.videoUrl}
+          preload="metadata"
+          className="hidden"
+          onLoadedMetadata={(e) => {
+            const total = Math.floor(e.currentTarget.duration);
+            setDuration(`${Math.floor(total / 60)}:${(total % 60).toString().padStart(2, "0")}`);
+          }}
+        />
+      )}
+      <div className="absolute top-2 right-2 text-white text-[9px] font-bold bg-black/60 px-1.5 py-0.5 rounded">
+        {duration}
+      </div>
+    </motion.div>
+  );
+};
+
 const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendor }) => {
   const { id, category } = useParams();
   const router = useRouter();
@@ -9209,6 +11468,12 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
   const [isCoverExpanded, setIsCoverExpanded] = useState(false);
   const [isHighlightsExpanded, setIsHighlightsExpanded] = useState(true);
   const [currentHighlightIndex, setCurrentHighlightIndex] = useState(0);
+
+  const [highlights, setHighlights] = useState(initialProfile?.highlights || []);
+  const [highlightsLoading, setHighlightsLoading] = useState(false);
+  const [showAddHighlightModal, setShowAddHighlightModal] = useState(false);
+  const [editingHighlight, setEditingHighlight] = useState(null);
+  const [highlightMediaViewer, setHighlightMediaViewer] = useState(null);
 
   const [activeTab, setActiveTab] = useState(() => {
     if (typeof window !== "undefined") {
@@ -9415,19 +11680,34 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
     }
   }, [posts, reels, user?.id, id, profileLoading]);
 
+  const fetchHighlights = useCallback(async () => {
+    if (!id) return;
+    setHighlightsLoading(true);
+    try {
+      const res = await fetch(`/api/vendor/${id}/profile/highlights`);
+      const data = await res.json();
+      if (data.success) {
+        setHighlights(data.data || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch highlights:", error);
+    } finally {
+      setHighlightsLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (profileLoading) return;
+    fetchHighlights();
+  }, [profileLoading, fetchHighlights, editingHighlight]);
+
   useEffect(() => {
     if (!initialProfile) {
       setLikesCount(0);
       return;
     }
-    const totalPostLikes = initialProfile.posts?.reduce(
-      (total, post) => total + (post.likes?.length || 0),
-      0
-    ) || 0;
-    const totalReelLikes = initialProfile.reels?.reduce(
-      (total, reel) => total + (reel.likes?.length || 0),
-      0
-    ) || 0;
+    const totalPostLikes = initialProfile.posts?.reduce((total, post) => total + (post.likes?.length || 0), 0) || 0;
+    const totalReelLikes = initialProfile.reels?.reduce((total, reel) => total + (reel.likes?.length || 0), 0) || 0;
     setLikesCount(totalPostLikes + totalReelLikes);
   }, [initialProfile]);
 
@@ -9726,24 +12006,35 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
   useEffect(() => {
     if (!posts.length) return;
 
+    let cancelled = false;
+
     const generate = async () => {
-      // Only target videos that don't have a thumbnail in cache or state
       const targetVideos = posts.filter((p) => p.mediaType === "video" && !p.thumbnailUrl && !videoThumbnails[p._id]);
 
       for (const post of targetVideos) {
+        if (cancelled) break;
         try {
-          const thumb = await getBulletproofThumbnail(post.mediaUrl);
-          setVideoThumbnails((prev) => ({ ...prev, [post._id]: thumb }));
+          const thumb = await generateVideoThumbnail(post.mediaUrl);
+          if (!cancelled) {
+            setVideoThumbnails((prev) => ({
+              ...prev,
+              [post._id]: thumb || "FALLBACK",
+            }));
+          }
         } catch (error) {
           console.warn(`Thumb failed for ${post._id}, using video fallback.`);
-          // Mark as "failed" so we don't keep retrying
-          setVideoThumbnails((prev) => ({ ...prev, [post._id]: "FALLBACK" }));
+          if (!cancelled) {
+            setVideoThumbnails((prev) => ({ ...prev, [post._id]: "FALLBACK" }));
+          }
         }
       }
     };
 
-    const timer = setTimeout(generate, 300); // Small delay to let UI settle
-    return () => clearTimeout(timer);
+    const timer = setTimeout(generate, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [posts]);
 
   // Add cleanup for video refs when component unmounts or posts change
@@ -9955,7 +12246,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
   }, [currentHighlightIndex]);
 
   const handleHighlightNext = useCallback(() => {
-    if (currentHighlightIndex < MOCK_HIGHLIGHTS.length - 1) {
+    if (currentHighlightIndex < highlights.length - 1) {
       setCurrentHighlightIndex((prev) => prev + 1);
       if (highlightsContainerRef.current) {
         const cardWidth = (window.innerWidth - 72) / 4.5;
@@ -9987,14 +12278,14 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
       const scrollLeft = container.scrollLeft;
       const newIndex = Math.round(scrollLeft / (cardWidth + gap));
 
-      if (newIndex !== currentHighlightIndex && newIndex >= 0 && newIndex < MOCK_HIGHLIGHTS.length) {
+      if (newIndex !== currentHighlightIndex && newIndex >= 0 && newIndex < highlights.length) {
         setCurrentHighlightIndex(newIndex);
       }
     };
 
     container.addEventListener("scroll", handleScroll);
     return () => container.removeEventListener("scroll", handleScroll);
-  }, [isHighlightsExpanded, currentHighlightIndex]);
+  }, [isHighlightsExpanded, currentHighlightIndex, highlights.length]);
 
   const handleSaveProfile = useCallback(() => {
     setIsSaved((prev) => !prev);
@@ -10213,6 +12504,46 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
       showUIConfirmation("Post restored", "success", Check);
     },
     [posts, archivedPosts, showUIConfirmation],
+  );
+
+  const handleAddHighlight = useCallback(
+    (newHighlight) => {
+      setHighlights((prev) => [...prev, newHighlight]);
+      setShowAddHighlightModal(false);
+      setEditingHighlight(null);
+      showUIConfirmation("Highlight added!", "success", Check);
+    },
+    [showUIConfirmation],
+  );
+
+  const handleUpdateHighlight = useCallback(
+    (updatedHighlight) => {
+      setHighlights((prev) => prev.map((h) => (h._id === updatedHighlight._id ? updatedHighlight : h)));
+      setShowAddHighlightModal(false);
+      setEditingHighlight(null);
+      showUIConfirmation("Highlight updated!", "success", Check);
+    },
+    [showUIConfirmation],
+  );
+
+  const handleDeleteHighlight = useCallback(
+    async (highlightId) => {
+      try {
+        const res = await fetch(`/api/vendor/${id}/profile/highlights?highlightId=${highlightId}`, {
+          method: "DELETE",
+        });
+        const data = await res.json();
+        if (data.success) {
+          setHighlights((prev) => prev.filter((h) => h._id !== highlightId));
+          showUIConfirmation("Highlight deleted", "success", Check);
+        } else {
+          showUIConfirmation(data.error || "Failed to delete", "error", AlertCircle);
+        }
+      } catch (error) {
+        showUIConfirmation("Failed to delete highlight", "error", AlertCircle);
+      }
+    },
+    [id, showUIConfirmation],
   );
 
   const handleTouchStart = useCallback((e) => {
@@ -10516,11 +12847,12 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
               <>
                 <div className="grid grid-cols-3 gap-[15px] mx-[15px]">
                   {posts.map((post, index) => {
-                    const posterUrl = post.thumbnailUrl || videoThumbnails[post._id] || null;
-                    const thumb = videoThumbnails[post._id];
+                    const thumb = post.thumbnailUrl || videoThumbnails[post._id];
+                    const hasUsableThumbnail = thumb && thumb !== "FALLBACK";
                     const postNum = (index % 4) + 1;
-                    const config = POST_CONFIGS[postNum];
+                    const config = POST_CONFIGS?.[postNum];
                     const HeadingIcon = config?.icon;
+
                     return (
                       <motion.div
                         key={post?._id || `post-${index}`}
@@ -10621,7 +12953,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                               {HeadingIcon && (
                                 <HeadingIcon size={16} className="text-slate-600 dark:text-slate-400 flex-shrink-0" />
                               )}
-                              <span className="text-sm  font-bold text-slate-800 dark:text-slate-200 truncate">
+                              <span className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
                                 {config.title}
                               </span>
                             </div>
@@ -10632,22 +12964,29 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                         <div className="aspect-[1/1.05] bg-gray-100 dark:bg-gray-800 overflow-hidden relative rounded-xl mx-2 mb-2">
                           {post.mediaType === "video" ? (
                             <div className="relative w-full h-full">
-                              {thumb && thumb !== "FALLBACK" ? (
-                                <img src={thumb} className="w-full h-full object-cover" />
-                              ) : (
-                                <video
-                                  ref={(el) => {
-                                    if (el) videoRefs.current[post._id] = el;
-                                  }}
-                                  src={post.mediaUrl}
-                                  poster={posterUrl || undefined}
-                                  className="w-full h-full object-cover"
-                                  muted
-                                  playsInline
-                                  loop
-                                  preload="metadata"
-                                />
-                              )}
+                              {/* Hidden video element for long-press playback */}
+                              <video
+                                ref={(el) => {
+                                  if (el) videoRefs.current[post._id] = el;
+                                }}
+                                src={post.mediaUrl}
+                                className="w-full h-full object-cover absolute inset-0"
+                                style={{ opacity: playingVideoId === post._id ? 1 : 0 }}
+                                muted
+                                playsInline
+                                loop
+                                preload="metadata"
+                              />
+
+                              {/* Thumbnail (visible when not playing) */}
+                              <VideoThumbnailRenderer
+                                post={post}
+                                videoThumbnails={videoThumbnails}
+                                videoRefs={videoRefs}
+                                playingVideoId={playingVideoId}
+                              />
+
+                              {/* Play icon overlay */}
                               <AnimatePresence>
                                 {playingVideoId !== post._id && (
                                   <motion.div
@@ -10662,6 +13001,8 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                                   </motion.div>
                                 )}
                               </AnimatePresence>
+
+                              {/* Playing indicator */}
                               <AnimatePresence>
                                 {playingVideoId === post._id && (
                                   <motion.div
@@ -10693,15 +13034,17 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                               loaderImage="/GlowLoadingGif.gif"
                             />
                           )}
+
+                          {/* Hover/active stats overlay (images & non-playing videos) */}
                           {(post?.mediaType !== "video" || playingVideoId !== post._id) && (
                             <div className="absolute inset-0 bg-black/0 group-active:bg-black/40 transition-colors flex items-center justify-center gap-3 text-white text-xs font-bold opacity-0 group-active:opacity-100">
                               <span className="flex items-center gap-1">
                                 <Heart size={14} className="fill-white" />
-                                {post?.likes?.length}
+                                {post?.likes?.length || 0}
                               </span>
                               <span className="flex items-center gap-1">
                                 <MessageCircle size={14} className="fill-white" />
-                                {post?.reviews?.length}
+                                {post?.reviews?.length || 0}
                               </span>
                             </div>
                           )}
@@ -10712,12 +13055,12 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                 </div>
               </>
             )}
+
+            {/* Gallery section below posts (unchanged) */}
             <div className="space-y-5 mx-4 relative isolate mb-3">
               {vendor?.images?.length > 0 ? (
                 <>
-                  {/* HEADER CONTAINER */}
                   <div className="relative w-full bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200/60 dark:border-slate-800/60 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors overflow-hidden group">
-                    {/* VISUAL LAYER (Passive - just looks good) */}
                     <div className="p-4 flex items-center justify-between pointer-events-none">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/40 dark:to-pink-900/40 flex items-center justify-center">
@@ -10739,17 +13082,11 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                         </motion.div>
                       </div>
                     </div>
-
-                    {/* INTERACTION LAYER (The "Force Click" Overlay) */}
-                    {/* This transparent button covers the entire header area absolutely. */}
-                    {/* z-10 ensures it sits on top of everything. */}
                     <button
                       type="button"
                       className="absolute inset-0 w-full h-full z-10 cursor-pointer focus:outline-none focus:ring-2 focus:ring-purple-500/20"
                       onClickCapture={(e) => {
-                        // Using Capture ensures this fires before any bubble-cancellation
                         e.preventDefault();
-                        console.log("Gallery Toggle Clicked"); // Debug check
                         setIsGalleryExpanded((prev) => !prev);
                       }}
                       aria-label="Toggle Gallery"
@@ -10778,7 +13115,6 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                               transition={{ delay: idx * 0.02 }}
                               whileTap={{ scale: 0.96 }}
                               className="relative aspect-square rounded-2xl overflow-hidden bg-slate-200 dark:bg-slate-800 cursor-pointer group shadow-sm z-0"
-                              // Image clicks are separate from the header logic
                               onClick={(e) => {
                                 e.stopPropagation();
                                 openImageModal(idx);
@@ -10813,7 +13149,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                   </div>
                   <p className="text-[14px] font-bold text-slate-700 dark:text-slate-300 mb-2">No images available</p>
                   <p className="text-[12px] text-slate-500 dark:text-slate-400 max-w-xs mx-auto">
-                    The vendor hasn't uploaded any gallery images yet
+                    The vendor hasn&apos;t uploaded any gallery images yet
                   </p>
                 </div>
               )}
@@ -10837,34 +13173,14 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                     onClick={() => setSelectedReelIndex(index)}
                     className="aspect-[9/16] bg-gray-100 dark:bg-gray-800 overflow-hidden relative cursor-pointer rounded-[10px]"
                   >
-                    <SmartMedia
-                      src={reel.thumbnail}
-                      type="image"
-                      className="w-full h-full object-cover"
-                      loaderImage="/GlowLoadingGif.gif"
-                    />
+                    <ReelThumbnailRenderer reel={reel} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
                     <div className="absolute bottom-2 left-2 flex items-center gap-1 text-white text-xs font-bold">
                       <Play size={12} className="fill-white" />
                       {reel.views}
                     </div>
-                    <video
-                      src={reel.videoUrl}
-                      preload="metadata"
-                      className="hidden"
-                      onLoadedMetadata={(e) => {
-                        const totalSeconds = Math.floor(e.currentTarget.duration);
-                        const minutes = Math.floor(totalSeconds / 60);
-                        const seconds = totalSeconds % 60;
-
-                        const formatted = `${minutes}:${seconds.toString().padStart(2, "0")}`;
-
-                        e.currentTarget.nextSibling.innerText = formatted;
-                      }}
-                    />
-
                     <div className="absolute top-2 right-2 text-white text-[9px] font-bold bg-black/60 px-1.5 py-0.5 rounded">
-                      0:00
+                      {reel.duration}
                     </div>
                   </motion.div>
                 ))}
@@ -10889,31 +13205,18 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-3 gap-[3px] gap-y-[6px] mx-[15px]">
-                  {reels?.slice(0, 3)?.map((reel, index) => (
-                    <motion.div
-                      key={reel?.id || reel?._id}
-                      whileTap={{ scale: 0.97 }}
-                      onClick={() => setSelectedReelIndex(index)}
-                      className="aspect-[9/10] bg-gray-100 dark:bg-gray-800 overflow-hidden relative cursor-pointer rounded-[10px]"
-                    >
-                      <SmartMedia
-                        src={reel.thumbnail}
-                        type="image"
-                        className="w-full h-full object-cover"
-                        loaderImage="/GlowLoadingGif.gif"
+                {reels?.length > 0 && (
+                  <div className="grid grid-cols-3 gap-[3px] gap-y-[6px] mx-[15px]">
+                    {reels.slice(0, 3).map((reel, index) => (
+                      <ReelCard
+                        key={reel?._id || reel?.id || `portfolio-reel-${index}`}
+                        reel={reel}
+                        index={index}
+                        onSelect={setSelectedReelIndex}
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-                      <div className="absolute bottom-2 left-2 flex items-center gap-1 text-white text-xs font-bold">
-                        <Play size={12} className="fill-white" />
-                        {reel.views}
-                      </div>
-                      <div className="absolute top-2 right-2 text-white text-[9px] font-bold bg-black/60 px-1.5 py-0.5 rounded">
-                        {reel.duration}
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
                 <div>
                   <ReviewSection vendorId={vendor?._id} vendorName={vendor?.name} />
                 </div>
@@ -11934,10 +14237,11 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
 
       {/* ============ FIXED HEADER ============ */}
       <div
-        className={`fixed top-[82px] max-w-[800px] mx-auto left-0 right-0 z-[40] transition-all duration-500 ease-out rounded-xl ${isScrolledHeader
-          ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-slate-200/50 dark:border-slate-800/50"
-          : "bg-transparent"
-          }`}
+        className={`fixed top-[82px] max-w-[800px] mx-auto left-0 right-0 z-[40] transition-all duration-500 ease-out rounded-xl ${
+          isScrolledHeader
+            ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-slate-200/50 dark:border-slate-800/50"
+            : "bg-transparent"
+        }`}
       >
         <div className="px-4 lg:px-6">
           {/* Row 1: Navigation Controls */}
@@ -11952,15 +14256,17 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
               whileTap={{ scale: 0.92 }}
               whileHover={{ scale: 1.05 }}
               onClick={handleBack}
-              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
-                ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
-                : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
-                }`}
+              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
+                isScrolledHeader
+                  ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
+                  : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
+              }`}
             >
               <ArrowLeft
                 size={20}
-                className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
-                  }`}
+                className={`transition-colors duration-500 ease-out ${
+                  isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                }`}
               />
             </motion.button>
 
@@ -12004,30 +14310,34 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                 whileTap={{ scale: 0.92 }}
                 whileHover={{ scale: 1.05 }}
                 onClick={handleShare}
-                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
-                  ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
-                  : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
-                  }`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
+                  isScrolledHeader
+                    ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
+                    : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
+                }`}
               >
                 <Share2
                   size={18}
-                  className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
-                    }`}
+                  className={`transition-colors duration-500 ease-out ${
+                    isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                  }`}
                 />
               </motion.button>
               <motion.button
                 whileTap={{ scale: 0.92 }}
                 whileHover={{ scale: 1.05 }}
                 onClick={() => setShowMoreOptions(true)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
-                  ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
-                  : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
-                  }`}
+                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
+                  isScrolledHeader
+                    ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
+                    : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
+                }`}
               >
                 <MoreVertical
                   size={18}
-                  className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
-                    }`}
+                  className={`transition-colors duration-500 ease-out ${
+                    isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                  }`}
                 />
               </motion.button>
             </motion.div>
@@ -12554,29 +14864,31 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
               transition={{ delay: 0.3, duration: 0.6, ease: smoothEase }}
               className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm mt-4 min-w-full flex items-center justify-center overflow-hidden"
             >
-              <div className="p-6">
+              <div className="p-6 w-full">
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-[18px] font-bold text-slate-900 dark:text-white">Highlights</h2>
+                  <h2 className="text-[18px] font-bold text-slate-900 dark:text-white">Portfolio</h2>
                   <div className="flex items-center gap-2">
                     <motion.button
                       whileTap={{ scale: 0.9 }}
                       onClick={handleHighlightPrev}
                       disabled={currentHighlightIndex === 0}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${currentHighlightIndex === 0
-                        ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
-                        : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                        }`}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
+                        currentHighlightIndex === 0
+                          ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
+                          : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                      }`}
                     >
                       <ChevronLeft size={16} className="text-slate-600 dark:text-slate-400" />
                     </motion.button>
                     <motion.button
                       whileTap={{ scale: 0.9 }}
                       onClick={handleHighlightNext}
-                      disabled={currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${currentHighlightIndex >= MOCK_HIGHLIGHTS.length - 1
-                        ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
-                        : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                        }`}
+                      disabled={currentHighlightIndex >= highlights.length}
+                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
+                        currentHighlightIndex >= highlights.length
+                          ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
+                          : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
+                      }`}
                     >
                       <ChevronRight size={16} className="text-slate-600 dark:text-slate-400" />
                     </motion.button>
@@ -12584,13 +14896,13 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                 </div>
 
                 <div ref={highlightsContainerRef} className="overflow-x-auto no-scrollbar">
-                  {profileLoading ? (
+                  {highlightsLoading || profileLoading ? (
                     <HighlightsSkeleton />
                   ) : (
                     <motion.div className="flex gap-4 pb-2" style={{ minWidth: "max-content" }}>
-                      {MOCK_HIGHLIGHTS.map((highlight, index) => (
+                      {highlights.map((highlight, index) => (
                         <motion.button
-                          key={highlight.id}
+                          key={highlight._id || `hl-${index}`}
                           initial={{ opacity: 0, y: 15, scale: 0.9 }}
                           animate={{ opacity: 1, y: 0, scale: 1 }}
                           transition={{ delay: 0.1 + index * 0.05, duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
@@ -12606,7 +14918,7 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                           >
                             <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-slate-900 p-[2px]">
                               <SmartMedia
-                                src={highlight.image}
+                                src={highlight.coverImage || highlight.images?.[0]?.url || "/placeholder-highlight.jpg"}
                                 type="image"
                                 className="w-full h-full object-cover rounded-full"
                                 loaderImage="/GlowLoadingGif.gif"
@@ -12618,6 +14930,47 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                           </span>
                         </motion.button>
                       ))}
+
+                      {isVerified && (
+                        <motion.button
+                          initial={{ opacity: 0, y: 15, scale: 0.9 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          transition={{
+                            delay: 0.1 + highlights.length * 0.05,
+                            duration: 0.4,
+                            ease: [0.22, 1, 0.36, 1],
+                          }}
+                          whileTap={{ scale: 0.94 }}
+                          onClick={() => {
+                            if (!isSignedIn) {
+                              requireSignIn("Please sign in to add highlights");
+                              return;
+                            }
+                            setEditingHighlight(null);
+                            setShowAddHighlightModal(true);
+                          }}
+                          className="flex flex-col items-center gap-2.5 shrink-0 group cursor-pointer"
+                        >
+                          <div className="w-[72px] h-[72px] lg:w-[80px] lg:h-[80px] rounded-full overflow-hidden p-[3px] transition-transform duration-300 group-hover:scale-105 border-2 border-dashed border-slate-300 dark:border-slate-600 flex items-center justify-center bg-slate-50 dark:bg-slate-800/50">
+                            <div className="w-full h-full rounded-full flex items-center justify-center bg-white dark:bg-slate-900">
+                              <Plus size={24} className="text-slate-400 dark:text-slate-500" />
+                            </div>
+                          </div>
+                          <span className="text-[11px] lg:text-[12px] font-medium text-slate-500 dark:text-slate-400">
+                            Add New
+                          </span>
+                        </motion.button>
+                      )}
+
+                      {highlights.length === 0 && !isVerified && (
+                        <div className="w-full h-full flex flex-col items-center justify-center py-4 text-center">
+                          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center mb-3">
+                            <Sparkles size={12} className="text-gray-400" />
+                          </div>
+                          <p className="text-gray-500 text-sm font-medium">No highlights yet</p>
+                          <p className="text-gray-400 text-xs mt-1">This vendor hasn&apos;t added any highlights</p>
+                        </div>
+                      )}
                     </motion.div>
                   )}
                 </div>
@@ -12806,7 +15159,52 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
       </AnimatePresence>
 
       <AnimatePresence>
-        {selectedHighlight && <StoryViewer highlight={selectedHighlight} onClose={() => setSelectedHighlight(null)} />}
+        {selectedHighlight && (
+          <HighlightStoryViewer
+            highlight={selectedHighlight}
+            highlights={highlights}
+            initialIndex={highlights.findIndex((h) => h._id === selectedHighlight._id)}
+            onClose={() => setSelectedHighlight(null)}
+            vendorName={profile?.vendorBusinessName || profile?.vendorName || vendor?.name}
+            vendorImage={vendorImage}
+            vendorUsername={profile?.username}
+            categoryColor={categoryColor}
+            onMediaClick={(media) => setHighlightMediaViewer(media)}
+            isVerified={isVerified}
+            onEdit={(hl) => {
+              setSelectedHighlight(null);
+              setEditingHighlight(hl);
+              setShowAddHighlightModal(true);
+            }}
+            onDelete={(hlId) => {
+              setSelectedHighlight(null);
+              handleDeleteHighlight(hlId);
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {highlightMediaViewer && (
+          <HighlightMediaFullscreen media={highlightMediaViewer} onClose={() => setHighlightMediaViewer(null)} />
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {showAddHighlightModal && (
+          <AddHighlightModal
+            isOpen={showAddHighlightModal}
+            onClose={() => {
+              setShowAddHighlightModal(false);
+              setEditingHighlight(null);
+            }}
+            vendorId={id}
+            editingHighlight={editingHighlight}
+            onHighlightAdded={handleAddHighlight}
+            onHighlightUpdated={handleUpdateHighlight}
+            categoryColor={categoryColor}
+          />
+        )}
       </AnimatePresence>
 
       <AnimatePresence>
