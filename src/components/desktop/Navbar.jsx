@@ -60,6 +60,7 @@ import {
   Award,
   ExternalLink,
   ChevronUp,
+  Lightbulb,
 } from "lucide-react";
 import { motion, AnimatePresence, useScroll, useMotionValueEvent } from "framer-motion";
 import { useRouter, usePathname } from "next/navigation";
@@ -1312,7 +1313,7 @@ const [isNavbarExpanded, setIsNavbarExpanded] = useState(false);
       { id: "home", label: "Home", icon: Home, route: "/" },
       { id: "marketplace", label: "Marketplace", icon: ChartBarStacked, route: "/vendors/marketplace" },
       { id: "center_fab", type: "center" },
-      { id: "bookings", label: "Bookings", icon: Calendar, route: "/user/bookings" },
+      { id: "ideas", label: "Ideas", icon: Lightbulb, route: "/ideas" },
       { id: "profile", label: "Profile", icon: User, route: "/user/profile" },
     ],
     [],
