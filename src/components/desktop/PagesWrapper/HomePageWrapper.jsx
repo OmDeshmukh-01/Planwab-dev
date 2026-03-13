@@ -15,6 +15,7 @@ import LandingCarousel from "../VendorsCarousel1";
 import { Camera, MapPin, PersonStanding } from "lucide-react";
 import CarouselHeader from "../CarouselHeader";
 import CardsWithBanner from "../HomePage/CardsWithBanner";
+import SmartMedia from "../SmartMediaLoader";
 
 export const categoryThemes = {
   Events: {
@@ -157,13 +158,16 @@ const CategoryButton = ({ category, imageSrc, active }) => {
         hover:bg-gray-50 dark:hover:bg-gray-700/50 hover:scale-105 hover:shadow-md cursor-pointer
         ${active ? "text-gray-900 dark:text-gray-100 shadow-sm" : "text-gray-600 dark:text-gray-300"}
       `}
-      style={{
-        backgroundImage: `url(${backgroundImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
-      }}
     >
+      <div className="absolute inset-0 z-0 rounded-xl overflow-hidden w-full">
+        <SmartMedia
+          src={backgroundImage}
+          type="image"
+          alt={`${category} Background`}
+          className="w-full h-full object-cover object-center"
+          priority={active}
+        />
+      </div>
       {active && (
         <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/70 via-black/40 to-transparent rounded-b-xl pointer-events-none"></div>
       )}

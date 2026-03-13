@@ -149,7 +149,6 @@ export default function HeroSection({ activeCategory, theme, categoryData }) {
                     alt={`${activeCategory} slide`}
                     className="w-full h-full object-cover"
                     priority={currentSlide === 0} // Priority for first slide
-                    useSkeleton={true} // Hero content, no skeleton needed
                   />
                 </motion.div>
               </AnimatePresence>
@@ -343,7 +342,6 @@ export default function HeroSection({ activeCategory, theme, categoryData }) {
                   alt={`${activeCategory} hero`}
                   className="w-full h-full object-cover"
                   priority={true} // Always priority - it's hero content
-                  useSkeleton={true} // Hero content, no skeleton needed
                 />
 
                 {/* Subtle gradient overlay */}
