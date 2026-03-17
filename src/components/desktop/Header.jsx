@@ -134,13 +134,13 @@ const PlannerDropdown = ({ isOpen }) => {
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-6">
           Join our community of professional event planners and start earning
         </p>
-        <div className="space-y-3">
-          <button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105">
+        <div className="space-y-3 flex flex-col">
+          <Link href="/vendor/onboarding" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-3 rounded-lg font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105 cursor-pointer">
             Start Application
-          </button>
-          <button className="w-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300">
+          </Link>
+          <Link href="/vendor/register" className="w-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-3 rounded-lg font-semibold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 cursor-pointer">
             Learn More
-          </button>
+          </Link>
         </div>
       </div>
     </div>
@@ -855,9 +855,9 @@ const MobileSidebar = ({ categories, pathname, onClose, theme, toggleTheme }) =>
                       Join our community and turn your passion into a profession.
                     </p>
                     <div className="space-y-2.5">
-                      <button className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105">
+                      <Link href="/vendor/onboarding" className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all duration-300 hover:scale-105">
                         Start Application
-                      </button>
+                      </Link>
                       <button className="w-full border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 py-2.5 rounded-lg font-semibold hover:bg-gray-100 dark:hover:bg-gray-700/70 transition-all duration-300">
                         Learn More
                       </button>
