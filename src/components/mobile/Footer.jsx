@@ -19,7 +19,7 @@ const SECTIONS = [
         <Link href="/vendors/marketplace" className="hover:text-[#C33765] transition-colors">
           Explore Vendors
         </Link>
-        <Link href="/vendor/register" className="hover:text-[#C33765] transition-colors">
+        <Link href="/vendor/onboarding" className="hover:text-[#C33765] transition-colors">
           List Your Business
         </Link>
         <Link href="/pricing" className="hover:text-[#C33765] transition-colors">
@@ -130,7 +130,7 @@ const SECTIONS = [
           🚀 Join PlanWAB today and grow your business faster with digital visibility and real leads.
         </p>
         <Link
-          href="/vendor/register"
+          href="/vendor/onboarding"
           className="inline-flex items-center gap-2 bg-[#C33765] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-[#a02952] transition-colors"
         >
           👉 List Your Business Now

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { LayoutDashboard, Calendar, IdCard, ShoppingCart, Users, Briefcase, Settings, Star, FileClock, ChevronDown, ChevronRight, MessageSquare } from "lucide-react";
+import { LayoutDashboard, Calendar, IdCard, ShoppingCart, Users, Briefcase, Settings, Star, FileClock, ChevronDown, ChevronRight, MessageSquare, Videotape, FileVideo } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { name: "Vendors", href: "/admin/vendors", icon: Briefcase },
   { name: "Vendor Profile", href: "/admin/vendors/profile", icon: IdCard },
   { name: "Orders", href: "/admin/orders", icon: ShoppingCart },
+  { name: "Reels", href: "/admin/reels", icon: FileVideo },
   {
     name: "Requests",
     icon: FileClock,
