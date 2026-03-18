@@ -781,9 +781,8 @@ const PasswordVerificationModal = ({ isOpen, onClose, onSuccess, vendorId, vendo
                     onKeyDown={handleKeyDown}
                     placeholder="Enter your password"
                     disabled={isVerifying}
-                    className={`w-full pl-12 pr-12 py-4 bg-slate-100 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all ${
-                      error ? "border-red-500 focus:border-red-500" : "border-transparent focus:border-blue-500"
-                    } ${isVerifying ? "opacity-60 cursor-not-allowed" : ""}`}
+                    className={`w-full pl-12 pr-12 py-4 bg-slate-100 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all ${error ? "border-red-500 focus:border-red-500" : "border-transparent focus:border-blue-500"
+                      } ${isVerifying ? "opacity-60 cursor-not-allowed" : ""}`}
                   />
                   <motion.button
                     type="button"
@@ -2287,7 +2286,7 @@ const PostDetailModal = ({
         if (!isActive) return;
         // Loop video
         video.currentTime = 0;
-        video.play().catch(() => {});
+        video.play().catch(() => { });
       };
 
       const handleError = (e) => {
@@ -3080,11 +3079,11 @@ const PostDetailModal = ({
             isDraggingSheet
               ? { duration: 0 }
               : {
-                  type: "spring",
-                  stiffness: 350,
-                  damping: 35,
-                  mass: 0.8,
-                }
+                type: "spring",
+                stiffness: 350,
+                damping: 35,
+                mass: 0.8,
+              }
           }
         >
           {/* Progress Bar */}
@@ -3400,11 +3399,11 @@ const PostDetailModal = ({
             isDraggingSheet
               ? { duration: 0 }
               : {
-                  type: "spring",
-                  stiffness: 350,
-                  damping: 35,
-                  mass: 0.8,
-                }
+                type: "spring",
+                stiffness: 350,
+                damping: 35,
+                mass: 0.8,
+              }
           }
         >
           {/* Drag Handle */}
@@ -3455,9 +3454,8 @@ const PostDetailModal = ({
                   <h3 className="font-semibold text-gray-900 truncate">{vendorName}</h3>
                   <div className="flex items-center gap-2 text-sm">
                     <span
-                      className={`font-medium bg-gradient-to-r ${
-                        currentPostConfig?.color || "from-gray-400 to-gray-500"
-                      } bg-clip-text text-transparent`}
+                      className={`font-medium bg-gradient-to-r ${currentPostConfig?.color || "from-gray-400 to-gray-500"
+                        } bg-clip-text text-transparent`}
                     >
                       {currentPostConfig?.title || "Post Details"}
                     </span>
@@ -3478,9 +3476,8 @@ const PostDetailModal = ({
 
               {/* Post Type Badge */}
               <div
-                className={`inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${
-                  currentPostConfig?.color || "from-gray-400 to-gray-500"
-                } rounded-full mt-3`}
+                className={`inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r ${currentPostConfig?.color || "from-gray-400 to-gray-500"
+                  } rounded-full mt-3`}
               >
                 <PostConfigIcon size={14} className="text-white" />
                 <span className="text-white text-xs font-medium">{currentPostConfig?.title}</span>
@@ -3510,32 +3507,32 @@ const PostDetailModal = ({
               currentPost.description ||
               currentPost.location ||
               currentPost.tags?.length > 0) && (
-              <div className="mt-6 pt-4 border-t border-gray-100 space-y-3">
-                {(currentPost.caption || currentPost.description) && (
-                  <p className="text-gray-700 text-sm leading-relaxed">
-                    {currentPost.caption || currentPost.description}
-                  </p>
-                )}
+                <div className="mt-6 pt-4 border-t border-gray-100 space-y-3">
+                  {(currentPost.caption || currentPost.description) && (
+                    <p className="text-gray-700 text-sm leading-relaxed">
+                      {currentPost.caption || currentPost.description}
+                    </p>
+                  )}
 
-                {(currentPost.location || currentPost.tags?.length > 0) && (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {currentPost.location && (
-                      <span className="text-blue-600 text-xs flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-full">
-                        <MapPin size={10} />
-                        {currentPost.location}
-                      </span>
-                    )}
-                    {currentPost.tags?.slice(0, 3).map((tag, idx) => (
-                      <span key={idx} className="px-2 py-1 bg-gray-100 rounded-full text-gray-600 text-xs">
-                        #{tag}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                  {(currentPost.location || currentPost.tags?.length > 0) && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {currentPost.location && (
+                        <span className="text-blue-600 text-xs flex items-center gap-1 bg-blue-50 px-2 py-1 rounded-full">
+                          <MapPin size={10} />
+                          {currentPost.location}
+                        </span>
+                      )}
+                      {currentPost.tags?.slice(0, 3).map((tag, idx) => (
+                        <span key={idx} className="px-2 py-1 bg-gray-100 rounded-full text-gray-600 text-xs">
+                          #{tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
 
-                {currentPost.date && <p className="text-gray-400 text-xs">{currentPost.date}</p>}
-              </div>
-            )}
+                  {currentPost.date && <p className="text-gray-400 text-xs">{currentPost.date}</p>}
+                </div>
+              )}
 
             {/* fixed buttons */}
             <div className="border-t border-gray-100 bg-white px-4 py-3">
@@ -3902,7 +3899,7 @@ const ReelsViewer = ({
     const video = videoRef.current;
     if (video) {
       video.currentTime = 0;
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     }
   };
 
@@ -4097,7 +4094,7 @@ const ReelsViewer = ({
       goToReel("down");
     } else {
       if (videoRef.current && isPlaying) {
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch(() => { });
       }
     }
 
@@ -4532,9 +4529,8 @@ const PortfolioViewer = ({ portfolio, onClose, onBookService }) => {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsSaved(!isSaved)}
-            className={`py-3.5 px-5 rounded-2xl border transition-all ${
-              isSaved ? "bg-red-500/20 border-red-500/50" : "bg-white/10 backdrop-blur-xl border-white/20"
-            }`}
+            className={`py-3.5 px-5 rounded-2xl border transition-all ${isSaved ? "bg-red-500/20 border-red-500/50" : "bg-white/10 backdrop-blur-xl border-white/20"
+              }`}
           >
             <Heart size={20} className={isSaved ? "text-red-500 fill-red-500" : "text-white"} />
           </motion.button>
@@ -5386,16 +5382,14 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                   whileTap={{ scale: isPostsFull ? 1 : 0.98 }}
                   onClick={() => !isPostsFull && setUploadType("post")}
                   disabled={isPostsFull}
-                  className={`w-full p-6 rounded-2xl border flex items-center gap-4 transition-all ${
-                    isPostsFull
+                  className={`w-full p-6 rounded-2xl border flex items-center gap-4 transition-all ${isPostsFull
                       ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
                       : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-100 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-600"
-                  }`}
+                    }`}
                 >
                   <div
-                    className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ${
-                      isPostsFull ? "bg-gray-400" : "bg-gradient-to-br from-blue-500 to-purple-600"
-                    }`}
+                    className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ${isPostsFull ? "bg-gray-400" : "bg-gradient-to-br from-blue-500 to-purple-600"
+                      }`}
                   >
                     <Image size={28} className="text-white" />
                   </div>
@@ -5416,16 +5410,14 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                   whileTap={{ scale: isReelsFull ? 1 : 0.98 }}
                   onClick={() => !isReelsFull && setUploadType("reel")}
                   disabled={isReelsFull}
-                  className={`w-full p-6 rounded-2xl border flex items-center gap-4 transition-all ${
-                    isReelsFull
+                  className={`w-full p-6 rounded-2xl border flex items-center gap-4 transition-all ${isReelsFull
                       ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
                       : "bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-900/20 dark:to-orange-900/20 border-pink-100 dark:border-pink-800 hover:border-pink-300 dark:hover:border-pink-600"
-                  }`}
+                    }`}
                 >
                   <div
-                    className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ${
-                      isReelsFull ? "bg-gray-400" : "bg-gradient-to-br from-pink-500 to-orange-500"
-                    }`}
+                    className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg ${isReelsFull ? "bg-gray-400" : "bg-gradient-to-br from-pink-500 to-orange-500"
+                      }`}
                   >
                     <Video size={28} className="text-white" />
                   </div>
@@ -5479,11 +5471,10 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                   whileTap={{ scale: isUploading ? 1 : 0.98 }}
                   onClick={handleFileSelect}
                   disabled={isUploading}
-                  className={`w-full ${uploadType === "reel" ? "aspect-[9/16]" : "aspect-square"} rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-4 overflow-hidden ${
-                    selectedFile
+                  className={`w-full ${uploadType === "reel" ? "aspect-[9/16]" : "aspect-square"} rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-4 overflow-hidden ${selectedFile
                       ? "border-green-500 bg-green-50 dark:bg-green-900/20"
                       : "border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-gray-400 dark:hover:border-gray-600"
-                  } ${isUploading ? "pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
+                    } ${isUploading ? "pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
                 >
                   {selectedFile ? (
                     <div className="relative w-full h-full">
@@ -5840,14 +5831,12 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
 
 const InfoChip = memo(({ icon: Icon, label, value, color = "blue", size = "normal" }) => (
   <div
-    className={`flex items-center gap-2 p-2.5 bg-${color}-50 dark:bg-${color}-900/20 rounded-xl ${
-      size === "small" ? "p-2" : ""
-    }`}
+    className={`flex items-center gap-2 p-2.5 bg-${color}-50 dark:bg-${color}-900/20 rounded-xl ${size === "small" ? "p-2" : ""
+      }`}
   >
     <div
-      className={`w-8 h-8 rounded-lg bg-${color}-100 dark:bg-${color}-800/30 flex items-center justify-center ${
-        size === "small" ? "w-7 h-7" : ""
-      }`}
+      className={`w-8 h-8 rounded-lg bg-${color}-100 dark:bg-${color}-800/30 flex items-center justify-center ${size === "small" ? "w-7 h-7" : ""
+        }`}
     >
       <Icon size={size === "small" ? 14 : 16} className={`text-${color}-600 dark:text-${color}-400`} />
     </div>
@@ -5865,10 +5854,9 @@ const QuickStatCard = memo(({ icon: Icon, label, value, subtext, color = "blue",
   <motion.div
     whileHover={{ scale: 1.02, y: -2 }}
     whileTap={{ scale: 0.98 }}
-    className={`relative overflow-hidden p-3 rounded-2xl ${
-      gradient ||
+    className={`relative overflow-hidden p-3 rounded-2xl ${gradient ||
       `bg-gradient-to-br from-${color}-50 to-${color}-100/50 dark:from-${color}-900/30 dark:to-${color}-800/20`
-    } border border-${color}-100 dark:border-${color}-800/30`}
+      } border border-${color}-100 dark:border-${color}-800/30`}
   >
     <div className="flex items-start justify-between">
       <div>
@@ -5891,9 +5879,8 @@ const PackageCard = memo(({ pkg, isSelected, onSelect }) => (
     layout
     whileTap={{ scale: 0.98 }}
     onClick={() => onSelect(pkg.id || pkg._id)}
-    className={`bg-white dark:bg-gray-900 p-4 rounded-2xl border-2 transition-all shadow-sm ${
-      isSelected ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-gray-100 dark:border-gray-800"
-    } ${pkg.isPopular ? "ring-2 ring-amber-400 ring-offset-2 dark:ring-offset-black" : ""}`}
+    className={`bg-white dark:bg-gray-900 p-4 rounded-2xl border-2 transition-all shadow-sm ${isSelected ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-gray-100 dark:border-gray-800"
+      } ${pkg.isPopular ? "ring-2 ring-amber-400 ring-offset-2 dark:ring-offset-black" : ""}`}
   >
     {pkg.isPopular && (
       <div className="flex justify-center -mt-7 mb-3">
@@ -5952,11 +5939,10 @@ const PackageCard = memo(({ pkg, isSelected, onSelect }) => (
     )}
     <motion.button
       whileTap={{ scale: 0.97 }}
-      className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${
-        isSelected
+      className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${isSelected
           ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
           : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-      }`}
+        }`}
     >
       {isSelected ? "✓ Selected" : "Select Package"}
     </motion.button>
@@ -6291,11 +6277,10 @@ const CategorySpecificSection = memo(({ vendor, formatPrice }) => {
             )}
             {vendor.destinationWeddings !== undefined && (
               <div
-                className={`p-3 rounded-xl flex items-center gap-3 ${
-                  vendor.destinationWeddings
+                className={`p-3 rounded-xl flex items-center gap-3 ${vendor.destinationWeddings
                     ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
                     : "bg-gray-50 dark:bg-gray-800"
-                }`}
+                  }`}
               >
                 {vendor.destinationWeddings ? (
                   <CheckCircle size={18} className="text-green-500" />
@@ -6574,9 +6559,8 @@ const CollapsibleSection = memo(
           <div className="flex items-center gap-3">
             {Icon && (
               <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                  iconBg || "bg-blue-50 dark:bg-blue-900/20"
-                }`}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconBg || "bg-blue-50 dark:bg-blue-900/20"
+                  }`}
               >
                 <Icon className={iconColor || "text-blue-500"} size={18} />
               </div>
@@ -7242,16 +7226,16 @@ const MoreOptionsDrawer = ({
     },
     ...(isVerified
       ? [
-          {
-            id: "updateProfile",
-            label: "Update Profile",
-            icon: Edit3,
-            action: () => {
-              setShowUpdateProfileDrawer(true);
-              onClose();
-            },
+        {
+          id: "updateProfile",
+          label: "Update Profile",
+          icon: Edit3,
+          action: () => {
+            setShowUpdateProfileDrawer(true);
+            onClose();
           },
-        ]
+        },
+      ]
       : []),
     {
       id: "notify",
@@ -7405,11 +7389,10 @@ const MoreOptionsDrawer = ({
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors ${
-                      option.danger
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors ${option.danger
                         ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20"
                         : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800"
-                    }`}
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -8162,11 +8145,10 @@ const PostOptionsDrawer = ({ isOpen, onClose, post, onDelete, onShare, onEdit, o
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors ${
-                      option.danger
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors ${option.danger
                         ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20"
                         : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800"
-                    }`}
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -8414,11 +8396,10 @@ const ReelOptionsDrawer = ({ isOpen, onClose, reel, onDelete, onShare, onEdit })
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors ${
-                      option.danger
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors ${option.danger
                         ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20"
                         : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800"
-                    }`}
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -8679,10 +8660,10 @@ const HighlightStoryViewer = ({
 
   const formattedDate = currentHighlight.eventDate
     ? new Date(currentHighlight.eventDate).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
     : null;
 
   return (
@@ -8712,7 +8693,7 @@ const HighlightStoryViewer = ({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-300 dark:ring-white/30">
-              <img src={vendorImage} alt={vendorName} className="w-full h-full object-cover" />
+              <SmartMedia src={vendorImage} alt={vendorName} type="image" className="w-full h-full object-cover" />
             </div>
             <div>
               <div className="flex items-center gap-2">
@@ -8802,9 +8783,10 @@ const HighlightStoryViewer = ({
                         }}
                       >
                         <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-gray-900 p-[2px]">
-                          <img
+                          <SmartMedia
                             src={currentHighlight.coverImage}
                             alt={currentHighlight.title}
+                            type="image"
                             className="w-full h-full object-cover rounded-full"
                           />
                         </div>
@@ -8812,34 +8794,34 @@ const HighlightStoryViewer = ({
                     </motion.div>
                   )}
 
-                 <div className="flex flex-col gap-2 justify-center items-center w-full h-full">
-                   <div className="flex-1 min-w-0 pt-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <h2 className="text-gray-900 dark:text-white text-[18px] font-bold leading-tight flex-1 truncate">
-                        {currentHighlight.title}
-                      </h2>
-                      {formattedDate && (
-                        <span className="text-gray-400 dark:text-white/40 text-[11px] font-medium whitespace-nowrap bg-gray-100 dark:bg-white/5 px-2.5 py-1 rounded-full flex-shrink-0">
-                          {formattedDate}
-                        </span>
-                      )}
+                  <div className="flex flex-col gap-2 justify-center items-center w-full h-full">
+                    <div className="flex-1 min-w-0 pt-1">
+                      <div className="flex items-start justify-between gap-2">
+                        <h2 className="text-gray-900 dark:text-white text-[18px] font-bold leading-tight flex-1 truncate">
+                          {currentHighlight.title}
+                        </h2>
+                        {formattedDate && (
+                          <span className="text-gray-400 dark:text-white/40 text-[11px] font-medium whitespace-nowrap bg-gray-100 dark:bg-white/5 px-2.5 py-1 rounded-full flex-shrink-0">
+                            {formattedDate}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  {(currentHighlight.category || currentHighlight.subcategory) && (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {currentHighlight.category && (
-                      <span className="px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-[11px] text-gray-600 dark:text-white/80 font-medium">
-                        {currentHighlight.category}
-                      </span>
+                    {(currentHighlight.category || currentHighlight.subcategory) && (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {currentHighlight.category && (
+                          <span className="px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-[11px] text-gray-600 dark:text-white/80 font-medium">
+                            {currentHighlight.category}
+                          </span>
+                        )}
+                        {currentHighlight.subcategory && (
+                          <span className="px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-[11px] text-gray-500 dark:text-white/70 font-medium">
+                            {currentHighlight.subcategory}
+                          </span>
+                        )}
+                      </div>
                     )}
-                    {currentHighlight.subcategory && (
-                      <span className="px-3 py-1 bg-gray-100 dark:bg-white/10 rounded-full text-[11px] text-gray-500 dark:text-white/70 font-medium">
-                        {currentHighlight.subcategory}
-                      </span>
-                    )}
                   </div>
-                )}
-                 </div>
                 </div>
 
                 {currentHighlight.description && (
@@ -8881,9 +8863,8 @@ const HighlightStoryViewer = ({
                   {Object.entries(currentHighlight.content).map(([key, value], idx, arr) => (
                     <div
                       key={key}
-                      className={`flex items-center justify-between py-2.5 ${
-                        idx < arr.length - 1 ? "border-b border-gray-200 dark:border-white/[0.06]" : ""
-                      }`}
+                      className={`flex items-center justify-between py-2.5 ${idx < arr.length - 1 ? "border-b border-gray-200 dark:border-white/[0.06]" : ""
+                        }`}
                     >
                       <span className="text-gray-400 dark:text-white/50 text-[12px] capitalize font-medium">
                         {key.replace(/_/g, " ")}
@@ -8920,11 +8901,11 @@ const HighlightStoryViewer = ({
                       }
                       className="flex-shrink-0 w-44 h-44 rounded-2xl overflow-hidden cursor-pointer relative group"
                     >
-                      <img
+                      <SmartMedia
                         src={img.url}
                         alt={img.caption || ""}
+                        type="image"
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        loading="lazy"
                       />
                       <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                         <ZoomIn
@@ -9459,9 +9440,8 @@ const HighlightMediaFullscreen = ({ media, onClose }) => {
                 e.stopPropagation();
                 navigateTo(idx, idx > currentIndex ? 1 : -1);
               }}
-              className={`rounded-full transition-all duration-300 ${
-                idx === currentIndex ? "w-6 h-2 bg-white" : "w-2 h-2 bg-white/40 hover:bg-white/60"
-              }`}
+              className={`rounded-full transition-all duration-300 ${idx === currentIndex ? "w-6 h-2 bg-white" : "w-2 h-2 bg-white/40 hover:bg-white/60"
+                }`}
             />
           ))}
         </div>
@@ -9580,9 +9560,8 @@ const HighlightMediaFullscreen = ({ media, onClose }) => {
                 e.stopPropagation();
                 navigateTo(idx, idx > currentIndex ? 1 : -1);
               }}
-              className={`rounded-full transition-all duration-300 ${
-                idx === currentIndex ? "w-2 h-6 bg-white" : "w-2 h-2 bg-white/40 hover:bg-white/60"
-              }`}
+              className={`rounded-full transition-all duration-300 ${idx === currentIndex ? "w-2 h-6 bg-white" : "w-2 h-2 bg-white/40 hover:bg-white/60"
+                }`}
             />
           ))}
         </div>
@@ -9617,11 +9596,10 @@ const VideoThumbnailCard = ({ videoUrl, thumbnailUrl, caption, duration, onClick
         />
       ) : (
         <div
-          className={`w-full h-full flex items-center justify-center ${
-            isTestimonial
+          className={`w-full h-full flex items-center justify-center ${isTestimonial
               ? "bg-gradient-to-br from-purple-900/80 to-pink-900/80"
               : "bg-gradient-to-br from-slate-800 to-slate-700"
-          }`}
+            }`}
         >
           {isTestimonial ? (
             <MessageCircle size={28} className="text-white/30" />
@@ -10128,24 +10106,24 @@ const AddHighlightModal = ({
   };
 
   const ExistingTestimonialThumb = ({ videoUrl, thumbnailUrl }) => {
-  const { thumbnail, loading } = useVideoThumbnail(videoUrl, thumbnailUrl || "");
+    const { thumbnail, loading } = useVideoThumbnail(videoUrl, thumbnailUrl || "");
 
-  return (
-    <div className="w-14 h-20 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0 relative">
-      {loading ? (
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="w-4 h-4 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />
-        </div>
-      ) : thumbnail ? (
-        <img src={thumbnail} alt="" className="w-full h-full object-cover" />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          <Play size={14} className="text-slate-500" />
-        </div>
-      )}
-    </div>
-  );
-};
+    return (
+      <div className="w-14 h-20 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0 relative">
+        {loading ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />
+          </div>
+        ) : thumbnail ? (
+          <img src={thumbnail} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Play size={14} className="text-slate-500" />
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <motion.div
@@ -10288,8 +10266,8 @@ const AddHighlightModal = ({
                       style={
                         hlCategory === cat
                           ? {
-                              background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-                            }
+                            background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                          }
                           : {}
                       }
                     >
@@ -10539,39 +10517,39 @@ const AddHighlightModal = ({
               </div>
               <div className="space-y-3">
                 {existingTestimonials.map((t, idx) => (
-  <div
-    key={`et-${idx}`}
-    className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700"
-  >
-    {/* ✅ Use the same ExistingVideoThumb-style hook for thumbnail */}
-    <ExistingTestimonialThumb videoUrl={t.videoUrl} thumbnailUrl={t.thumbnailUrl} />
+                  <div
+                    key={`et-${idx}`}
+                    className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700"
+                  >
+                    {/* ✅ Use the same ExistingVideoThumb-style hook for thumbnail */}
+                    <ExistingTestimonialThumb videoUrl={t.videoUrl} thumbnailUrl={t.thumbnailUrl} />
 
-    <div className="flex-1 min-w-0">
-      {/* ✅ Make personName editable, not just display text */}
-      <input
-        type="text"
-        value={t.personName || ""}
-        onChange={(e) =>
-          setExistingTestimonials((prev) =>
-            prev.map((item, i) =>
-              i === idx ? { ...item, personName: e.target.value } : item
-            )
-          )
-        }
-        placeholder="Person's name"
-        className="w-full px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-[12px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
-        maxLength={50}
-      />
-      <p className="text-[10px] text-slate-500 mt-0.5">Existing</p>
-    </div>
-    <button
-      onClick={() => removeExistingTestimonial(idx)}
-      className="p-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700"
-    >
-      <X size={14} className="text-slate-500" />
-    </button>
-  </div>
-))}
+                    <div className="flex-1 min-w-0">
+                      {/* ✅ Make personName editable, not just display text */}
+                      <input
+                        type="text"
+                        value={t.personName || ""}
+                        onChange={(e) =>
+                          setExistingTestimonials((prev) =>
+                            prev.map((item, i) =>
+                              i === idx ? { ...item, personName: e.target.value } : item
+                            )
+                          )
+                        }
+                        placeholder="Person's name"
+                        className="w-full px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-[12px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+                        maxLength={50}
+                      />
+                      <p className="text-[10px] text-slate-500 mt-0.5">Existing</p>
+                    </div>
+                    <button
+                      onClick={() => removeExistingTestimonial(idx)}
+                      className="p-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <X size={14} className="text-slate-500" />
+                    </button>
+                  </div>
+                ))}
                 {testimonialFiles.map((t, idx) => (
                   <div
                     key={`nt-${idx}`}
@@ -13562,11 +13540,10 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
 
       {/* ============ FIXED HEADER WITH INTEGRATED TABS ============ */}
       <div
-        className={`fixed top-0 left-0 right-0 z-[40] transition-all duration-500 ease-out ${
-          isScrolledHeader
+        className={`fixed top-0 left-0 right-0 z-[40] transition-all duration-500 ease-out ${isScrolledHeader
             ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-lg border-b border-gray-200/50 dark:border-gray-800/50"
             : "bg-gradient-to-b from-black/50 to-transparent"
-        }`}
+          }`}
         style={{
           willChange: isScrolledHeader ? "auto" : "transform, opacity",
         }}
@@ -13587,18 +13564,16 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
             whileTap={{ scale: 0.92 }}
             whileHover={{ scale: 1.05 }}
             onClick={handleBack}
-            className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-              isScrolledHeader ? "b border-gray-200 dark:border-gray-700 shadow-sm" : " border-white/10 shadow-black/20"
-            }`}
+            className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader ? "b border-gray-200 dark:border-gray-700 shadow-sm" : " border-white/10 shadow-black/20"
+              }`}
             style={{
               willChange: "transform",
             }}
           >
             <ArrowLeft
               size={20}
-              className={`transition-colors duration-500 ease-out ${
-                isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
-              }`}
+              className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
+                }`}
             />
           </motion.button>
 
@@ -13614,9 +13589,8 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
               className="flex items-center gap-2 flex-1 min-w-0 ml-2"
             >
               <span
-                className={`text-sm font-bold truncate transition-colors duration-500 ease-out ${
-                  isScrolledHeader ? "text-gray-900 dark:text-white" : "text-white"
-                }`}
+                className={`text-sm font-bold truncate transition-colors duration-500 ease-out ${isScrolledHeader ? "text-gray-900 dark:text-white" : "text-white"
+                  }`}
               >
                 {"@" + vendor?.username}
               </span>
@@ -13655,40 +13629,36 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
               whileTap={{ scale: 0.92 }}
               whileHover={{ scale: 1.05 }}
               onClick={handleShare}
-              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                isScrolledHeader
+              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
                   ? " border-gray-200 dark:border-gray-700 shadow-sm"
                   : " border-white/10 shadow-black/20"
-              }`}
+                }`}
               style={{
                 willChange: "transform",
               }}
             >
               <Share2
                 size={18}
-                className={`transition-colors duration-500 ease-out ${
-                  isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
-                }`}
+                className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
+                  }`}
               />
             </motion.button>
             <motion.button
               whileTap={{ scale: 0.92 }}
               whileHover={{ scale: 1.05 }}
               onClick={() => setShowMoreOptions(true)}
-              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                isScrolledHeader
+              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
                   ? " border-gray-200 dark:border-gray-700 shadow-sm"
                   : " border-white/10 shadow-black/20"
-              }`}
+                }`}
               style={{
                 willChange: "transform",
               }}
             >
               <MoreVertical
                 size={18}
-                className={`transition-colors duration-500 ease-out ${
-                  isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
-                }`}
+                className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-gray-700 dark:text-gray-200" : "text-white"
+                  }`}
               />
             </motion.button>
           </motion.div>
@@ -14176,11 +14146,10 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                           whileTap={{ scale: 0.9 }}
                           onClick={handleHighlightPrev}
                           disabled={currentHighlightIndex === 0}
-                          className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
-                            currentHighlightIndex === 0
+                          className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${currentHighlightIndex === 0
                               ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
                               : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                          }`}
+                            }`}
                         >
                           <ChevronLeft size={16} className="text-slate-600 dark:text-slate-400" />
                         </motion.button>
@@ -14188,11 +14157,10 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                           whileTap={{ scale: 0.9 }}
                           onClick={handleHighlightNext}
                           disabled={currentHighlightIndex >= highlights.length}
-                          className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
-                            currentHighlightIndex >= highlights.length
+                          className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${currentHighlightIndex >= highlights.length
                               ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
                               : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                          }`}
+                            }`}
                         >
                           <ChevronRight size={16} className="text-slate-600 dark:text-slate-400" />
                         </motion.button>
@@ -14310,9 +14278,9 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                     animate={
                       hasTrusted
                         ? {
-                            rotate: [0, -15, 15, -10, 10, 0],
-                            scale: [1, 1.15, 1.1, 1.05, 1],
-                          }
+                          rotate: [0, -15, 15, -10, 10, 0],
+                          scale: [1, 1.15, 1.1, 1.05, 1],
+                        }
                         : {}
                     }
                     transition={{ duration: 0.5, ease: smoothEase }}

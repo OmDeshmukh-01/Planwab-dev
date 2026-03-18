@@ -848,9 +848,8 @@ const PasswordVerificationModal = ({ isOpen, onClose, onSuccess, vendorId, vendo
                     onKeyDown={handleKeyDown}
                     placeholder="Enter your password"
                     disabled={isVerifying}
-                    className={`w-full pl-12 pr-12 py-4 bg-slate-100 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all ${
-                      error ? "border-red-500 focus:border-red-500" : "border-transparent focus:border-blue-500"
-                    } ${isVerifying ? "opacity-60 cursor-not-allowed" : ""}`}
+                    className={`w-full pl-12 pr-12 py-4 bg-slate-100 dark:bg-slate-800 border-2 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none transition-all ${error ? "border-red-500 focus:border-red-500" : "border-transparent focus:border-blue-500"
+                      } ${isVerifying ? "opacity-60 cursor-not-allowed" : ""}`}
                   />
                   <motion.button
                     type="button"
@@ -2249,7 +2248,7 @@ const PostDetailModal = ({
 
     const handleEnded = () => {
       video.currentTime = 0;
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     };
 
     const handleError = () => {
@@ -2326,7 +2325,7 @@ const PostDetailModal = ({
     } else {
       // Resume video only if it was playing before drag started
       if (videoRef.current && isVideo && wasDragPlayingRef.current) {
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch(() => { });
       }
     }
 
@@ -3344,11 +3343,10 @@ const PostDetailModal = ({
                       }
                     }}
                     disabled={currentIndex === 0}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      currentIndex === 0
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex === 0
                         ? "bg-gray-50 text-gray-400 cursor-not-allowed"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
-                    }`}
+                      }`}
                   >
                     <ChevronUp size={16} />
                     Previous
@@ -3360,11 +3358,10 @@ const PostDetailModal = ({
                       }
                     }}
                     disabled={currentIndex >= posts.length - 1}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      currentIndex >= posts.length - 1
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex >= posts.length - 1
                         ? "bg-gray-50 text-gray-400 cursor-not-allowed"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200 cursor-pointer"
-                    }`}
+                      }`}
                   >
                     Next
                     <ChevronDown size={16} />
@@ -3677,7 +3674,7 @@ const ReelsViewer = ({
     const video = videoRef.current;
     if (video) {
       video.currentTime = 0;
-      video.play().catch(() => {});
+      video.play().catch(() => { });
     }
   };
 
@@ -3872,7 +3869,7 @@ const ReelsViewer = ({
       goToReel("down");
     } else {
       if (videoRef.current && isPlaying) {
-        videoRef.current.play().catch(() => {});
+        videoRef.current.play().catch(() => { });
       }
     }
 
@@ -4346,11 +4343,10 @@ const ReelsViewer = ({
                       }
                     }}
                     disabled={currentIndex === 0}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      currentIndex === 0
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex === 0
                         ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
                         : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
-                    }`}
+                      }`}
                   >
                     <ChevronUp size={16} />
                     Previous
@@ -4365,11 +4361,10 @@ const ReelsViewer = ({
                       }
                     }}
                     disabled={currentIndex >= reels.length - 1}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${
-                      currentIndex >= reels.length - 1
+                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold flex items-center justify-center gap-1.5 transition-all ${currentIndex >= reels.length - 1
                         ? "bg-gray-800/50 text-gray-600 cursor-not-allowed"
                         : "bg-gray-800 text-white hover:bg-gray-700 cursor-pointer"
-                    }`}
+                      }`}
                   >
                     Next
                     <ChevronDown size={16} />
@@ -4509,9 +4504,8 @@ const PortfolioViewer = ({ portfolio, onClose, onBookService }) => {
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={() => setIsSaved(!isSaved)}
-            className={`py-3.5 px-5 rounded-2xl border transition-all ${
-              isSaved ? "bg-red-500/20 border-red-500/50" : "bg-white/10 backdrop-blur-xl border-white/20"
-            }`}
+            className={`py-3.5 px-5 rounded-2xl border transition-all ${isSaved ? "bg-red-500/20 border-red-500/50" : "bg-white/10 backdrop-blur-xl border-white/20"
+              }`}
           >
             <Heart size={20} className={isSaved ? "text-red-500 fill-red-500" : "text-white"} />
           </motion.button>
@@ -5368,16 +5362,14 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                     whileTap={{ scale: isPostsFull ? 1 : 0.98 }}
                     onClick={() => !isPostsFull && setUploadType("post")}
                     disabled={isPostsFull}
-                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${
-                      isPostsFull
+                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${isPostsFull
                         ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
                         : "bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border-blue-100 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-600 hover:shadow-lg hover:shadow-blue-500/10"
-                    }`}
+                      }`}
                   >
                     <div
-                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${
-                        isPostsFull ? "bg-gray-400" : "bg-gradient-to-br from-blue-500 to-purple-600"
-                      }`}
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${isPostsFull ? "bg-gray-400" : "bg-gradient-to-br from-blue-500 to-purple-600"
+                        }`}
                     >
                       <Image size={28} className="text-white" />
                     </div>
@@ -5398,16 +5390,14 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                     whileTap={{ scale: isReelsFull ? 1 : 0.98 }}
                     onClick={() => !isReelsFull && setUploadType("reel")}
                     disabled={isReelsFull}
-                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${
-                      isReelsFull
+                    className={`w-full p-6 rounded-2xl border flex items-center lg:flex-col lg:items-start lg:text-left gap-4 transition-all cursor-pointer ${isReelsFull
                         ? "bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-60 cursor-not-allowed"
                         : "bg-gradient-to-br from-pink-50 to-orange-50 dark:from-pink-900/20 dark:to-orange-900/20 border-pink-100 dark:border-pink-800 hover:border-pink-300 dark:hover:border-pink-600 hover:shadow-lg hover:shadow-pink-500/10"
-                    }`}
+                      }`}
                   >
                     <div
-                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${
-                        isReelsFull ? "bg-gray-400" : "bg-gradient-to-br from-pink-500 to-orange-500"
-                      }`}
+                      className={`w-16 h-16 rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0 ${isReelsFull ? "bg-gray-400" : "bg-gradient-to-br from-pink-500 to-orange-500"
+                        }`}
                     >
                       <Video size={28} className="text-white" />
                     </div>
@@ -5465,11 +5455,10 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
                       whileTap={{ scale: isUploading ? 1 : 0.98 }}
                       onClick={handleFileSelect}
                       disabled={isUploading}
-                      className={`w-full ${uploadType === "reel" ? "aspect-[9/16] lg:aspect-[9/14]" : "aspect-square"} rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-4 overflow-hidden ${
-                        selectedFile
+                      className={`w-full ${uploadType === "reel" ? "aspect-[9/16] lg:aspect-[9/14]" : "aspect-square"} rounded-2xl border-2 border-dashed transition-all flex flex-col items-center justify-center gap-4 overflow-hidden ${selectedFile
                           ? "border-green-500 bg-green-50 dark:bg-green-900/20"
                           : "border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 hover:border-blue-400 dark:hover:border-blue-600 hover:bg-blue-50/50 dark:hover:bg-blue-900/10"
-                      } ${isUploading ? "pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
+                        } ${isUploading ? "pointer-events-none cursor-not-allowed" : "cursor-pointer"}`}
                     >
                       {selectedFile ? (
                         <div className="relative w-full h-full">
@@ -5848,14 +5837,12 @@ const UploadModal = ({ isOpen, onClose, onUploadPost, onUploadReel, postsCount, 
 
 const InfoChip = memo(({ icon: Icon, label, value, color = "blue", size = "normal" }) => (
   <div
-    className={`flex items-center gap-2 p-2.5 bg-${color}-50 dark:bg-${color}-900/20 rounded-xl ${
-      size === "small" ? "p-2" : ""
-    }`}
+    className={`flex items-center gap-2 p-2.5 bg-${color}-50 dark:bg-${color}-900/20 rounded-xl ${size === "small" ? "p-2" : ""
+      }`}
   >
     <div
-      className={`w-8 h-8 rounded-lg bg-${color}-100 dark:bg-${color}-800/30 flex items-center justify-center ${
-        size === "small" ? "w-7 h-7" : ""
-      }`}
+      className={`w-8 h-8 rounded-lg bg-${color}-100 dark:bg-${color}-800/30 flex items-center justify-center ${size === "small" ? "w-7 h-7" : ""
+        }`}
     >
       <Icon size={size === "small" ? 14 : 16} className={`text-${color}-600 dark:text-${color}-400`} />
     </div>
@@ -5873,10 +5860,9 @@ const QuickStatCard = memo(({ icon: Icon, label, value, subtext, color = "blue",
   <motion.div
     whileHover={{ scale: 1.02, y: -2 }}
     whileTap={{ scale: 0.98 }}
-    className={`relative overflow-hidden p-3 rounded-2xl ${
-      gradient ||
+    className={`relative overflow-hidden p-3 rounded-2xl ${gradient ||
       `bg-gradient-to-br from-${color}-50 to-${color}-100/50 dark:from-${color}-900/30 dark:to-${color}-800/20`
-    } border border-${color}-100 dark:border-${color}-800/30`}
+      } border border-${color}-100 dark:border-${color}-800/30`}
   >
     <div className="flex items-start justify-between">
       <div>
@@ -5899,9 +5885,8 @@ const PackageCard = memo(({ pkg, isSelected, onSelect }) => (
     layout
     whileTap={{ scale: 0.98 }}
     onClick={() => onSelect(pkg.id || pkg._id)}
-    className={`bg-white dark:bg-gray-900 p-4 rounded-2xl border-2 transition-all shadow-sm ${
-      isSelected ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-gray-100 dark:border-gray-800"
-    } ${pkg.isPopular ? "ring-2 ring-amber-400 ring-offset-2 dark:ring-offset-black" : ""}`}
+    className={`bg-white dark:bg-gray-900 p-4 rounded-2xl border-2 transition-all shadow-sm ${isSelected ? "border-blue-500 shadow-lg shadow-blue-500/20" : "border-gray-100 dark:border-gray-800"
+      } ${pkg.isPopular ? "ring-2 ring-amber-400 ring-offset-2 dark:ring-offset-black" : ""}`}
   >
     {pkg.isPopular && (
       <div className="flex justify-center -mt-7 mb-3">
@@ -5960,11 +5945,10 @@ const PackageCard = memo(({ pkg, isSelected, onSelect }) => (
     )}
     <motion.button
       whileTap={{ scale: 0.97 }}
-      className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${
-        isSelected
+      className={`w-full py-2.5 rounded-xl font-bold text-xs transition-all ${isSelected
           ? "bg-blue-600 text-white shadow-lg shadow-blue-500/25"
           : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-      }`}
+        }`}
     >
       {isSelected ? "✓ Selected" : "Select Package"}
     </motion.button>
@@ -6299,11 +6283,10 @@ const CategorySpecificSection = memo(({ vendor, formatPrice }) => {
             )}
             {vendor.destinationWeddings !== undefined && (
               <div
-                className={`p-3 rounded-xl flex items-center gap-3 ${
-                  vendor.destinationWeddings
+                className={`p-3 rounded-xl flex items-center gap-3 ${vendor.destinationWeddings
                     ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
                     : "bg-gray-50 dark:bg-gray-800"
-                }`}
+                  }`}
               >
                 {vendor.destinationWeddings ? (
                   <CheckCircle size={18} className="text-green-500" />
@@ -6582,9 +6565,8 @@ const CollapsibleSection = memo(
           <div className="flex items-center gap-3">
             {Icon && (
               <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center ${
-                  iconBg || "bg-blue-50 dark:bg-blue-900/20"
-                }`}
+                className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconBg || "bg-blue-50 dark:bg-blue-900/20"
+                  }`}
               >
                 <Icon className={iconColor || "text-blue-500"} size={18} />
               </div>
@@ -6959,9 +6941,8 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                   <motion.div
                     key={s}
                     animate={{ scaleX: s <= step ? 1 : 0.5 }}
-                    className={`flex-1 h-1.5 rounded-full transition-colors ${
-                      s <= step ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-gray-200 dark:bg-gray-700"
-                    }`}
+                    className={`flex-1 h-1.5 rounded-full transition-colors ${s <= step ? "bg-gradient-to-r from-blue-600 to-purple-600" : "bg-gray-200 dark:bg-gray-700"
+                      }`}
                   />
                 ))}
               </div>
@@ -7028,11 +7009,10 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                       key={service.id}
                       whileTap={{ scale: 0.98 }}
                       onClick={() => setSelectedService(service)}
-                      className={`w-full p-5 rounded-2xl border-2 transition-all text-left cursor-pointer ${
-                        selectedService?.id === service.id
+                      className={`w-full p-5 rounded-2xl border-2 transition-all text-left cursor-pointer ${selectedService?.id === service.id
                           ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20 shadow-lg shadow-blue-500/10"
                           : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800/50"
-                      }`}
+                        }`}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-2">
@@ -7083,11 +7063,10 @@ const BookingDrawer = ({ isOpen, onClose, services, vendorName, onBookingConfirm
                               setSelectedDate(day.date);
                               setSelectedSlot(slot);
                             }}
-                            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${
-                              selectedDate === day.date && selectedSlot === slot
+                            className={`px-5 py-3 rounded-xl text-sm font-bold transition-all cursor-pointer ${selectedDate === day.date && selectedSlot === slot
                                 ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg shadow-blue-500/25"
                                 : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                            }`}
+                              }`}
                           >
                             {slot}
                           </motion.button>
@@ -7399,16 +7378,16 @@ const MoreOptionsDrawer = ({
     },
     ...(isVerified
       ? [
-          {
-            id: "updateProfile",
-            label: "Update Profile",
-            icon: Edit3,
-            action: () => {
-              setShowUpdateProfileDrawer(true);
-              onClose();
-            },
+        {
+          id: "updateProfile",
+          label: "Update Profile",
+          icon: Edit3,
+          action: () => {
+            setShowUpdateProfileDrawer(true);
+            onClose();
           },
-        ]
+        },
+      ]
       : []),
     {
       id: "notify",
@@ -7574,13 +7553,12 @@ const MoreOptionsDrawer = ({
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${
-                      option.danger
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${option.danger
                         ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
                         : option.verified
                           ? "text-green-600 dark:text-green-400 active:bg-green-50 dark:active:bg-green-900/20 hover:bg-green-50 dark:hover:bg-green-900/20 cursor-default"
                           : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    }`}
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -8367,11 +8345,10 @@ const PostOptionsDrawer = ({ isOpen, onClose, post, onDelete, onShare, onEdit, o
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${
-                      option.danger
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${option.danger
                         ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
                         : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    }`}
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -8635,11 +8612,10 @@ const ReelOptionsDrawer = ({ isOpen, onClose, reel, onDelete, onShare, onEdit })
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={option.action}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${
-                      option.danger
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-colors cursor-pointer ${option.danger
                         ? "text-red-500 active:bg-red-50 dark:active:bg-red-900/20 hover:bg-red-50 dark:hover:bg-red-900/20"
                         : "text-gray-900 dark:text-white active:bg-gray-50 dark:active:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800"
-                    }`}
+                      }`}
                   >
                     <option.icon size={22} />
                     <span className="font-medium">{option.label}</span>
@@ -9292,10 +9268,10 @@ const HighlightStoryViewer = ({
 
   const formattedDate = currentHighlight.eventDate
     ? new Date(currentHighlight.eventDate).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
     : null;
 
   return (
@@ -9355,7 +9331,7 @@ const HighlightStoryViewer = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="w-11 h-11 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-white/20">
-                <img src={vendorImage} alt={vendorName} className="w-full h-full object-cover" />
+                <SmartMedia src={vendorImage} alt={vendorName} type="image" className="w-full h-full object-cover" />
               </div>
               <div>
                 <div className="flex items-center gap-3">
@@ -9454,9 +9430,10 @@ const HighlightStoryViewer = ({
                           }}
                         >
                           <div className="w-full h-full rounded-full overflow-hidden bg-white dark:bg-gray-900 p-[2px]">
-                            <img
+                            <SmartMedia
                               src={currentHighlight.coverImage}
                               alt={currentHighlight.title}
+                              type="image"
                               className="w-full h-full object-cover rounded-full"
                             />
                           </div>
@@ -9572,11 +9549,11 @@ const HighlightStoryViewer = ({
                         }
                         className="aspect-square rounded-2xl overflow-hidden cursor-pointer relative group"
                       >
-                        <img
+                        <SmartMedia
                           src={img.url}
                           alt={img.caption || ""}
+                          type="image"
                           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          loading="lazy"
                         />
                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
                           <ZoomIn
@@ -10090,9 +10067,8 @@ const HighlightMediaFullscreen = ({ media, onClose }) => {
                 e.stopPropagation();
                 navigateTo(idx, idx > currentIndex ? 1 : -1);
               }}
-              className={`rounded-full transition-all duration-300 ${
-                idx === currentIndex ? "w-7 h-2.5 bg-white" : "w-2.5 h-2.5 bg-white/40 hover:bg-white/60"
-              }`}
+              className={`rounded-full transition-all duration-300 ${idx === currentIndex ? "w-7 h-2.5 bg-white" : "w-2.5 h-2.5 bg-white/40 hover:bg-white/60"
+                }`}
             />
           ))}
         </div>
@@ -10211,9 +10187,8 @@ const HighlightMediaFullscreen = ({ media, onClose }) => {
                 e.stopPropagation();
                 navigateTo(idx, idx > currentIndex ? 1 : -1);
               }}
-              className={`rounded-full transition-all duration-300 ${
-                idx === currentIndex ? "w-2.5 h-7 bg-white" : "w-2.5 h-2.5 bg-white/40 hover:bg-white/60"
-              }`}
+              className={`rounded-full transition-all duration-300 ${idx === currentIndex ? "w-2.5 h-7 bg-white" : "w-2.5 h-2.5 bg-white/40 hover:bg-white/60"
+                }`}
             />
           ))}
         </div>
@@ -10248,11 +10223,10 @@ const VideoThumbnailCard = ({ videoUrl, thumbnailUrl, caption, duration, onClick
         />
       ) : (
         <div
-          className={`w-full h-full flex items-center justify-center ${
-            isTestimonial
+          className={`w-full h-full flex items-center justify-center ${isTestimonial
               ? "bg-gradient-to-br from-purple-900/80 to-pink-900/80"
               : "bg-gradient-to-br from-slate-800 to-slate-700"
-          }`}
+            }`}
         >
           {isTestimonial ? (
             <MessageCircle size={32} className="text-white/30" />
@@ -10749,24 +10723,24 @@ const AddHighlightModal = ({
   };
 
   const ExistingTestimonialThumb = ({ videoUrl, thumbnailUrl }) => {
-  const { thumbnail, loading } = useVideoThumbnail(videoUrl, thumbnailUrl || "");
+    const { thumbnail, loading } = useVideoThumbnail(videoUrl, thumbnailUrl || "");
 
-  return (
-    <div className="w-14 h-20 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0 relative">
-      {loading ? (
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="w-4 h-4 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />
-        </div>
-      ) : thumbnail ? (
-        <img src={thumbnail} alt="" className="w-full h-full object-cover" />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center">
-          <Play size={14} className="text-slate-500" />
-        </div>
-      )}
-    </div>
-  );
-};
+    return (
+      <div className="w-14 h-20 rounded-lg overflow-hidden bg-slate-800 flex-shrink-0 relative">
+        {loading ? (
+          <div className="w-full h-full flex items-center justify-center">
+            <div className="w-4 h-4 border-2 border-white/30 border-t-white/80 rounded-full animate-spin" />
+          </div>
+        ) : thumbnail ? (
+          <img src={thumbnail} alt="" className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center">
+            <Play size={14} className="text-slate-500" />
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <motion.div
@@ -10850,11 +10824,10 @@ const AddHighlightModal = ({
             <button
               key={s.id}
               onClick={() => setActiveSection(s.id)}
-              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 text-[13px] font-bold whitespace-nowrap transition-all border-b-2 ${
-                activeSection === s.id
+              className={`flex-1 flex items-center justify-center gap-2 px-4 py-3.5 text-[13px] font-bold whitespace-nowrap transition-all border-b-2 ${activeSection === s.id
                   ? "border-slate-900 dark:border-white text-slate-900 dark:text-white bg-slate-50 dark:bg-slate-800/30"
                   : "border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/20"
-              }`}
+                }`}
             >
               <s.icon size={14} />
               {s.label}
@@ -10921,8 +10894,8 @@ const AddHighlightModal = ({
                       style={
                         hlCategory === cat
                           ? {
-                              background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
-                            }
+                            background: `linear-gradient(135deg, ${categoryColor.primary}, ${categoryColor.secondary})`,
+                          }
                           : {}
                       }
                     >
@@ -11182,40 +11155,40 @@ const AddHighlightModal = ({
                 </button>
               </div>
               <div className="space-y-3">
-               {existingTestimonials.map((t, idx) => (
-  <div
-    key={`et-${idx}`}
-    className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700"
-  >
-    {/* ✅ Use the same ExistingVideoThumb-style hook for thumbnail */}
-    <ExistingTestimonialThumb videoUrl={t.videoUrl} thumbnailUrl={t.thumbnailUrl} />
+                {existingTestimonials.map((t, idx) => (
+                  <div
+                    key={`et-${idx}`}
+                    className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700"
+                  >
+                    {/* ✅ Use the same ExistingVideoThumb-style hook for thumbnail */}
+                    <ExistingTestimonialThumb videoUrl={t.videoUrl} thumbnailUrl={t.thumbnailUrl} />
 
-    <div className="flex-1 min-w-0">
-      {/* ✅ Make personName editable, not just display text */}
-      <input
-        type="text"
-        value={t.personName || ""}
-        onChange={(e) =>
-          setExistingTestimonials((prev) =>
-            prev.map((item, i) =>
-              i === idx ? { ...item, personName: e.target.value } : item
-            )
-          )
-        }
-        placeholder="Person's name"
-        className="w-full px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-[12px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
-        maxLength={50}
-      />
-      <p className="text-[10px] text-slate-500 mt-0.5">Existing</p>
-    </div>
-    <button
-      onClick={() => removeExistingTestimonial(idx)}
-      className="p-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700"
-    >
-      <X size={14} className="text-slate-500" />
-    </button>
-  </div>
-))}
+                    <div className="flex-1 min-w-0">
+                      {/* ✅ Make personName editable, not just display text */}
+                      <input
+                        type="text"
+                        value={t.personName || ""}
+                        onChange={(e) =>
+                          setExistingTestimonials((prev) =>
+                            prev.map((item, i) =>
+                              i === idx ? { ...item, personName: e.target.value } : item
+                            )
+                          )
+                        }
+                        placeholder="Person's name"
+                        className="w-full px-3 py-1.5 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg text-[12px] text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none"
+                        maxLength={50}
+                      />
+                      <p className="text-[10px] text-slate-500 mt-0.5">Existing</p>
+                    </div>
+                    <button
+                      onClick={() => removeExistingTestimonial(idx)}
+                      className="p-1.5 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700"
+                    >
+                      <X size={14} className="text-slate-500" />
+                    </button>
+                  </div>
+                ))}
                 {testimonialFiles.map((t, idx) => (
                   <div
                     key={`nt-${idx}`}
@@ -14237,11 +14210,10 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
 
       {/* ============ FIXED HEADER ============ */}
       <div
-        className={`fixed top-[82px] max-w-[800px] mx-auto left-0 right-0 z-[40] transition-all duration-500 ease-out rounded-xl ${
-          isScrolledHeader
+        className={`fixed top-[82px] max-w-[800px] mx-auto left-0 right-0 z-[40] transition-all duration-500 ease-out rounded-xl ${isScrolledHeader
             ? "bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl shadow-lg border-b border-slate-200/50 dark:border-slate-800/50"
             : "bg-transparent"
-        }`}
+          }`}
       >
         <div className="px-4 lg:px-6">
           {/* Row 1: Navigation Controls */}
@@ -14256,17 +14228,15 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
               whileTap={{ scale: 0.92 }}
               whileHover={{ scale: 1.05 }}
               onClick={handleBack}
-              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                isScrolledHeader
+              className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
                   ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
                   : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
-              }`}
+                }`}
             >
               <ArrowLeft
                 size={20}
-                className={`transition-colors duration-500 ease-out ${
-                  isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
-                }`}
+                className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                  }`}
               />
             </motion.button>
 
@@ -14310,34 +14280,30 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                 whileTap={{ scale: 0.92 }}
                 whileHover={{ scale: 1.05 }}
                 onClick={handleShare}
-                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                  isScrolledHeader
+                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
                     ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
                     : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
-                }`}
+                  }`}
               >
                 <Share2
                   size={18}
-                  className={`transition-colors duration-500 ease-out ${
-                    isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
-                  }`}
+                  className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                    }`}
                 />
               </motion.button>
               <motion.button
                 whileTap={{ scale: 0.92 }}
                 whileHover={{ scale: 1.05 }}
                 onClick={() => setShowMoreOptions(true)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${
-                  isScrolledHeader
+                className={`w-10 h-10 rounded-full flex items-center justify-center border shadow-lg transition-all duration-500 ease-out ${isScrolledHeader
                     ? "border-slate-200 dark:border-slate-700 shadow-sm bg-white dark:bg-slate-800"
                     : "border-white/10 shadow-black/20 bg-black/20 backdrop-blur-sm"
-                }`}
+                  }`}
               >
                 <MoreVertical
                   size={18}
-                  className={`transition-colors duration-500 ease-out ${
-                    isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
-                  }`}
+                  className={`transition-colors duration-500 ease-out ${isScrolledHeader ? "text-slate-700 dark:text-slate-200" : "text-white"
+                    }`}
                 />
               </motion.button>
             </motion.div>
@@ -14872,11 +14838,10 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                       whileTap={{ scale: 0.9 }}
                       onClick={handleHighlightPrev}
                       disabled={currentHighlightIndex === 0}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
-                        currentHighlightIndex === 0
+                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${currentHighlightIndex === 0
                           ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
                           : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                      }`}
+                        }`}
                     >
                       <ChevronLeft size={16} className="text-slate-600 dark:text-slate-400" />
                     </motion.button>
@@ -14884,11 +14849,10 @@ const VendorProfilePageWrapper = ({ initialReviews, initialProfile, initialVendo
                       whileTap={{ scale: 0.9 }}
                       onClick={handleHighlightNext}
                       disabled={currentHighlightIndex >= highlights.length}
-                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${
-                        currentHighlightIndex >= highlights.length
+                      className={`w-8 h-8 rounded-full flex items-center justify-center border transition-all ${currentHighlightIndex >= highlights.length
                           ? "border-slate-200 dark:border-slate-700 opacity-40 cursor-not-allowed"
                           : "border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
-                      }`}
+                        }`}
                     >
                       <ChevronRight size={16} className="text-slate-600 dark:text-slate-400" />
                     </motion.button>

@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
-import { 
-  X, 
-  ChevronRight, 
-  CheckCircle, 
-  Store, 
-  MapPin, 
-  Tag, 
-  Lock, 
+import {
+  X,
+  ChevronRight,
+  CheckCircle,
+  Store,
+  MapPin,
+  Tag,
+  Lock,
   Sparkles,
   Eye,
   EyeOff,
@@ -51,7 +51,7 @@ const UpdateProfileDrawer = ({ vendor, profile, id, onProfileUpdated, isOpen, on
   const [showPasswordSection, setShowPasswordSection] = useState(false);
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
-  
+
   const [profilePicture, setProfilePicture] = useState(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState(null);
   const [coverImage, setCoverImage] = useState(null);
@@ -128,26 +128,24 @@ const UpdateProfileDrawer = ({ vendor, profile, id, onProfileUpdated, isOpen, on
     setError("");
   };
 
-  const uploadImageToCloudinary = async (file) => {
-    const data = new FormData();
-    data.append("file", file);
-    data.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "planWab_vendors");
-
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-      {
-        method: "POST",
-        body: data,
-      }
-    );
-
-    const result = await response.json();
-
-    if (!result.secure_url) {
-      throw new Error("Upload failed");
-    }
-
-    return result.secure_url;
+  const uploadImageToImageKit = async (file, folder = "/profiles") => {
+    const authRes = await fetch("/api/imagekit/auth");
+    const authData = await authRes.json();
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("publicKey", process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY);
+    formData.append("signature", authData.signature);
+    formData.append("expire", authData.expire);
+    formData.append("token", authData.token);
+    formData.append("fileName", `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${file.name.split(".").pop()}`);
+    formData.append("folder", folder);
+    const res = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) throw new Error("Image upload failed");
+    const data = await res.json();
+    return data.url;
   };
 
   const handleProfilePictureChange = async (e) => {
@@ -174,7 +172,7 @@ const UpdateProfileDrawer = ({ vendor, profile, id, onProfileUpdated, isOpen, on
     setError("");
 
     try {
-      const url = await uploadImageToCloudinary(file);
+      const url = await uploadImageToImageKit(file, "/profiles/avatars");
       setProfilePicture(url);
       setFormData((prev) => ({ ...prev, profilePicture: url }));
     } catch (err) {
@@ -209,7 +207,7 @@ const UpdateProfileDrawer = ({ vendor, profile, id, onProfileUpdated, isOpen, on
     setError("");
 
     try {
-      const url = await uploadImageToCloudinary(file);
+      const url = await uploadImageToImageKit(file, "/profiles/covers");
       setCoverImage(url);
       setFormData((prev) => ({ ...prev, coverImage: url }));
     } catch (err) {
@@ -612,11 +610,10 @@ const UpdateProfileDrawer = ({ vendor, profile, id, onProfileUpdated, isOpen, on
                             📝 Formatting supported
                           </span>
                           <span
-                            className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
-                              (formData.bio?.replace(/<[^>]*>/g, "").trim().length || 0) > 900
+                            className={`text-xs font-bold px-2.5 py-1 rounded-lg ${(formData.bio?.replace(/<[^>]*>/g, "").trim().length || 0) > 900
                                 ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
                                 : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
-                            }`}
+                              }`}
                           >
                             {formData.bio?.replace(/<[^>]*>/g, "").trim().length || 0}/1000
                           </span>

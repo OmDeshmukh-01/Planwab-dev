@@ -105,27 +105,25 @@ const VendorProfileOnboarding = ({ vendor, id, onProfileCreated, isOpen, onClose
     }
   };
 
-  // Upload single image to Cloudinary
-  const uploadImageToCloudinary = async (file) => {
-    const data = new FormData();
-    data.append("file", file);
-    data.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "planWab_vendors");
-
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-      {
-        method: "POST",
-        body: data,
-      }
-    );
-
-    const result = await response.json();
-
-    if (!result.secure_url) {
-      throw new Error("Upload failed");
-    }
-
-    return result.secure_url;
+  // Upload single image to ImageKit
+  const uploadImageToImageKit = async (file, folder = "/profiles") => {
+    const authRes = await fetch("/api/imagekit/auth");
+    const authData = await authRes.json();
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("publicKey", process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY);
+    formData.append("signature", authData.signature);
+    formData.append("expire", authData.expire);
+    formData.append("token", authData.token);
+    formData.append("fileName", `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${file.name.split(".").pop()}`);
+    formData.append("folder", folder);
+    const res = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) throw new Error("Image upload failed");
+    const data = await res.json();
+    return data.url;
   };
 
   // Handle profile picture selection and upload
@@ -157,7 +155,7 @@ const VendorProfileOnboarding = ({ vendor, id, onProfileCreated, isOpen, onClose
     setError("");
 
     try {
-      const url = await uploadImageToCloudinary(file);
+      const url = await uploadImageToImageKit(file, "/profiles/avatars");
       setProfilePicture(url);
       setFormData((prev) => ({ ...prev, profilePicture: url }));
     } catch (err) {
@@ -197,7 +195,7 @@ const VendorProfileOnboarding = ({ vendor, id, onProfileCreated, isOpen, onClose
     setError("");
 
     try {
-      const url = await uploadImageToCloudinary(file);
+      const url = await uploadImageToImageKit(file, "/profiles/covers");
       setCoverImage(url);
       setFormData((prev) => ({ ...prev, coverImage: url }));
     } catch (err) {
@@ -421,8 +419,8 @@ const VendorProfileOnboarding = ({ vendor, id, onProfileCreated, isOpen, onClose
                               boxShadow: isActive
                                 ? "0 0 0 4px rgba(59, 130, 246, 0.15), 0 4px 12px rgba(59, 130, 246, 0.3)"
                                 : isCompleted
-                                ? "0 2px 8px rgba(59, 130, 246, 0.2)"
-                                : "0 2px 4px rgba(0, 0, 0, 0.05)",
+                                  ? "0 2px 8px rgba(59, 130, 246, 0.2)"
+                                  : "0 2px 4px rgba(0, 0, 0, 0.05)",
                             }}
                             transition={{ duration: 0.3 }}
                             className="w-10 h-10 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 backdrop-blur-sm"
@@ -817,11 +815,10 @@ const VendorProfileOnboarding = ({ vendor, id, onProfileCreated, isOpen, onClose
                           <div className="flex items-center gap-2">
                             <span className="text-xs text-slate-500">Max 1000 chars</span>
                             <span
-                              className={`text-xs font-bold px-2.5 py-1 rounded-lg ${
-                                formData.bio?.replace(/<[^>]*>/g, "").trim().length > 900
+                              className={`text-xs font-bold px-2.5 py-1 rounded-lg ${formData.bio?.replace(/<[^>]*>/g, "").trim().length > 900
                                   ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
                                   : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
-                              }`}
+                                }`}
                             >
                               {formData.bio?.replace(/<[^>]*>/g, "").trim().length || 0}/1000
                             </span>

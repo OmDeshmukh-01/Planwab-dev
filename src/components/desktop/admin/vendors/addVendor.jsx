@@ -132,26 +132,24 @@ const ToastProvider = ({ children }) => {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, x: 100, scale: 0.9 }}
               transition={{ type: "spring", stiffness: 500, damping: 40 }}
-              className={`pointer-events-auto p-4 rounded-xl shadow-2xl border backdrop-blur-sm flex items-start gap-3 ${
-                toast.type === "success"
+              className={`pointer-events-auto p-4 rounded-xl shadow-2xl border backdrop-blur-sm flex items-start gap-3 ${toast.type === "success"
                   ? "bg-green-50/95 dark:bg-green-900/95 border-green-300 dark:border-green-600 text-green-800 dark:text-green-100"
                   : toast.type === "error"
-                  ? "bg-red-50/95 dark:bg-red-900/95 border-red-300 dark:border-red-600 text-red-800 dark:text-red-100"
-                  : toast.type === "warning"
-                  ? "bg-yellow-50/95 dark:bg-yellow-900/95 border-yellow-300 dark:border-yellow-600 text-yellow-800 dark:text-yellow-100"
-                  : "bg-blue-50/95 dark:bg-blue-900/95 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-100"
-              }`}
+                    ? "bg-red-50/95 dark:bg-red-900/95 border-red-300 dark:border-red-600 text-red-800 dark:text-red-100"
+                    : toast.type === "warning"
+                      ? "bg-yellow-50/95 dark:bg-yellow-900/95 border-yellow-300 dark:border-yellow-600 text-yellow-800 dark:text-yellow-100"
+                      : "bg-blue-50/95 dark:bg-blue-900/95 border-blue-300 dark:border-blue-600 text-blue-800 dark:text-blue-100"
+                }`}
             >
               <div
-                className={`p-1 rounded-full ${
-                  toast.type === "success"
+                className={`p-1 rounded-full ${toast.type === "success"
                     ? "bg-green-200 dark:bg-green-700"
                     : toast.type === "error"
-                    ? "bg-red-200 dark:bg-red-700"
-                    : toast.type === "warning"
-                    ? "bg-yellow-200 dark:bg-yellow-700"
-                    : "bg-blue-200 dark:bg-blue-700"
-                }`}
+                      ? "bg-red-200 dark:bg-red-700"
+                      : toast.type === "warning"
+                        ? "bg-yellow-200 dark:bg-yellow-700"
+                        : "bg-blue-200 dark:bg-blue-700"
+                  }`}
               >
                 {toast.type === "success" && <CheckCircle size={18} />}
                 {toast.type === "error" && <AlertCircle size={18} />}
@@ -391,11 +389,10 @@ const AdminPasswordModal = ({ isOpen, onClose, onSuccess }) => {
                     setError("");
                   }}
                   placeholder="Enter admin password"
-                  className={`w-full pl-10 pr-12 py-3 rounded-xl border-2 outline-none transition-all bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${
-                    error
+                  className={`w-full pl-10 pr-12 py-3 rounded-xl border-2 outline-none transition-all bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 ${error
                       ? "border-red-400 focus:border-red-500 focus:ring-4 focus:ring-red-500/20"
                       : "border-gray-200 dark:border-gray-600 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20"
-                  }`}
+                    }`}
                   disabled={isVerifying}
                 />
                 <button
@@ -683,9 +680,8 @@ const WelcomeSection = ({ isVisible, onClose }) => {
                     <motion.div
                       key={tip.id}
                       whileHover={{ scale: 1.02, y: -2 }}
-                      className={`bg-white/10 backdrop-blur-sm rounded-xl p-4 cursor-pointer transition-all border border-white/20 ${
-                        expandedTip === tip.id ? "ring-2 ring-white/50" : ""
-                      }`}
+                      className={`bg-white/10 backdrop-blur-sm rounded-xl p-4 cursor-pointer transition-all border border-white/20 ${expandedTip === tip.id ? "ring-2 ring-white/50" : ""
+                        }`}
                       onClick={() => setExpandedTip(expandedTip === tip.id ? null : tip.id)}
                     >
                       <div className="flex items-start gap-3">
@@ -697,9 +693,8 @@ const WelcomeSection = ({ isVisible, onClose }) => {
                             <h3 className="font-semibold text-white text-sm">{tip.title}</h3>
                             <ChevronDown
                               size={14}
-                              className={`text-white/60 transition-transform ${
-                                expandedTip === tip.id ? "rotate-180" : ""
-                              }`}
+                              className={`text-white/60 transition-transform ${expandedTip === tip.id ? "rotate-180" : ""
+                                }`}
                             />
                           </div>
                           <p className="text-white/70 text-xs mt-1">{tip.shortDesc}</p>
@@ -1702,21 +1697,28 @@ function AddVendorContent({ onNavigate }) {
   );
 
   // ============================================================================
-  // IMAGE UPLOAD TO CLOUDINARY
+  // IMAGE UPLOAD TO IMAGEKIT
   // ============================================================================
-  const uploadImagesToCloudinary = async (files) => {
+  const uploadImagesToImageKit = async (files) => {
+    const authRes = await fetch("/api/imagekit/auth");
+    const authData = await authRes.json();
     const uploadPromises = files.map((file) => {
       const data = new FormData();
       data.append("file", file);
-      data.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "planWab_vendors");
-      return fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+      data.append("publicKey", process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY);
+      data.append("signature", authData.signature);
+      data.append("expire", authData.expire);
+      data.append("token", authData.token);
+      data.append("fileName", `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${file.name.split(".").pop()}`);
+      data.append("folder", "/vendors/images");
+      return fetch("https://upload.imagekit.io/api/v1/files/upload", {
         method: "POST",
         body: data,
       }).then((res) => res.json());
     });
 
     const results = await Promise.all(uploadPromises);
-    return results.filter((r) => r.secure_url).map((data) => data.secure_url);
+    return results.filter((r) => r.url).map((data) => data.url);
   };
 
   // ============================================================================
@@ -1810,7 +1812,7 @@ function AddVendorContent({ onNavigate }) {
 
     try {
       addToast(`Uploading ${uploadedFiles.length} image(s) to cloud...`, "info");
-      const imageUrls = await uploadImagesToCloudinary(uploadedFiles);
+      const imageUrls = await uploadImagesToImageKit(uploadedFiles);
 
       if (imageUrls.length === 0) {
         throw new Error("Failed to upload images. Please try again.");
@@ -2097,11 +2099,10 @@ function AddVendorContent({ onNavigate }) {
                     setFormData((prev) => ({ ...prev, categoryData: {} }));
                     addToast(`Category changed to ${cat.label}`, "info");
                   }}
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all min-w-[85px] flex-shrink-0 ${
-                    activeCategory === cat.key
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-all min-w-[85px] flex-shrink-0 ${activeCategory === cat.key
                       ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 shadow-lg shadow-indigo-500/20"
                       : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:border-indigo-300 hover:shadow-md"
-                  }`}
+                    }`}
                 >
                   <cat.icon className="h-6 w-6 mb-1.5" />
                   <span className="text-[11px] font-medium text-center leading-tight">{cat.label}</span>
@@ -2132,13 +2133,12 @@ function AddVendorContent({ onNavigate }) {
                       setActiveSection(section.id);
                       scrollToFormTop();
                     }}
-                    className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
-                      isActive
+                    className={`relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${isActive
                         ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30"
                         : hasError
-                        ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-700"
-                        : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
-                    }`}
+                          ? "bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-700"
+                          : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      }`}
                   >
                     <section.icon size={15} />
                     <span className="hidden md:inline">{section.label}</span>
@@ -2380,11 +2380,10 @@ function AddVendorContent({ onNavigate }) {
                     setActiveSection(sections[index].id);
                     scrollToFormTop();
                   }}
-                  className={`rounded-full transition-all duration-300 ${
-                    index === currentSectionIndex
+                  className={`rounded-full transition-all duration-300 ${index === currentSectionIndex
                       ? "bg-indigo-600 w-6 h-2"
                       : "bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 w-2 h-2"
-                  }`}
+                    }`}
                 />
               ))}
             </div>
@@ -2604,13 +2603,11 @@ const InputField = ({
           </span>
         )}
         <input
-          className={`w-full px-3 py-2.5 rounded-xl border-2 outline-none transition-all focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm ${
-            Icon ? "pl-10" : prefix ? "pl-8" : ""
-          } ${suffix || copyable ? "pr-10" : ""} ${
-            error
+          className={`w-full px-3 py-2.5 rounded-xl border-2 outline-none transition-all focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm ${Icon ? "pl-10" : prefix ? "pl-8" : ""
+            } ${suffix || copyable ? "pr-10" : ""} ${error
               ? "border-red-400 bg-red-50 dark:bg-red-900/10 focus:ring-red-500/20 focus:border-red-500"
               : "border-gray-200 dark:border-gray-600"
-          }`}
+            }`}
           onBlur={onBlur}
           {...props}
         />
@@ -2657,11 +2654,10 @@ const TextArea = ({ label, error, className = "", helperText, maxLength, require
       </label>
     )}
     <textarea
-      className={`w-full px-3 py-2.5 rounded-xl border-2 outline-none transition-all focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm resize-none ${
-        error
+      className={`w-full px-3 py-2.5 rounded-xl border-2 outline-none transition-all focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm resize-none ${error
           ? "border-red-400 bg-red-50 dark:bg-red-900/10 focus:ring-red-500/20 focus:border-red-500"
           : "border-gray-200 dark:border-gray-600"
-      }`}
+        }`}
       maxLength={maxLength}
       {...props}
     />
@@ -2669,9 +2665,8 @@ const TextArea = ({ label, error, className = "", helperText, maxLength, require
       {helperText && !error && <p className="text-xs text-gray-500">{helperText}</p>}
       {maxLength && (
         <p
-          className={`text-xs ml-auto ${
-            (props.value?.length || 0) > maxLength * 0.9 ? "text-orange-500 font-medium" : "text-gray-400"
-          }`}
+          className={`text-xs ml-auto ${(props.value?.length || 0) > maxLength * 0.9 ? "text-orange-500 font-medium" : "text-gray-400"
+            }`}
         >
           {props.value?.length || 0}/{maxLength}
         </p>
@@ -2696,11 +2691,10 @@ const TextArea = ({ label, error, className = "", helperText, maxLength, require
 const CheckboxField = ({ label, checked, onChange, description }) => (
   <label className="flex items-start gap-3 cursor-pointer group">
     <div
-      className={`w-5 h-5 mt-0.5 rounded-lg border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-        checked
+      className={`w-5 h-5 mt-0.5 rounded-lg border-2 flex items-center justify-center transition-all flex-shrink-0 ${checked
           ? "bg-indigo-600 border-indigo-600"
           : "border-gray-300 dark:border-gray-600 group-hover:border-indigo-400"
-      }`}
+        }`}
     >
       {checked && <Check size={12} className="text-white" />}
     </div>
@@ -2740,9 +2734,8 @@ const CustomSelect = ({ label, options, value, onChange, error, required, placeh
               onChange(e.target.value);
             }}
             placeholder="Enter custom value..."
-            className={`flex-1 px-3 py-2.5 rounded-xl border-2 outline-none transition-all focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm ${
-              error ? "border-red-400" : "border-gray-200 dark:border-gray-600"
-            }`}
+            className={`flex-1 px-3 py-2.5 rounded-xl border-2 outline-none transition-all focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm ${error ? "border-red-400" : "border-gray-200 dark:border-gray-600"
+              }`}
           />
           <button
             type="button"
@@ -2762,9 +2755,8 @@ const CustomSelect = ({ label, options, value, onChange, error, required, placeh
           <select
             value={value || ""}
             onChange={(e) => onChange(e.target.value)}
-            className={`flex-1 px-3 py-2.5 rounded-xl border-2 outline-none transition-all focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm ${
-              error ? "border-red-400" : "border-gray-200 dark:border-gray-600"
-            }`}
+            className={`flex-1 px-3 py-2.5 rounded-xl border-2 outline-none transition-all focus:ring-4 focus:ring-indigo-500/20 focus:border-indigo-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 text-sm ${error ? "border-red-400" : "border-gray-200 dark:border-gray-600"
+              }`}
           >
             <option value="">{placeholder}</option>
             {options.map((o) => (
@@ -2875,16 +2867,14 @@ const MultiSelectWithCustom = ({ label, options, value = [], onChange, maxSelect
                 }
               }}
               disabled={!isSelected && maxSelections && value.length >= maxSelections}
-              className={`px-3 py-2.5 rounded-xl text-xs font-medium border-2 transition-all text-left flex items-center gap-2 disabled:opacity-50 ${
-                isSelected
+              className={`px-3 py-2.5 rounded-xl text-xs font-medium border-2 transition-all text-left flex items-center gap-2 disabled:opacity-50 ${isSelected
                   ? "bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-500/20"
                   : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:border-indigo-400"
-              }`}
+                }`}
             >
               <div
-                className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${
-                  isSelected ? "bg-white border-white" : "border-gray-300 dark:border-gray-600"
-                }`}
+                className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${isSelected ? "bg-white border-white" : "border-gray-300 dark:border-gray-600"
+                  }`}
               >
                 {isSelected && <Check size={10} className="text-indigo-600" />}
               </div>
@@ -2933,11 +2923,10 @@ const TagInput = ({ label, tags = [], onChange, suggestions = [], placeholder, a
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 group max-w-[180px] ${
-                suggestions.includes(t)
+              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 group max-w-[180px] ${suggestions.includes(t)
                   ? "bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300"
                   : "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
-              }`}
+                }`}
             >
               <span className="truncate">{t}</span>
               {!suggestions.includes(t) && (
@@ -3811,13 +3800,12 @@ const MediaSection = ({
         tip="High-quality images significantly improve customer engagement. Upload at least 3-5 images showcasing your best work."
       >
         <div
-          className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all ${
-            dragActive
+          className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all ${dragActive
               ? "bg-indigo-50 dark:bg-indigo-900/30 border-indigo-500"
               : errors.images
-              ? "border-red-400 bg-red-50 dark:bg-red-900/10"
-              : "border-gray-300 dark:border-gray-600 hover:border-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800"
-          }`}
+                ? "border-red-400 bg-red-50 dark:bg-red-900/10"
+                : "border-gray-300 dark:border-gray-600 hover:border-indigo-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+            }`}
           onDragEnter={(e) => {
             e.preventDefault();
             setDragActive(true);
@@ -3834,11 +3822,10 @@ const MediaSection = ({
           }}
         >
           <div
-            className={`w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center ${
-              errors.images
+            className={`w-20 h-20 mx-auto mb-4 rounded-2xl flex items-center justify-center ${errors.images
                 ? "bg-red-100 dark:bg-red-900/30"
                 : "bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30"
-            }`}
+              }`}
           >
             <UploadCloud
               className={`w-10 h-10 ${errors.images ? "text-red-600" : "text-indigo-600 dark:text-indigo-400"}`}
@@ -4055,9 +4042,8 @@ const ImageThumbnail = ({
             type="button"
             onClick={handleMoveLeft}
             disabled={!canMoveLeft}
-            className={`p-1.5 rounded-lg transition-all shadow-lg pointer-events-auto ${
-              canMoveLeft ? "bg-white/90 hover:bg-white text-gray-700" : "bg-white/50 text-gray-400 cursor-not-allowed"
-            }`}
+            className={`p-1.5 rounded-lg transition-all shadow-lg pointer-events-auto ${canMoveLeft ? "bg-white/90 hover:bg-white text-gray-700" : "bg-white/50 text-gray-400 cursor-not-allowed"
+              }`}
             title="Move left"
           >
             <ChevronLeft size={12} />
@@ -4068,9 +4054,8 @@ const ImageThumbnail = ({
             type="button"
             onClick={handleMoveRight}
             disabled={!canMoveRight}
-            className={`p-1.5 rounded-lg transition-all shadow-lg pointer-events-auto ${
-              canMoveRight ? "bg-white/90 hover:bg-white text-gray-700" : "bg-white/50 text-gray-400 cursor-not-allowed"
-            }`}
+            className={`p-1.5 rounded-lg transition-all shadow-lg pointer-events-auto ${canMoveRight ? "bg-white/90 hover:bg-white text-gray-700" : "bg-white/50 text-gray-400 cursor-not-allowed"
+              }`}
             title="Move right"
           >
             <ChevronRight size={12} />
@@ -4519,11 +4504,10 @@ const PackageCard = ({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className={`border-2 p-5 rounded-2xl relative mb-4 ${
-        pkg.isPopular
+      className={`border-2 p-5 rounded-2xl relative mb-4 ${pkg.isPopular
           ? "border-amber-400 bg-gradient-to-br from-amber-50 to-orange-50 dark:from-amber-900/10 dark:to-orange-900/10 shadow-lg shadow-amber-500/10"
           : "border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800"
-      }`}
+        }`}
     >
       <button
         type="button"
