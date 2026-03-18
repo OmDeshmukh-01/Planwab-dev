@@ -280,23 +280,27 @@ export default function AddVendor() {
     setIsSubmitting(true);
 
     try {
+      // Get ImageKit auth params once for all uploads
+      const authRes = await fetch("/api/imagekit/auth");
+      const authData = await authRes.json();
+
       const uploadPromises = uploadedFiles.map((file) => {
         const formData = new FormData();
         formData.append("file", file);
-        formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "planWab");
-        return fetch(
-          `https://api.cloudinary.com/v1_1/${
-            process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || "dtbq7fbfa"
-          }/image/upload`,
-          {
-            method: "POST",
-            body: formData,
-          }
-        ).then((res) => res.json());
+        formData.append("publicKey", process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY);
+        formData.append("signature", authData.signature);
+        formData.append("expire", authData.expire);
+        formData.append("token", authData.token);
+        formData.append("fileName", `${Date.now()}_${Math.random().toString(36).substring(2, 8)}.${file.name.split(".").pop()}`);
+        formData.append("folder", "/vendors/images");
+        return fetch("https://upload.imagekit.io/api/v1/files/upload", {
+          method: "POST",
+          body: formData,
+        }).then((res) => res.json());
       });
 
       const uploadedImagesData = await Promise.all(uploadPromises);
-      const imageUrls = uploadedImagesData.map((data) => data.secure_url);
+      const imageUrls = uploadedImagesData.map((data) => data.url);
 
       if (imageUrls.some((url) => !url)) {
         throw new Error("Some images failed to upload.");
@@ -374,11 +378,10 @@ export default function AddVendor() {
                   key={cat.key}
                   type="button"
                   onClick={() => handleCategorySelect(cat.key)}
-                  className={`flex flex-col items-center justify-center p-3 rounded-xl aspect-square transition-all duration-300 ${
-                    activeCategory === cat.key
+                  className={`flex flex-col items-center justify-center p-3 rounded-xl aspect-square transition-all duration-300 ${activeCategory === cat.key
                       ? "bg-indigo-600 text-white shadow-lg"
                       : "bg-gray-100 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
-                  }`}
+                    }`}
                 >
                   <cat.icon className="w-6 h-6 mb-1" />
                   <span className="text-xs font-medium text-center">{cat.label}</span>
@@ -950,11 +953,10 @@ export default function AddVendor() {
 
             <Section title="Business Images" icon={UploadCloud} iconColor="from-red-500 to-orange-500">
               <div
-                className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${
-                  dragActive
+                className={`relative border-2 border-dashed rounded-xl p-8 text-center transition-all duration-200 ${dragActive
                     ? "border-indigo-400 bg-indigo-50 dark:bg-indigo-900/20"
                     : "border-gray-300 dark:border-gray-600 hover:border-indigo-400"
-                } ${errors.images ? "border-red-500" : ""}`}
+                  } ${errors.images ? "border-red-500" : ""}`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
@@ -1005,9 +1007,8 @@ export default function AddVendor() {
             <div className="pt-6 border-t border-gray-200 dark:border-gray-700">
               {submitFeedback.message && (
                 <div
-                  className={`p-4 mb-4 rounded-lg text-center font-medium ${
-                    submitFeedback.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
-                  }`}
+                  className={`p-4 mb-4 rounded-lg text-center font-medium ${submitFeedback.type === "success" ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+                    }`}
                 >
                   {submitFeedback.message}
                 </div>
@@ -1071,13 +1072,11 @@ const InputField = ({ label, id, icon: Icon, required, className = "", helper, e
         id={id}
         {...props}
         required={required}
-        className={`w-full ${
-          Icon ? "pl-11" : "pl-4"
-        } pr-4 py-3 bg-white dark:bg-gray-700/50 border-2 rounded-xl transition-all ${
-          error
+        className={`w-full ${Icon ? "pl-11" : "pl-4"
+          } pr-4 py-3 bg-white dark:bg-gray-700/50 border-2 rounded-xl transition-all ${error
             ? "border-red-500 ring-red-500"
             : "border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500"
-        } ${className}`}
+          } ${className}`}
       />
     </div>
     {helper && !error && <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">{helper}</p>}
@@ -1095,9 +1094,8 @@ const CustomSelect = ({ label, id, options, placeholder, required, value, onChan
         <button
           type="button"
           onClick={() => !disabled && setIsOpen(!isOpen)}
-          className={`w-full px-4 py-3 bg-white dark:bg-gray-700/50 border-2 rounded-xl text-left flex items-center justify-between ${
-            disabled ? "cursor-not-allowed bg-gray-100" : "border-gray-200 dark:border-gray-600"
-          }`}
+          className={`w-full px-4 py-3 bg-white dark:bg-gray-700/50 border-2 rounded-xl text-left flex items-center justify-between ${disabled ? "cursor-not-allowed bg-gray-100" : "border-gray-200 dark:border-gray-600"
+            }`}
           disabled={disabled}
         >
           <span className={value ? "" : "text-gray-500"}>{value || placeholder}</span>
@@ -1282,9 +1280,8 @@ const RangeField = ({ label, id, minPlaceholder, maxPlaceholder, required, onCha
           placeholder={minPlaceholder}
           value={minValue}
           onChange={handleMinChange}
-          className={`w-full px-4 py-3 bg-white dark:bg-gray-700/50 border-2 rounded-xl ${
-            hasError ? "border-red-500" : "border-gray-200 dark:border-gray-600"
-          }`}
+          className={`w-full px-4 py-3 bg-white dark:bg-gray-700/50 border-2 rounded-xl ${hasError ? "border-red-500" : "border-gray-200 dark:border-gray-600"
+            }`}
           min="0"
         />
         <span className="text-gray-500">-</span>
@@ -1293,9 +1290,8 @@ const RangeField = ({ label, id, minPlaceholder, maxPlaceholder, required, onCha
           placeholder={maxPlaceholder}
           value={maxValue}
           onChange={handleMaxChange}
-          className={`w-full px-4 py-3 bg-white dark:bg-gray-700/50 border-2 rounded-xl ${
-            hasError ? "border-red-500" : "border-gray-200 dark:border-gray-600"
-          }`}
+          className={`w-full px-4 py-3 bg-white dark:bg-gray-700/50 border-2 rounded-xl ${hasError ? "border-red-500" : "border-gray-200 dark:border-gray-600"
+            }`}
           min="0"
         />
       </div>
